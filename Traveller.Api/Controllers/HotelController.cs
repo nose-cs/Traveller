@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Traveller.Domain.Models;
 using Traveller.Dtos;
 using Traveller.Persistence.Repositories;
 
@@ -24,8 +23,7 @@ public class HotelController : ControllerBase
     {
         try
         {
-            await _repository.AddAsync(new Hotel()
-                { Name = hotelDto.Name, Address = hotelDto.Address, Category = hotelDto.Category });
+            await _repository.AddAsync(HotelDto.Map(hotelDto));
             
             await _repository.SaveChangesAsync();
             return Ok();
