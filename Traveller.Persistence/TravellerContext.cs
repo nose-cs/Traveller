@@ -20,17 +20,15 @@ public class TravellerContext : DbContext
     {
         modelBuilder.Entity<Facility>().HasKey(e => e.Id);
         modelBuilder.Entity<Package>().HasKey(e => e.Id);
-
-        modelBuilder.Entity<PackageFacility>().Property(pf => pf.PackageId).IsRequired();
         
         modelBuilder.Entity<PackageFacility>()
             .HasOne(pf => pf.Facility)
-            .WithMany()
+            .WithMany(f => f.Packages)
             .HasForeignKey(pf => pf.FacilityId).HasPrincipalKey(f => f.Id).IsRequired();
         
         modelBuilder.Entity<PackageFacility>()
             .HasOne(pf => pf.Package)
-            .WithMany()
+            .WithMany(p => p.Facilities)
             .HasForeignKey(pf => pf.PackageId).IsRequired();
         
         modelBuilder.Entity<PackageFacility>()
