@@ -12,6 +12,7 @@ builder.Services.AddDbContext<TravellerContext>(options =>
 
 builder.Services.AddScoped<HotelRepository>();
 builder.Services.AddScoped<TourRepository>();
+builder.Services.AddScoped<FlightRepository>();
 
 builder.Services.AddControllers();
 
