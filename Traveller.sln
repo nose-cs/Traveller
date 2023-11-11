@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveller.Api", "Traveller.Api\Traveller.Api.csproj", "{218D5DAF-CAC3-48A6-B07D-5934E2566F92}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveller.Domain", "Traveller.Domain\Traveller.Domain.csproj", "{DC76432B-ED7D-4CC1-A2CF-F9D0997979EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traveller.Persistence", "Traveller.Persistence\Traveller.Persistence.csproj", "{5585541E-3E0B-4489-AE78-6837AA5B6D76}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{218D5DAF-CAC3-48A6-B07D-5934E2566F92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{218D5DAF-CAC3-48A6-B07D-5934E2566F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{218D5DAF-CAC3-48A6-B07D-5934E2566F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{218D5DAF-CAC3-48A6-B07D-5934E2566F92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC76432B-ED7D-4CC1-A2CF-F9D0997979EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC76432B-ED7D-4CC1-A2CF-F9D0997979EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC76432B-ED7D-4CC1-A2CF-F9D0997979EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC76432B-ED7D-4CC1-A2CF-F9D0997979EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5585541E-3E0B-4489-AE78-6837AA5B6D76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5585541E-3E0B-4489-AE78-6837AA5B6D76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5585541E-3E0B-4489-AE78-6837AA5B6D76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5585541E-3E0B-4489-AE78-6837AA5B6D76}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

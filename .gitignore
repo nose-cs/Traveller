@@ -1,0 +1,12 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+.idea/
+/.vs
+/TravelAgency/TravelAgency.csproj.user
+/TravelAgency/appsettings.json
+/Traveler.Api/Properties/launchSettings.json
+/Traveller.Api/Properties/launchSettings.json
+/Traveller.Api/appsettings.json
