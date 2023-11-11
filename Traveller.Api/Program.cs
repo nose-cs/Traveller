@@ -11,6 +11,7 @@ builder.Services.AddDbContext<TravellerContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TravellerDatabase")));
 
 builder.Services.AddScoped<HotelRepository>();
+builder.Services.AddScoped<TourRepository>();
 
 builder.Services.AddControllers();
 
