@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231111182541_Add Tour Hotel relationship")]
+    partial class AddTourHotelrelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,21 +38,6 @@ namespace Traveller.Persistence.Migrations
                     b.HasIndex("HotelsId");
 
                     b.ToTable("ExtendedTourHotel");
-                });
-
-            modelBuilder.Entity("PackageTour", b =>
-                {
-                    b.Property<int>("PackageId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ToursId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("PackageId", "ToursId");
-
-                    b.HasIndex("ToursId");
-
-                    b.ToTable("PackageTour");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Facility", b =>
@@ -214,10 +202,15 @@ namespace Traveller.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("PackageId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Id")
                         .IsUnique();
+
+                    b.HasIndex("PackageId");
 
                     b.ToTable("Tours");
 
@@ -248,21 +241,6 @@ namespace Traveller.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PackageTour", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.Package", null)
-                        .WithMany()
-                        .HasForeignKey("PackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Traveller.Domain.Models.Tour", null)
-                        .WithMany()
-                        .HasForeignKey("ToursId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Traveller.Domain.Models.PackageFacility", b =>
                 {
                     b.HasOne("Traveller.Domain.Models.Facility", "Facility")
@@ -282,6 +260,13 @@ namespace Traveller.Persistence.Migrations
                     b.Navigation("Package");
                 });
 
+            modelBuilder.Entity("Traveller.Domain.Models.Tour", b =>
+                {
+                    b.HasOne("Traveller.Domain.Models.Package", null)
+                        .WithMany("Tours")
+                        .HasForeignKey("PackageId");
+                });
+
             modelBuilder.Entity("Traveller.Domain.Models.Facility", b =>
                 {
                     b.Navigation("Packages");
@@ -290,6 +275,8 @@ namespace Traveller.Persistence.Migrations
             modelBuilder.Entity("Traveller.Domain.Models.Package", b =>
                 {
                     b.Navigation("Facilities");
+
+                    b.Navigation("Tours");
                 });
 #pragma warning restore 612, 618
         }

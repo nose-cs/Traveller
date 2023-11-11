@@ -18,21 +18,8 @@ public class TravellerContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Facility>().HasKey(e => e.Id);
-        modelBuilder.Entity<Package>().HasKey(e => e.Id);
-        
-        modelBuilder.Entity<PackageFacility>()
-            .HasOne(pf => pf.Facility)
-            .WithMany(f => f.Packages)
-            .HasForeignKey(pf => pf.FacilityId).HasPrincipalKey(f => f.Id).IsRequired();
-        
-        modelBuilder.Entity<PackageFacility>()
-            .HasOne(pf => pf.Package)
-            .WithMany(p => p.Facilities)
-            .HasForeignKey(pf => pf.PackageId).IsRequired();
-        
-        modelBuilder.Entity<PackageFacility>()
-            .HasKey(pf => new { pf.FacilityId, pf.PackageId })
-            .HasName("PK_PackageFacility");
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(TravellerContext).Assembly);
     }
 }

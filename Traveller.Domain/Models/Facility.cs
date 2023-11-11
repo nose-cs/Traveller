@@ -6,5 +6,5 @@ public class Facility : IDbModel
     public string Description { get; set; } = null!;
     public int Id { get; set; }
     
-    public ICollection<PackageFacility> Packages { get; set; } = null!;
+    public virtual ICollection<PackageFacility> Packages { get; set; } = null!;
 }

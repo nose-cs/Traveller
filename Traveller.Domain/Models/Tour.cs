@@ -19,6 +19,8 @@ public class Tour : IProduct
     public Day DepartureDay { get; set; }
     public TimeOnly ArrivalTime { get; set; }
     public TimeOnly DepartureTime { get; set; }
+
+    public virtual ICollection<Package> Packages { get; set; } = new List<Package>();
     public int Id { get; set; }
 }
 
