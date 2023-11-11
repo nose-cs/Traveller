@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Traveller.Persistence;
+using Traveller.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Register the database context postgresql
 builder.Services.AddDbContext<TravellerContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TravellerDatabase")));
+
+builder.Services.AddScoped<HotelRepository>();
 
 builder.Services.AddControllers();
 
