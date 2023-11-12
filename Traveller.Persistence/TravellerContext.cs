@@ -15,6 +15,10 @@ public class TravellerContext : DbContext
     public DbSet<Hotel> Hotels { get; set; } = null!;
     public DbSet<Tour> Tours { get; set; } = null!;
     public DbSet<Package> Packages { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<Tourist> Tourists { get; set; } = null!;
+    public DbSet<AgencyUser> AgencyUsers { get; set; } = null!;
+    public DbSet<Agency> Agencies { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

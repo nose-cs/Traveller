@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231112011129_Add users")]
+    partial class Addusers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -78,7 +81,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Agencies");
+                    b.ToTable("Agency");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Facility", b =>
@@ -274,21 +277,19 @@ namespace Traveller.Persistence.Migrations
                     b.Property<string>("Password")
                         .HasColumnType("text");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("EmailIndex");
 
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.HasIndex("Role");
-
-                    b.ToTable("Users");
+                    b.ToTable("User");
 
                     b.UseTptMappingStrategy();
                 });
@@ -309,7 +310,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("AgencyId");
 
-                    b.ToTable("AgencyUsers");
+                    b.ToTable("AgencyUser");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Tourist", b =>
@@ -322,7 +323,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("Nationality");
 
-                    b.ToTable("Tourists");
+                    b.ToTable("Tourist");
                 });
 
             modelBuilder.Entity("ExtendedTourHotel", b =>
