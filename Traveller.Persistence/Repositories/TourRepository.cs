@@ -31,7 +31,6 @@ public class TourRepository : IRepository<Tour, int>
         await _context.SaveChangesAsync();
     }
 
-
     public IEnumerable<Tour> Find()
     {
         return _context.Tours;
