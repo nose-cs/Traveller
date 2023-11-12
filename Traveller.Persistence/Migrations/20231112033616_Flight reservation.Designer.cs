@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231112033616_Flight reservation")]
+    partial class Flightreservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -277,9 +280,6 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("AgencyId");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ProductId");
 
                     b.ToTable("HotelOffer");
@@ -312,9 +312,6 @@ namespace Traveller.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("OfferId");
 
@@ -454,9 +451,6 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("AgencyId");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("ProductId");
 
                     b.ToTable("TourOffer");
@@ -489,9 +483,6 @@ namespace Traveller.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
 
                     b.HasIndex("OfferId");
 

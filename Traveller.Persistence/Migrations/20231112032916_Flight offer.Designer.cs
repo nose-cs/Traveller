@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231112032916_Flight offer")]
+    partial class Flightoffer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,9 +209,6 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("OfferId");
 
                     b.HasIndex("TouristId");
@@ -243,86 +243,6 @@ namespace Traveller.Persistence.Migrations
                     b.ToTable("Hotels");
                 });
 
-            modelBuilder.Entity("Traveller.Domain.Models.HotelOffer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AgencyId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AgencyId");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("HotelOffer");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.HotelReservation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ArrivalDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DepartureDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("NumberOfTravellers")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("OfferId")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("TouristId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
-
-                    b.HasIndex("OfferId");
-
-                    b.HasIndex("TouristId");
-
-                    b.ToTable("HotelReservation");
-                });
-
             modelBuilder.Entity("Traveller.Domain.Models.Package", b =>
                 {
                     b.Property<int>("Id")
@@ -331,16 +251,11 @@ namespace Traveller.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AgencyId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AgencyId");
 
                     b.HasIndex("Id")
                         .IsUnique();
@@ -418,86 +333,6 @@ namespace Traveller.Persistence.Migrations
                     b.HasDiscriminator<string>("Discriminator").HasValue("Tour");
 
                     b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.TourOffer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AgencyId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AgencyId");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("TourOffer");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.TourReservation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ArrivalDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("DepartureDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("NumberOfTravellers")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("OfferId")
-                        .HasColumnType("integer");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("TouristId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Id")
-                        .IsUnique();
-
-                    b.HasIndex("OfferId");
-
-                    b.HasIndex("TouristId");
-
-                    b.ToTable("TourReservation");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.User", b =>
@@ -603,7 +438,7 @@ namespace Traveller.Persistence.Migrations
             modelBuilder.Entity("Traveller.Domain.Models.FlightOffer", b =>
                 {
                     b.HasOne("Traveller.Domain.Models.Agency", "Agency")
-                        .WithMany("Flights")
+                        .WithMany()
                         .HasForeignKey("AgencyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -628,45 +463,7 @@ namespace Traveller.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("Traveller.Domain.Models.Tourist", "Tourist")
-                        .WithMany("FlightReservations")
-                        .HasForeignKey("TouristId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Offer");
-
-                    b.Navigation("Tourist");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.HotelOffer", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.Agency", "Agency")
-                        .WithMany("Hotels")
-                        .HasForeignKey("AgencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Traveller.Domain.Models.Hotel", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Agency");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.HotelReservation", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.HotelOffer", "Offer")
-                        .WithMany("Reservations")
-                        .HasForeignKey("OfferId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Traveller.Domain.Models.Tourist", "Tourist")
-                        .WithMany("HotelReservations")
                         .HasForeignKey("TouristId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -674,13 +471,6 @@ namespace Traveller.Persistence.Migrations
                     b.Navigation("Offer");
 
                     b.Navigation("Tourist");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.Package", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.Agency", null)
-                        .WithMany("Packages")
-                        .HasForeignKey("AgencyId");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.PackageFacility", b =>
@@ -700,44 +490,6 @@ namespace Traveller.Persistence.Migrations
                     b.Navigation("Facility");
 
                     b.Navigation("Package");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.TourOffer", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.Agency", "Agency")
-                        .WithMany("Tours")
-                        .HasForeignKey("AgencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Traveller.Domain.Models.Tour", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Agency");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.TourReservation", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.TourOffer", "Offer")
-                        .WithMany("Reservations")
-                        .HasForeignKey("OfferId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Traveller.Domain.Models.Tourist", "Tourist")
-                        .WithMany("TourReservations")
-                        .HasForeignKey("TouristId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Offer");
-
-                    b.Navigation("Tourist");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.AgencyUser", b =>
@@ -769,14 +521,6 @@ namespace Traveller.Persistence.Migrations
             modelBuilder.Entity("Traveller.Domain.Models.Agency", b =>
                 {
                     b.Navigation("AgencyUsers");
-
-                    b.Navigation("Flights");
-
-                    b.Navigation("Hotels");
-
-                    b.Navigation("Packages");
-
-                    b.Navigation("Tours");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Facility", b =>
@@ -789,28 +533,9 @@ namespace Traveller.Persistence.Migrations
                     b.Navigation("Reservations");
                 });
 
-            modelBuilder.Entity("Traveller.Domain.Models.HotelOffer", b =>
-                {
-                    b.Navigation("Reservations");
-                });
-
             modelBuilder.Entity("Traveller.Domain.Models.Package", b =>
                 {
                     b.Navigation("Facilities");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.TourOffer", b =>
-                {
-                    b.Navigation("Reservations");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.Tourist", b =>
-                {
-                    b.Navigation("FlightReservations");
-
-                    b.Navigation("HotelReservations");
-
-                    b.Navigation("TourReservations");
                 });
 #pragma warning restore 612, 618
         }
