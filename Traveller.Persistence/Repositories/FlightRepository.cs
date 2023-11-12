@@ -1,8 +1,9 @@
-﻿using Traveller.Domain.Models;
+﻿using Traveller.Domain.Interfaces.Repositories;
+using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
 
-public class FlightRepository : IRepository<Flight, int>
+public class FlightRepository : IFlightRepository
 {
     private readonly TravellerContext _context;
 

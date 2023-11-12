@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Dtos;
-using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 
@@ -8,11 +8,11 @@ namespace Traveller.Controllers;
 [Route("api/[controller]")]
 public class HotelController : ControllerBase
 {
-    private readonly HotelRepository _repository;
+    private readonly IHotelRepository _repository;
  
     private readonly ILogger<HotelController> _logger;
 
-    public HotelController(ILogger<HotelController> logger, HotelRepository repository)
+    public HotelController(ILogger<HotelController> logger, IHotelRepository repository)
     {
         _logger = logger;
         _repository = repository;
