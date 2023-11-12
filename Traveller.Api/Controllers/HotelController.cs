@@ -5,7 +5,7 @@ using Traveller.Persistence.Repositories;
 namespace Traveller.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class HotelController : ControllerBase
 {
     private readonly HotelRepository _repository;

@@ -5,7 +5,7 @@ using Traveller.Persistence.Repositories;
 namespace Traveller.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class FlightController : ControllerBase
 {
     private readonly FlightRepository _repository;
@@ -43,7 +43,7 @@ public class FlightController : ControllerBase
             var dbFlight = await _repository.FindById(id);
             if (dbFlight is null)
             {
-                return NotFound($"Hotel with id {id} doesn't exist");
+                return NotFound($"Flight with id {id} doesn't exist");
             }
 
             dbFlight.FlightNumber = flightDto.FlightNumber;
@@ -90,7 +90,7 @@ public class FlightController : ControllerBase
             var dbFlight = await _repository.FindById(id);
             if (dbFlight is null)
             {
-                return NotFound($"Hotel with id {id} doesn't exist");
+                return NotFound($"Flight with id {id} doesn't exist");
             }
 
             return Ok(FlightDto.Map(dbFlight));
