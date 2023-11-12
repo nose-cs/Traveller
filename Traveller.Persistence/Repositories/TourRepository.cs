@@ -1,4 +1,5 @@
-﻿using Traveller.Domain.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
 
@@ -39,5 +40,11 @@ public class TourRepository : IRepository<Tour, int>
     public async ValueTask<Tour?> FindById(int key)
     {
         return await _context.Tours.FindAsync(key);
+    }
+
+    public async Task<IEnumerable<Package>> FindPackages(int key)
+    {
+        var tour = await _context.Tours.AsNoTracking().Include(t => t.Packages).FirstOrDefaultAsync(t => t.Id == key);
+        return tour?.Packages ?? new List<Package>();
     }
 }

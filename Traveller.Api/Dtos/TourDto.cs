@@ -9,7 +9,6 @@ public class TourDto
     public int? Id { get; init; }
     public TourInfo ArrivalInfo { get; init; } = null!;
     public TourInfo DepartureInfo { get; init; } = null!;
-    public IEnumerable<int>? PackagesId { get; set; }
 
     public static TourDto Map(Tour tour)
     {
@@ -17,8 +16,7 @@ public class TourDto
         var departureInfo = new TourInfo(tour.DeparturePlace, tour.DepartureDay, tour.DepartureTime);
         return new TourDto()
         {
-            Id = tour.Id, ArrivalInfo = arrivalInfo, DepartureInfo = departureInfo,
-            PackagesId = tour.Packages.Select(p => p.Id)
+            Id = tour.Id, ArrivalInfo = arrivalInfo, DepartureInfo = departureInfo
         };
     }
 
