@@ -4,9 +4,9 @@ using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Configuration;
 
-public class PackageFacilityConfiguration : EntityConfiguration<PackageFacility>
+public class PackageFacilityConfiguration : IEntityTypeConfiguration<PackageFacility>
 {
-    protected override void ConfigureEntity(EntityTypeBuilder<PackageFacility> builder)
+    public void Configure(EntityTypeBuilder<PackageFacility> builder)
     {
         builder
             .HasOne(pf => pf.Facility)
@@ -17,8 +17,7 @@ public class PackageFacilityConfiguration : EntityConfiguration<PackageFacility>
             .HasOne(pf => pf.Package)
             .WithMany(p => p.Facilities)
             .HasForeignKey(pf => pf.PackageId).IsRequired();
-
-        builder
-            .HasKey(pf => new { pf.FacilityId, pf.PackageId }).HasName("PK_PackageFacility");
+        
+        builder.HasKey(pf => new { pf.FacilityId, pf.PackageId }).HasName("PK_PackageFacility");
     }
 }
