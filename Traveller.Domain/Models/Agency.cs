@@ -10,7 +10,7 @@ public class Agency : IDbModel
     public string Address { get; set; } = null!;
     
     public virtual ICollection<TourOffer> Tours { get; set; } = new List<TourOffer>();
-    public virtual ICollection<Package> Packages { get; set; } = new List<Package>();
+    public virtual ICollection<PackageOffer> Packages { get; set; } = new List<PackageOffer>();
     public virtual ICollection<HotelOffer> Hotels { get; set; } = new List<HotelOffer>();
     public virtual ICollection<FlightOffer> Flights { get; set; } = new List<FlightOffer>();
 
