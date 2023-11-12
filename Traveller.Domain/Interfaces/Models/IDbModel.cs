@@ -1,4 +1,4 @@
-﻿namespace Traveller.Domain;
+﻿namespace Traveller.Domain.Interfaces.Models;
 
 public interface IDbModel
 {

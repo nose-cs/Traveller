@@ -1,4 +1,6 @@
-﻿namespace Traveller.Domain.Models;
+﻿using Traveller.Domain.Interfaces.Models;
+
+namespace Traveller.Domain.Models;
 
 public class Package : IProduct
 {
