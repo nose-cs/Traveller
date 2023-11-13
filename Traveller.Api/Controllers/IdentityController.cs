@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Traveller.Api.Authentication.Services;
 using Traveller.Api.Dtos;
 using Traveller.Domain.Models;
+using Traveller.Dtos;
 
 namespace Traveller.Api.Controllers;
 
@@ -19,12 +20,12 @@ public class IdentityController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<string>> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<TokenDto>> Login([FromBody] LoginRequest request)
     {
         try
         {
             var token = await _loginService.Login(request);
-            return Ok(token);
+            return Ok(TokenDto.Map(token));
         }
         catch (Exception e)
         {
@@ -33,13 +34,13 @@ public class IdentityController : ControllerBase
     }
     
     [HttpPost("signup")]
-    public async Task<ActionResult<string>> Signup([FromBody] UserDto userDto)
+    public async Task<ActionResult<TokenDto>> Signup([FromBody] UserDto userDto)
     {
         //TODO: check valid email, add unique constraint to user email
         try
         {
             var token = await _loginService.CreateAccount(userDto, Role.Tourist, 0);
-            return Ok(token);
+            return Ok(TokenDto.Map(token));
         }
         catch (Exception e)
         {
@@ -49,7 +50,7 @@ public class IdentityController : ControllerBase
 
     [HttpPost("signupAdmin")]
     [Authorize(Roles = ("Admin"))]
-    public async Task<ActionResult<string>> SignupAdmin([FromBody] UserDto userDto)
+    public async Task<ActionResult> SignupAdmin([FromBody] UserDto userDto)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
@@ -69,7 +70,7 @@ public class IdentityController : ControllerBase
 
     [HttpPost("signupMarketingEmployee")]
     [Authorize(Roles = ("Admin"))]
-    public async Task<ActionResult<string>> SignupMarketingEmployee([FromBody] UserDto userDto)
+    public async Task<ActionResult> SignupMarketingEmployee([FromBody] UserDto userDto)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
@@ -89,7 +90,7 @@ public class IdentityController : ControllerBase
 
     [HttpPost("signupAgent")]
     [Authorize(Roles = ("Admin"))]
-    public async Task<ActionResult<string>> SignupAgent([FromBody] UserDto userDto)
+    public async Task<ActionResult> SignupAgent([FromBody] UserDto userDto)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
