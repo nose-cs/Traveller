@@ -1,4 +1,5 @@
-﻿using Traveller.Domain.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
 
@@ -38,5 +39,10 @@ public class HotelRepository : IRepository<Hotel, int>
     public async ValueTask<Hotel?> FindById(int key)
     {
         return await _context.Hotels.FindAsync(key);
+    }
+
+    public string getName(int key)
+    {
+        return _context.Hotels.Where(hotel => hotel.Id == key).Select(hotel => hotel.Name).First();
     }
 }

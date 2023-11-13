@@ -8,11 +8,11 @@ namespace Traveller.Controllers;
 [Route("api/[controller]")]
 public class TourController : ControllerBase
 {
-    private readonly TourRepository _tourRepository;
+    private readonly Repositories _tourRepository;
  
     private readonly ILogger<HotelController> _logger;
 
-    public TourController(ILogger<HotelController> logger, TourRepository tourRepository)
+    public TourController(ILogger<HotelController> logger, Repositories tourRepository)
     {
         _logger = logger;
         _tourRepository = tourRepository;
@@ -23,9 +23,9 @@ public class TourController : ControllerBase
     {
         try
         {
-            await _tourRepository.AddAsync(TourDto.Map(tourDto));
+            await _tourRepository.Tours.AddAsync(TourDto.Map(tourDto));
             
-            await _tourRepository.SaveChangesAsync();
+            await _tourRepository.Tours.SaveChangesAsync();
             return Ok();
         }
         catch (Exception e)
@@ -40,7 +40,7 @@ public class TourController : ControllerBase
     {
         try
         {
-            var dbTour = await _tourRepository.FindById(id);
+            var dbTour = await _tourRepository.Tours.FindById(id);
             if (dbTour is null)
             {
                 return NotFound($"Tour with id {id} doesn't exist");
@@ -54,7 +54,7 @@ public class TourController : ControllerBase
             dbTour.DeparturePlace = tourDto.DepartureInfo.Place;
             dbTour.DepartureTime = tourDto.DepartureInfo.Time;
             
-            await _tourRepository.SaveChangesAsync();
+            await _tourRepository.Tours.SaveChangesAsync();
             
             return Ok();
         }
@@ -70,8 +70,8 @@ public class TourController : ControllerBase
     {
         try
         {
-            await _tourRepository.Remove(id);
-            await _tourRepository.SaveChangesAsync();
+            await _tourRepository.Tours.Remove(id);
+            await _tourRepository.Tours.SaveChangesAsync();
             
             return Ok();
         }
@@ -83,14 +83,14 @@ public class TourController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_tourRepository.Find().Select(TourDto.Map));
-    
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult> Get([FromRoute] int id)
+    public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_tourRepository.Tours.Find().Select(TourDto.Map));
+
+    [HttpGet("get")]
+    public async Task<ActionResult> Get([FromQuery] int id)
     {
         try
         {
-            var dbTour = await _tourRepository.FindById(id);
+            var dbTour = await _tourRepository.Tours.FindById(id);
             if (dbTour  is null)
             {
                 return NotFound($"Tour with id {id} doesn't exist");
@@ -110,7 +110,7 @@ public class TourController : ControllerBase
     {
         try
         {
-            var packages = await _tourRepository.FindPackages(id);
+            var packages = await _tourRepository.Tours.FindPackages(id);
             if (packages is null)
             {
                 return NotFound($"Tour with id {id} doesn't exist");
