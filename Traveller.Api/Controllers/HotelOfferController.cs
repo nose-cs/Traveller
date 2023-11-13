@@ -133,8 +133,8 @@ public class HotelOfferController : ControllerBase
                                                                                         return dto;
                                                                                     }).ToArray());
 
-    [HttpGet("get")]
-    public async Task<ActionResult> Get([FromQuery] int id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult> Get([FromRoute] int id)
     {
         try
         {
