@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
 
-public class AgencyRepository : IRepository<Agency, int>
+public class AgencyRepository : IAgencyRepository
 {
     private readonly TravellerContext _context;
 
@@ -41,7 +42,7 @@ public class AgencyRepository : IRepository<Agency, int>
         return await _context.Agencies.FindAsync(key);
     }
 
-    public string getName(int key)
+    public string GetName(int key)
     {
         return _context.Agencies.Where(agency => agency.Id == key).Select(agency => agency.Name).First();
     }

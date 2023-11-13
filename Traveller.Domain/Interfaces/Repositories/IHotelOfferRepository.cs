@@ -2,7 +2,7 @@
 
 namespace Traveller.Domain.Interfaces.Repositories;
 
-public interface IHotelRepository : IRepository<Hotel, int>
+public interface IHotelOfferRepository : IRepository<HotelOffer, int>
 {
-    string GetName(int key);
+    
 }

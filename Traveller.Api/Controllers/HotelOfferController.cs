@@ -126,10 +126,10 @@ public class HotelOfferController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult GetAll() => Ok(_repository.HotelOffers.Find().ToArray().Select(offer => {
+    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.HotelOffers.Find().ToArray().Select(offer => {
                                                                                         var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
-                                                                                        dto.AgencyName = _repository.Agencies.getName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Hotels.getName(offer.ProductId);
+                                                                                        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                                                                                        dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
                                                                                         return dto;
                                                                                     }).ToArray());
 
@@ -145,8 +145,8 @@ public class HotelOfferController : ControllerBase
             }
 
             var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(dbHotelOffer);
-            dto.AgencyName = _repository.Agencies.getName(dbHotelOffer.AgencyId);
-            dto.ProductName = _repository.Hotels.getName(dbHotelOffer.ProductId);
+            dto.AgencyName = _repository.Agencies.GetName(dbHotelOffer.AgencyId);
+            dto.ProductName = _repository.Hotels.GetName(dbHotelOffer.ProductId);
 
             return Ok(dto);
         }

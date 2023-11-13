@@ -40,4 +40,9 @@ public class HotelRepository : IHotelRepository
     {
         return await _context.Hotels.FindAsync(key);
     }
+
+    public string GetName(int key)
+    {
+        return _context.Hotels.Where(hotel => hotel.Id == key).Select(hotel => hotel.Name).First();
+    }
 }
