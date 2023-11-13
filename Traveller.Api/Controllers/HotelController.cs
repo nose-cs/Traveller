@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Dtos;
+using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 
@@ -8,14 +8,14 @@ namespace Traveller.Controllers;
 [Route("api/[controller]")]
 public class HotelController : ControllerBase
 {
-    private readonly IHotelRepository _repository;
+    private readonly Repositories _repositories;
  
     private readonly ILogger<HotelController> _logger;
 
-    public HotelController(ILogger<HotelController> logger, IHotelRepository repository)
+    public HotelController(ILogger<HotelController> logger, Repositories repositories)
     {
         _logger = logger;
-        _repository = repository;
+        _repositories = repositories;
     }
 
     [HttpPost]
@@ -23,9 +23,9 @@ public class HotelController : ControllerBase
     {
         try
         {
-            await _repository.AddAsync(HotelDto.Map(hotelDto));
+            await _repositories.Hotels.AddAsync(HotelDto.Map(hotelDto));
             
-            await _repository.SaveChangesAsync();
+            await _repositories.Hotels.SaveChangesAsync();
             return Ok();
         }
         catch (Exception e)
@@ -40,7 +40,7 @@ public class HotelController : ControllerBase
     {
         try
         {
-            var dbHotel = await _repository.FindById(id);
+            var dbHotel = await _repositories.Hotels.FindById(id);
             if (dbHotel is null)
             {
                 return NotFound($"Hotel with id {id} doesn't exist");
@@ -50,7 +50,7 @@ public class HotelController : ControllerBase
             dbHotel.Name = hotelDto.Name;
             dbHotel.Category = dbHotel.Category;
             
-            await _repository.SaveChangesAsync();
+            await _repositories.Hotels.SaveChangesAsync();
             
             return Ok();
         }
@@ -66,8 +66,8 @@ public class HotelController : ControllerBase
     {
         try
         {
-            await _repository.Remove(id);
-            await _repository.SaveChangesAsync();
+            await _repositories.Hotels.Remove(id);
+            await _repositories.Hotels.SaveChangesAsync();
             
             return Ok();
         }
@@ -79,14 +79,14 @@ public class HotelController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_repository.Find().Select(HotelDto.Map));
+    public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_repositories.Hotels.Find().Select(HotelDto.Map));
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
         try
         {
-            var dbHotel = await _repository.FindById(id);
+            var dbHotel = await _repositories.Hotels.FindById(id);
             if (dbHotel is null)
             {
                 return NotFound($"Hotel with id {id} doesn't exist");

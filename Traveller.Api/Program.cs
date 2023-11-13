@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Traveller.Api.Authentication;
-using Traveller.Api.Authentication.Services;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Persistence;
 using Traveller.Persistence.Repositories;
+using Traveller.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,15 +15,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TravellerContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TravellerDatabase")));
 
-builder.Services.AddScoped<HotelRepository>();
-builder.Services.AddScoped<HotelOfferRepository>();
-builder.Services.AddScoped<TourRepository>();
-builder.Services.AddScoped<FlightRepository>();
-builder.Services.AddScoped<PackageRepository>();
-builder.Services.AddScoped<FacilityRepository>();
-builder.Services.AddScoped<AgencyRepository>();
-builder.Services.AddScoped<UserRepository>();
-
+builder.Services.AddScoped<IHotelRepository, HotelRepository>();
+builder.Services.AddScoped<IHotelOfferRepository, HotelOfferRepository>();
+builder.Services.AddScoped<ITourRepository, TourRepository>();
+builder.Services.AddScoped<IFlightRepository, FlightRepository>();
+builder.Services.AddScoped<IPackageRepository, PackageRepository>();
+builder.Services.AddScoped<IFacilityRepository, FacilityRepository>();
+builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<Repositories>();
 
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();

@@ -1,11 +1,10 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Traveller.Domain.Models;
 
-namespace Traveller.Api.Authentication.Services;
+namespace Traveller.Services;
 
 public class JwtProvider : IJwtProvider
 {
