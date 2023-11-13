@@ -8,18 +8,25 @@ public class TravellerContext : DbContext
     public TravellerContext(DbContextOptions<TravellerContext> options) : base(options)
     {
     }
+    public DbSet<Agency> Agencies { get; set; } = null!;
     
+    public DbSet<Flight> Flights { get; set; } = null!;
+    public DbSet<FlightOffer> FlightOffers { get; set; } = null!;
+    public DbSet<FlightReservation> FlightReservations { get; set; } = null!;
+    public DbSet<Hotel> Hotels { get; set; } = null!;
+    public DbSet<HotelOffer> HotelOffers { get; set; } = null!;
+    public DbSet<HotelReservation> HotelReservations { get; set; } = null!;
+    public DbSet<Tour> Tours { get; set; } = null!;
+    public DbSet<TourOffer> TourOffers { get; set; } = null!;
+    public DbSet<TourReservation> TourReservation { get; set; } = null!;
+    public DbSet<Package> Packages { get; set; } = null!;
     public DbSet<Facility> Facilities { get; set; } = null!;
     public DbSet<PackageFacility> PackageFacility { get; set; } = null!;
-    public DbSet<Flight> Flights { get; set; } = null!;
-    public DbSet<Hotel> Hotels { get; set; } = null!;
-    public DbSet<Tour> Tours { get; set; } = null!;
-    public DbSet<Package> Packages { get; set; } = null!;
+    
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Tourist> Tourists { get; set; } = null!;
     public DbSet<AgencyUser> AgencyUsers { get; set; } = null!;
-    public DbSet<Agency> Agencies { get; set; } = null!;
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

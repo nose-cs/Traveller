@@ -31,7 +31,6 @@ public class TourRepository : IRepository<Tour, int>
         await _context.SaveChangesAsync();
     }
 
-
     public IEnumerable<Tour> Find()
     {
         return _context.Tours;
@@ -42,9 +41,9 @@ public class TourRepository : IRepository<Tour, int>
         return await _context.Tours.FindAsync(key);
     }
 
-    public async Task<IEnumerable<Package>> FindPackages(int key)
+    public async Task<IEnumerable<Package>?> FindPackages(int key)
     {
         var tour = await _context.Tours.AsNoTracking().Include(t => t.Packages).FirstOrDefaultAsync(t => t.Id == key);
-        return tour?.Packages ?? new List<Package>();
+        return tour?.Packages;
     }
 }

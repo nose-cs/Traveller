@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Traveller.Domain.Models;
+﻿using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
 

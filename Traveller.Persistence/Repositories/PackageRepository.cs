@@ -41,15 +41,15 @@ public class PackageRepository : IRepository<Package, int>
         return await _context.Packages.FindAsync(key);
     }
     
-    public async Task<IEnumerable<Tour>> FindTours(int key)
+    public async Task<IEnumerable<Tour>?>  FindTours(int key)
     {
         var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).FirstOrDefaultAsync(p => p.Id == key);
-        return package?.Tours ?? new List<Tour>();
+        return package?.Tours;
     }
     
-    public async Task<IEnumerable<Tour>> FindFacilities(int key)
+    public async Task<IEnumerable<Tour>?> FindFacilities(int key)
     {
         var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).FirstOrDefaultAsync(p => p.Id == key);
-        return package?.Tours ?? new List<Tour>();
+        return package?.Tours;
     }
 }

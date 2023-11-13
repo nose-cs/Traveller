@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231112034449_Add offers and reservations")]
+    partial class Addoffersandreservations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -175,7 +178,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("FlightOffers");
+                    b.ToTable("FlightOffer");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.FlightReservation", b =>
@@ -213,7 +216,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("TouristId");
 
-                    b.ToTable("FlightReservations");
+                    b.ToTable("FlightReservation");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Hotel", b =>
@@ -282,7 +285,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("HotelOffers");
+                    b.ToTable("HotelOffer");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.HotelReservation", b =>
@@ -320,7 +323,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("TouristId");
 
-                    b.ToTable("HotelReservations");
+                    b.ToTable("HotelReservation");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Package", b =>
@@ -356,11 +359,20 @@ namespace Traveller.Persistence.Migrations
                     b.Property<int>("PackageId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
                     b.Property<double>("Price")
                         .HasColumnType("double precision");
 
                     b.HasKey("FacilityId", "PackageId")
                         .HasName("PK_PackageFacility");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
 
                     b.HasIndex("PackageId");
 
@@ -450,7 +462,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("TourOffers");
+                    b.ToTable("TourOffer");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.TourReservation", b =>

@@ -5,7 +5,7 @@ using Traveller.Persistence.Repositories;
 namespace Traveller.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class TourController : ControllerBase
 {
     private readonly TourRepository _tourRepository;
@@ -43,7 +43,7 @@ public class TourController : ControllerBase
             var dbTour = await _tourRepository.FindById(id);
             if (dbTour is null)
             {
-                return NotFound($"Hotel with id {id} doesn't exist");
+                return NotFound($"Tour with id {id} doesn't exist");
             }
 
             dbTour.ArrivalDay = tourDto.ArrivalInfo.Day;
@@ -84,13 +84,37 @@ public class TourController : ControllerBase
 
     [HttpGet]
     public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_tourRepository.Find().Select(TourDto.Map));
-
+    
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
         try
         {
+            var dbTour = await _tourRepository.FindById(id);
+            if (dbTour  is null)
+            {
+                return NotFound($"Tour with id {id} doesn't exist");
+            }
+
+            return Ok(TourDto.Map(dbTour));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.Message);
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpGet("{id:int}/packages")]
+    public async Task<ActionResult> GetPackages([FromRoute] int id)
+    {
+        try
+        {
             var packages = await _tourRepository.FindPackages(id);
+            if (packages is null)
+            {
+                return NotFound($"Tour with id {id} doesn't exist");
+            }
             return Ok(packages.Select(PackageDto.Map));
         }
         catch (Exception e)
