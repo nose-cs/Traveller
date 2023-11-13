@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Traveller.Api.Authentication;
 using Traveller.Api.Authentication.Services;
-using Traveller.Api.OptionsSetup;
 using Traveller.Persistence;
 using Traveller.Persistence.Repositories;
 
@@ -14,11 +16,15 @@ builder.Services.AddDbContext<TravellerContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TravellerDatabase")));
 
 builder.Services.AddScoped<HotelRepository>();
+builder.Services.AddScoped<HotelOfferRepository>();
 builder.Services.AddScoped<TourRepository>();
 builder.Services.AddScoped<FlightRepository>();
 builder.Services.AddScoped<PackageRepository>();
 builder.Services.AddScoped<FacilityRepository>();
+builder.Services.AddScoped<AgencyRepository>();
 builder.Services.AddScoped<UserRepository>();
+
+builder.Services.AddScoped<Repositories>();
 
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -27,9 +33,24 @@ builder.Services.AddScoped<LoginService>();
 builder.Services.AddControllers();
 
 // Add Jwt authentication settings
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
-builder.Services.ConfigureOptions<JwtOptionsSetup>();
-builder.Services.ConfigureOptions<JwtBearerOptionsSetup>();
+builder.Services.AddAuthentication(x =>
+{
+    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(x =>
+{
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true
+    };
+});
 
 builder.Services.AddAuthorization();
 

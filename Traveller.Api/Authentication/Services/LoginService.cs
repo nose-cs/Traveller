@@ -8,13 +8,6 @@ using Traveller.Controllers;
 
 namespace Traveller.Api.Authentication.Services;
 
-public enum Role
-{
-    Tourist,
-    MarketingEmployee,
-    Agent,
-    Admin
-}
 public class LoginService
 {
     private readonly UserRepository _repository;
@@ -43,7 +36,7 @@ public class LoginService
         return token;
     }
 
-    public async Task<string> CreateAccount(UserDto userDto, Role role)
+    public async Task<string> CreateAccount(UserDto userDto, Role role, int agencyId)
     {
         var user = await _repository.FindByEmail(userDto.Email);
         
@@ -61,9 +54,9 @@ public class LoginService
                 Password = _passwordService.EncryptPassword(userDto.Password),
                 Nationality = userDto.Nationality
             },
-            Role.MarketingEmployee => new AgencyUser() { Name = userDto.Name, Email = userDto.Email },
-            Role.Agent => new AgencyUser() { Name = userDto.Name, Email = userDto.Email },
-            Role.Admin => new AgencyUser() { Name = userDto.Name, Email = userDto.Email },
+            Role.MarketingEmployee => new AgencyUser() { Role = Domain.Models.Role.MarketingEmployee, Name = userDto.Name, Email = userDto.Email, Password = _passwordService.EncryptPassword(userDto.Password), AgencyId = agencyId },
+            Role.Agent => new AgencyUser() { Role = Domain.Models.Role.Agent, Name = userDto.Name, Email = userDto.Email , Password = _passwordService.EncryptPassword(userDto.Password), AgencyId = agencyId },
+            Role.Admin => new AgencyUser() { Role = Domain.Models.Role.Admin, Name = userDto.Name, Email = userDto.Email , Password = _passwordService.EncryptPassword(userDto.Password), AgencyId = agencyId },
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, "Role doesn't exist")
         };
 

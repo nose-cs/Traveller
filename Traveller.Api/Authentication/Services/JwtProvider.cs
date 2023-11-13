@@ -9,11 +9,11 @@ namespace Traveller.Api.Authentication.Services;
 
 public class JwtProvider : IJwtProvider
 {
-    private readonly JwtOptions _jwtOptions;
+    private readonly IConfiguration _config;
 
-    public JwtProvider(IOptions<JwtOptions> options)
+    public JwtProvider(IConfiguration config)
     {
-        _jwtOptions = options.Value;
+        _config = config;
     }
 
     public string Generate(User user)
@@ -22,17 +22,19 @@ public class JwtProvider : IJwtProvider
         {
             new("id", user.Id.ToString()),
             new(JwtRegisteredClaimNames.Name, user.Name),
-            new(JwtRegisteredClaimNames.Email, user.Email)
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new("role", user.Role.ToString()),
+            new("agencyId", user is AgencyUser agencyUser ? agencyUser.AgencyId.ToString() : "")
         };
 
         var signingCredentials = new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey)),
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]!)),
             SecurityAlgorithms.HmacSha256);
             
         
         var token = new JwtSecurityToken(
-            _jwtOptions.Issuer,
-            _jwtOptions.Audience,
+            _config["Jwt:Issuer"],
+            _config["Jwt:Audience"],
             claims,
             null,
             DateTime.UtcNow.AddHours(1),

@@ -8,11 +8,11 @@ namespace Traveller.Controllers;
 [Route("api/[controller]")]
 public class HotelController : ControllerBase
 {
-    private readonly HotelRepository _repository;
+    private readonly Repositories _repository;
  
     private readonly ILogger<HotelController> _logger;
 
-    public HotelController(ILogger<HotelController> logger, HotelRepository repository)
+    public HotelController(ILogger<HotelController> logger, Repositories repository)
     {
         _logger = logger;
         _repository = repository;
@@ -23,9 +23,9 @@ public class HotelController : ControllerBase
     {
         try
         {
-            await _repository.AddAsync(HotelDto.Map(hotelDto));
+            await _repository.Hotels.AddAsync(HotelDto.Map(hotelDto));
             
-            await _repository.SaveChangesAsync();
+            await _repository.Hotels.SaveChangesAsync();
             return Ok();
         }
         catch (Exception e)
@@ -40,7 +40,7 @@ public class HotelController : ControllerBase
     {
         try
         {
-            var dbHotel = await _repository.FindById(id);
+            var dbHotel = await _repository.Hotels.FindById(id);
             if (dbHotel is null)
             {
                 return NotFound($"Hotel with id {id} doesn't exist");
@@ -50,7 +50,7 @@ public class HotelController : ControllerBase
             dbHotel.Name = hotelDto.Name;
             dbHotel.Category = dbHotel.Category;
             
-            await _repository.SaveChangesAsync();
+            await _repository.Hotels.SaveChangesAsync();
             
             return Ok();
         }
@@ -66,8 +66,8 @@ public class HotelController : ControllerBase
     {
         try
         {
-            await _repository.Remove(id);
-            await _repository.SaveChangesAsync();
+            await _repository.Hotels.Remove(id);
+            await _repository.Hotels.SaveChangesAsync();
             
             return Ok();
         }
@@ -79,14 +79,14 @@ public class HotelController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_repository.Find().Select(HotelDto.Map));
+    public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_repository.Hotels.Find().Select(HotelDto.Map));
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult> Get([FromRoute] int id)
+    [HttpGet("get")]
+    public async Task<ActionResult> Get([FromQuery] int id)
     {
         try
         {
-            var dbHotel = await _repository.FindById(id);
+            var dbHotel = await _repository.Hotels.FindById(id);
             if (dbHotel is null)
             {
                 return NotFound($"Hotel with id {id} doesn't exist");
