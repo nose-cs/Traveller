@@ -18,7 +18,7 @@ public class Tour : IProduct
     public string ArrivalPlace { get; set; } = null!;
     public string DeparturePlace { get; set; } = null!;
     public Day ArrivalDay { get; set; }
-    public Day DepartureDay { get; set; }
+    public ushort Duration { get; set; }
     public TimeOnly ArrivalTime { get; set; }
     public TimeOnly DepartureTime { get; set; }
 
