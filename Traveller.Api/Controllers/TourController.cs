@@ -50,7 +50,7 @@ public class TourController : ControllerBase
             dbTour.ArrivalPlace = tourDto.ArrivalInfo.Place;
             dbTour.ArrivalTime = tourDto.ArrivalInfo.Time;
             
-            dbTour.DepartureDay = tourDto.DepartureInfo.Day;
+            dbTour.Duration = tourDto.Duration;
             dbTour.DeparturePlace = tourDto.DepartureInfo.Place;
             dbTour.DepartureTime = tourDto.DepartureInfo.Time;
             
