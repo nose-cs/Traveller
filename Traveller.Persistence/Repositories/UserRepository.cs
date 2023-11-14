@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
 
-public class UserRepository : IRepository<User, int>
+public class UserRepository : IUserRepository
 {
     private readonly TravellerContext _context;
 
@@ -45,5 +46,4 @@ public class UserRepository : IRepository<User, int>
     {
         return await _context.Users.FindAsync(key);
     }
-
 }

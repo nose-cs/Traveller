@@ -1,4 +1,5 @@
 ﻿using Traveller.Domain;
+using Traveller.Domain.Interfaces.Models;
 using Traveller.Domain.Models;
 
 namespace Traveller.Dtos

@@ -1,6 +1,6 @@
 ﻿using Traveller.Domain.Models;
 
-namespace Traveller.Domain;
+namespace Traveller.Domain.Interfaces.Models;
 
 public interface IReservation<TProduct, TReservation, TOffer> : IDbModel
     where TProduct : class, IProduct, new()

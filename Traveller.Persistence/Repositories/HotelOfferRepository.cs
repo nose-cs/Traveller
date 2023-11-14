@@ -1,8 +1,9 @@
-﻿using Traveller.Domain.Models;
+﻿using Traveller.Domain.Interfaces.Repositories;
+using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
 
-public class HotelOfferRepository : IRepository<HotelOffer, int>
+public class HotelOfferRepository : IHotelOfferRepository
 {
     private readonly TravellerContext _context;
 

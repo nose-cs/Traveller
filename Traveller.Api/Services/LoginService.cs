@@ -1,21 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Traveller.Dtos;
+﻿using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
-using Traveller.Persistence;
-using Traveller.Api.Dtos;
-using Traveller.Persistence.Repositories;
-using Traveller.Controllers;
+using Traveller.Dtos;
 
-namespace Traveller.Api.Authentication.Services;
+namespace Traveller.Services;
 
 public class LoginService
 {
-    private readonly UserRepository _repository;
+    private readonly IUserRepository _repository;
     private readonly IJwtProvider _jwtProvider;
     private readonly IPasswordService _passwordService;
     private readonly ILogger<LoginService> _logger;
 
-    public LoginService(UserRepository repository, ILogger<LoginService> logger, IJwtProvider jwtProvider, IPasswordService passwordService)
+    public LoginService(IUserRepository repository, ILogger<LoginService> logger, IJwtProvider jwtProvider, IPasswordService passwordService)
     {
         _repository = repository;
         _logger = logger;
@@ -23,11 +19,11 @@ public class LoginService
         _passwordService = passwordService;
     }
 
-    public async Task<string> Login(LoginRequest request)
+    public async Task<string> Login(LoginRequestDto requestDto)
     {
-        var user = await _repository.FindByEmail(request.Email);
+        var user = await _repository.FindByEmail(requestDto.Email);
         
-        if (user is null || !_passwordService.CheckPassword(request.Password, user))
+        if (user is null || !_passwordService.CheckPassword(requestDto.Password, user))
         {
             throw new Exception("not found: invalid credentials");
         }

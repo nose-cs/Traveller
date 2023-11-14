@@ -1,8 +1,11 @@
-﻿namespace Traveller.Domain.Models;
+﻿using Traveller.Domain.Interfaces.Models;
+
+namespace Traveller.Domain.Models;
 
 public class Package : IProduct
 {
     public string Name { get; set; } = null!;
+    public int Duration { get; set; }
     public int Id { get; set; }
     
     public virtual ICollection<PackageFacility> Facilities { get; set; } = null!;

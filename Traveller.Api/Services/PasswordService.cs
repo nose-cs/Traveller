@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using Traveller.Domain.Models;
 
-namespace Traveller.Api.Authentication.Services;
+namespace Traveller.Services;
 
 public class PasswordService : IPasswordService
 {

@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
 
-public class PackageRepository : IRepository<Package, int>
+public class PackageRepository : IPackageRepository
 {
     private readonly TravellerContext _context;
 

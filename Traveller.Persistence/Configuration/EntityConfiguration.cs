@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Traveller.Domain;
+using Traveller.Domain.Interfaces.Models;
 
 namespace Traveller.Persistence.Configuration;
 

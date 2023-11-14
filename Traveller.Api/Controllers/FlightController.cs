@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Dtos;
 using Traveller.Persistence.Repositories;
 
@@ -8,14 +9,14 @@ namespace Traveller.Controllers;
 [Route("api/[controller]")]
 public class FlightController : ControllerBase
 {
-    private readonly Repositories _repository;
+    private readonly Repositories _repositories;
  
     private readonly ILogger<HotelController> _logger;
 
-    public FlightController(ILogger<HotelController> logger, Repositories repository)
+    public FlightController(ILogger<HotelController> logger, Repositories repositories)
     {
         _logger = logger;
-        _repository = repository;
+        _repositories = repositories;
     }
 
     [HttpPost]
@@ -23,9 +24,9 @@ public class FlightController : ControllerBase
     {
         try
         {
-            await _repository.Flights.AddAsync(FlightDto.Map(flightDto));
+            await _repositories.Flights.AddAsync(FlightDto.Map(flightDto));
             
-            await _repository.Flights.SaveChangesAsync();
+            await _repositories.Flights.SaveChangesAsync();
             return Ok();
         }
         catch (Exception e)
@@ -40,7 +41,7 @@ public class FlightController : ControllerBase
     {
         try
         {
-            var dbFlight = await _repository.Flights.FindById(id);
+            var dbFlight = await _repositories.Flights.FindById(id);
             if (dbFlight is null)
             {
                 return NotFound($"Flight with id {id} doesn't exist");
@@ -51,7 +52,7 @@ public class FlightController : ControllerBase
             dbFlight.Destination = flightDto.Destination;
             dbFlight.Source = flightDto.Source;
             
-            await _repository.Flights.SaveChangesAsync();
+            await _repositories.Flights.SaveChangesAsync();
             
             return Ok();
         }
@@ -67,8 +68,8 @@ public class FlightController : ControllerBase
     {
         try
         {
-            await _repository.Flights.Remove(id);
-            await _repository.Flights.SaveChangesAsync();
+            await _repositories.Flights.Remove(id);
+            await _repositories.Flights.SaveChangesAsync();
             
             return Ok();
         }
@@ -80,14 +81,14 @@ public class FlightController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<FlightDto>> GetAll() => Ok(_repository.Flights.Find().Select(FlightDto.Map));
+    public ActionResult<IEnumerable<FlightDto>> GetAll() => Ok(_repositories.Flights.Find().Select(FlightDto.Map));
 
-    [HttpGet("get")]
-    public async Task<ActionResult> Get([FromQuery] int id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult> Get([FromRoute] int id)
     {
         try
         {
-            var dbFlight = await _repository.Flights.FindById(id);
+            var dbFlight = await _repositories.Flights.FindById(id);
             if (dbFlight is null)
             {
                 return NotFound($"Flight with id {id} doesn't exist");
