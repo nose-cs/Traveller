@@ -132,7 +132,7 @@ public class TourOfferController : ControllerBase
     public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.TourOffers.Find().ToArray().Select(offer => {
                                                                                         var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
                                                                                         dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
+                                                                                        dto.ProductName = _repository.Tours.GetName(offer.ProductId);
                                                                                         return dto;
                                                                                     }).ToArray());
 
@@ -149,7 +149,7 @@ public class TourOfferController : ControllerBase
 
             var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(dbOffer);
             dto.AgencyName = _repository.Agencies.GetName(dbOffer.AgencyId);
-            dto.ProductName = _repository.Hotels.GetName(dbOffer.ProductId);
+            dto.ProductName = _repository.Tours.GetName(dbOffer.ProductId);
 
             return Ok(dto);
         }

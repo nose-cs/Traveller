@@ -40,4 +40,9 @@ public class FlightRepository : IFlightRepository
     {
         return await _context.Flights.FindAsync(key);
     }
+
+    public string GetName(int key)
+    {
+        return _context.Flights.Where(flight => flight.Id == key).Select(flight => flight.Airline + ": " + flight.Source + " - " + flight.Destination).First();
+    }
 }

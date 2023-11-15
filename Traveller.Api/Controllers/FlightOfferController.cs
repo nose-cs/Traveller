@@ -132,7 +132,7 @@ public class FlightOfferController : ControllerBase
     public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.FlightOffers.Find().ToArray().Select(offer => {
                                                                                         var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
                                                                                         dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
+                                                                                        dto.ProductName = _repository.Flights.GetName(offer.ProductId);
                                                                                         return dto;
                                                                                     }).ToArray());
 
@@ -149,7 +149,7 @@ public class FlightOfferController : ControllerBase
 
             var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(dbOffer);
             dto.AgencyName = _repository.Agencies.GetName(dbOffer.AgencyId);
-            dto.ProductName = _repository.Hotels.GetName(dbOffer.ProductId);
+            dto.ProductName = _repository.Flights.GetName(dbOffer.ProductId);
 
             return Ok(dto);
         }
