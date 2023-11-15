@@ -34,7 +34,8 @@ public class PackageOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        PackageOffer Offer = OfferDto.Map<Package, PackageReservation, PackageOffer>(offerDto);
+        PackageOffer Offer = new PackageOffer(); 
+        OfferDto.Map<Package, PackageReservation, PackageOffer>(Offer, offerDto);
 
         Offer.Id = 0;
 
@@ -81,7 +82,7 @@ public class PackageOfferController : ControllerBase
             if(dbOffer.ProductId != offerDto.ProductId && await _repository.Packages.FindById(offerDto.ProductId) == null)
                 return NotFound($"Package id: {offerDto.ProductId} doesn´t exists");
 
-            dbOffer = OfferDto.Map<Package, PackageReservation, PackageOffer>(offerDto);
+            OfferDto.Map<Package, PackageReservation, PackageOffer>(dbOffer, offerDto);
             
             await _repository.PackageOffers.SaveChangesAsync();
             

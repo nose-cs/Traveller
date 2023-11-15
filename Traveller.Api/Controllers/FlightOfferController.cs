@@ -34,7 +34,8 @@ public class FlightOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        FlightOffer Offer = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offerDto);
+        FlightOffer Offer = new FlightOffer(); 
+        OfferDto.Map<Flight, FlightReservation, FlightOffer>(Offer, offerDto);
 
         Offer.Id = 0;
 
@@ -81,7 +82,7 @@ public class FlightOfferController : ControllerBase
             if(dbOffer.ProductId != offerDto.ProductId && await _repository.Flights.FindById(offerDto.ProductId) == null)
                 return NotFound($"Flight id: {offerDto.ProductId} doesn´t exists");
 
-            dbOffer = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offerDto);
+            OfferDto.Map<Flight, FlightReservation, FlightOffer>(dbOffer, offerDto);
             
             await _repository.FlightOffers.SaveChangesAsync();
             

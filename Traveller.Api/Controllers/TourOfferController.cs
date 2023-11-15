@@ -34,7 +34,8 @@ public class TourOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        TourOffer Offer = OfferDto.Map<Tour, TourReservation, TourOffer>(offerDto);
+        TourOffer Offer = new TourOffer();
+        OfferDto.Map<Tour, TourReservation, TourOffer>(Offer, offerDto);
 
         Offer.Id = 0;
 
@@ -81,7 +82,7 @@ public class TourOfferController : ControllerBase
             if(dbOffer.ProductId != offerDto.ProductId && await _repository.Tours.FindById(offerDto.ProductId) == null)
                 return NotFound($"Tour id: {offerDto.ProductId} doesn´t exists");
 
-            dbOffer = OfferDto.Map<Tour, TourReservation, TourOffer>(offerDto);
+            OfferDto.Map<Tour, TourReservation, TourOffer>(dbOffer, offerDto);
             
             await _repository.TourOffers.SaveChangesAsync();
             
