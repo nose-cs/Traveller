@@ -18,17 +18,19 @@ namespace Traveller.Dtos
         public string? ProductName { get; set; }
         public int ProductId { get; set; }
 
-        public static TOffer Map<TProduct, TReservation, TOffer>(OfferDto offerDto) where TProduct : class, IProduct, new()
+        public static void Map<TProduct, TReservation, TOffer>(TOffer offer, OfferDto offerDto) where TProduct : class, IProduct, new()
                                                                                                                  where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
                                                                                                                  where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
         {
-            var offer = new TOffer() { Description = offerDto.Description, Price = offerDto.Price, Capacity = offerDto.Capacity
-                                    , StartDate =  offerDto.StartDate, EndDate = offerDto.EndDate, ProductId = offerDto.ProductId };
+            offer.Description = offerDto.Description;
+            offer.Price = offerDto.Price;
+            offer.Capacity = offerDto.Capacity;
+            offer.StartDate = offerDto.StartDate;
+            offer.EndDate = offerDto.EndDate;
+            offer.ProductId = offerDto.ProductId;
 
             if (offerDto.Id != null)
                 offer.Id = (int)offerDto.Id;
-
-            return offer;
         }
         public static OfferDto Map<TProduct, TReservation, TOffer>(TOffer offer) where TProduct : class, IProduct, new()
                                                                                 where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()

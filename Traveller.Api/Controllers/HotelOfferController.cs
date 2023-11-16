@@ -32,7 +32,8 @@ public class HotelOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        HotelOffer hotelOffer = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offerDto);
+        HotelOffer hotelOffer = new HotelOffer(); 
+        OfferDto.Map<Hotel, HotelReservation, HotelOffer>(hotelOffer, offerDto);
 
         hotelOffer.Id = 0;
 
@@ -79,7 +80,7 @@ public class HotelOfferController : ControllerBase
             if(dbHotelOffer.ProductId != offerDto.ProductId && await _repository.Hotels.FindById(offerDto.ProductId) == null)
                 return NotFound($"Hotel id: {offerDto.ProductId} doesn´t exists");
 
-            dbHotelOffer = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offerDto);
+            OfferDto.Map<Hotel, HotelReservation, HotelOffer>(dbHotelOffer, offerDto);
             
             await _repository.HotelOffers.SaveChangesAsync();
             

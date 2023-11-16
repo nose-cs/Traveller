@@ -53,4 +53,9 @@ public class PackageRepository : IPackageRepository
         var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).FirstOrDefaultAsync(p => p.Id == key);
         return package?.Tours;
     }
+
+    public string GetName(int key)
+    {
+        return _context.Packages.Where(package => package.Id == key).Select(package => package.Name).First();
+    }
 }

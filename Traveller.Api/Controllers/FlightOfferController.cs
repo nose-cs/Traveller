@@ -34,7 +34,8 @@ public class FlightOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        FlightOffer Offer = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offerDto);
+        FlightOffer Offer = new FlightOffer(); 
+        OfferDto.Map<Flight, FlightReservation, FlightOffer>(Offer, offerDto);
 
         Offer.Id = 0;
 
@@ -81,7 +82,7 @@ public class FlightOfferController : ControllerBase
             if(dbOffer.ProductId != offerDto.ProductId && await _repository.Flights.FindById(offerDto.ProductId) == null)
                 return NotFound($"Flight id: {offerDto.ProductId} doesn´t exists");
 
-            dbOffer = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offerDto);
+            OfferDto.Map<Flight, FlightReservation, FlightOffer>(dbOffer, offerDto);
             
             await _repository.FlightOffers.SaveChangesAsync();
             
@@ -131,7 +132,7 @@ public class FlightOfferController : ControllerBase
     public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.FlightOffers.Find().ToArray().Select(offer => {
                                                                                         var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
                                                                                         dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
+                                                                                        dto.ProductName = _repository.Flights.GetName(offer.ProductId);
                                                                                         return dto;
                                                                                     }).ToArray());
 
@@ -148,7 +149,7 @@ public class FlightOfferController : ControllerBase
 
             var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(dbOffer);
             dto.AgencyName = _repository.Agencies.GetName(dbOffer.AgencyId);
-            dto.ProductName = _repository.Hotels.GetName(dbOffer.ProductId);
+            dto.ProductName = _repository.Flights.GetName(dbOffer.ProductId);
 
             return Ok(dto);
         }

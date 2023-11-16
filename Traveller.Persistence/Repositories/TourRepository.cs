@@ -47,4 +47,9 @@ public class TourRepository : ITourRepository
         var tour = await _context.Tours.AsNoTracking().Include(t => t.Packages).FirstOrDefaultAsync(t => t.Id == key);
         return tour?.Packages;
     }
+
+    public string GetName(int key)
+    {
+        return _context.Tours.Where(tour => tour.Id == key).Select(tour => tour.ArrivalPlace + " - " + tour.DeparturePlace).First();
+    }
 }
