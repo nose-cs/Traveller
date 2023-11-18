@@ -31,7 +31,7 @@ namespace Traveller.Persistence.Repositories
                             IPackageRepository Packages,
                             ITourOfferRepository TourOffers,
                             ITourRepository Tours,
-                            IUserRepository Users  ) 
+                            IUserRepository Users)
         {
             this.Agencies = Agencies;
             this.Facilties = Facilties;

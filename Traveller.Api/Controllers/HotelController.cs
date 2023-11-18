@@ -16,7 +16,7 @@ public class HotelController : ControllerBase
     {
         _logger = logger;
         _repositories = repositories;
-    }
+    } 
 
     [HttpPost]
     public async Task<ActionResult> Create(HotelDto hotelDto)
@@ -80,6 +80,16 @@ public class HotelController : ControllerBase
 
     [HttpGet]
     public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_repositories.Hotels.Find().Select(HotelDto.Map));
+
+    [HttpGet("Get")]
+    public ActionResult<IEnumerable<HotelDto>> Get([FromQuery] HotelFilterDTO filter) =>
+        Ok(_repositories.Hotels.Find().
+                Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
+                      (filter.Name is null || ho.Name.Contains(filter.Name)) &&
+                      (filter.Address is null || ho.Address.Contains(filter.Address)) &&
+                      (filter.ProductId is null || ho.Id == filter.ProductId))).
+                Select(HotelDto.Map));
+        
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)

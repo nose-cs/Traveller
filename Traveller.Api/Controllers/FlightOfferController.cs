@@ -135,6 +135,26 @@ public class FlightOfferController : ControllerBase
                                                                                         dto.ProductName = _repository.Flights.GetName(offer.ProductId);
                                                                                         return dto;
                                                                                     }).ToArray());
+    
+    [HttpGet("getFlightOffers")]
+    public IActionResult GetFlightOffers([FromQuery] OfferFilterDTO filter)
+    {
+        var offers = _repository.FlightOffers.Find().Where(to =>
+                (filter.ProductId == null || to.Product.Id == filter.ProductId)
+                && (filter.StartPrice == null || to.Price >= filter.StartPrice)
+                && (filter.EndPrice == null || to.Price <= filter.EndPrice)
+                && (filter.StartDate == null ||
+                    to.StartDate <= filter.StartDate && (to.EndDate == null ||
+                                                         to.EndDate >= filter.StartDate))
+                && (filter.AgencyId == null || to.Agency.Id == filter.AgencyId))
+            .ToArray().Select(offer =>
+            {
+                var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repository.Flights.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers); }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
