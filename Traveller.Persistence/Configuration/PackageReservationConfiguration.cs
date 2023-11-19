@@ -10,7 +10,7 @@ public class PackageReservationConfiguration : EntityConfiguration<PackageReserv
         builder.HasOne(pr => pr.Tourist).WithMany(t => t.PackageReservations).HasForeignKey(fr => fr.TouristId);
         builder.HasOne(pr => pr.Offer).WithMany(o => o.Reservations).HasForeignKey(fr => fr.OfferId);
         builder.HasOne(pr => pr.Payment).WithOne();
-        builder.HasOne(pr => pr.ArrivalFlight).WithMany().HasForeignKey(pr => pr.ArrivalFlightId);
-        builder.HasOne(pr => pr.DepartureFlight).WithMany().HasForeignKey(pr => pr.DepartureFlightId);
+        builder.HasOne(pr => pr.ArrivalFlight).WithMany(fr => fr.ArrivalReservations).HasForeignKey(pr => pr.ArrivalFlightId);
+        builder.HasOne(pr => pr.DepartureFlight).WithMany(fr => fr.DepartureReservations).HasForeignKey(pr => pr.DepartureFlightId);
     }
 }
