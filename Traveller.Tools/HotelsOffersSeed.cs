@@ -6,9 +6,14 @@ public partial class Program
 {
     private static readonly Random Random = new();
 
+    private static IEnumerable<HotelOffer> _hotelsOffers = null!;
+    private const int HotelOfferCount = 500;
+
     private static async Task AddHotelOffersAsync()
     {
-        foreach (var hotelOffer in GenerateHotelOffers())
+        _hotelsOffers = GenerateHotelOffers();
+
+        foreach (var hotelOffer in _hotelsOffers)
         {
             await _appDbContext.AddAsync(hotelOffer);
         }
@@ -18,7 +23,7 @@ public partial class Program
     {
         var date = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
 
-        return Enumerable.Range(1, 500).Select(i =>
+        return Enumerable.Range(1, HotelOfferCount).Select(i =>
         {
             var (title, description) = GenerateSequentialTitleDescription(i);
             return new HotelOffer
@@ -29,8 +34,8 @@ public partial class Program
                 Capacity = Random.Next(1, 10),
                 StartDate = date.AddDays(Random.Next(1, 10)),
                 EndDate = date.AddDays(i + Random.Next(10, 1000)),
-                AgencyId = i % 10 + 1,
-                ProductId = i % 25 + 1
+                AgencyId = i % AgenciesCount + 1,
+                ProductId = i % HotelCount + 1
             };
         });
     }
