@@ -46,13 +46,12 @@ public class TourController : ControllerBase
                 return NotFound($"Tour with id {id} doesn't exist");
             }
 
-            dbTour.ArrivalDay = tourDto.ArrivalInfo.Day;
-            dbTour.ArrivalPlace = tourDto.ArrivalInfo.Place;
-            dbTour.ArrivalTime = tourDto.ArrivalInfo.Time;
-            
+            dbTour.SourcePlaceId = tourDto.SourceInfo.Place.Id;
+            dbTour.SourceDay = tourDto.SourceInfo.Day;
+            dbTour.SourceTime = tourDto.SourceInfo.Time;
+            dbTour.DestinationPlaceId = tourDto.DestinationInfo.Place.Id;
+            dbTour.DestinationTime = tourDto.DestinationInfo.Time;
             dbTour.Duration = tourDto.Duration;
-            dbTour.DeparturePlace = tourDto.DepartureInfo.Place;
-            dbTour.DepartureTime = tourDto.DepartureInfo.Time;
             
             await _repositories.Tours.SaveChangesAsync();
             

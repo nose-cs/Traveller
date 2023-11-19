@@ -48,7 +48,7 @@ public class LoginService
                 Name = userDto.Name,
                 Email = userDto.Email,
                 Password = _passwordService.EncryptPassword(userDto.Password),
-                Nationality = userDto.Nationality
+                Country = userDto.Nationality
             },
             Role.MarketingEmployee => new AgencyUser() { Role = Domain.Models.Role.MarketingEmployee, Name = userDto.Name, Email = userDto.Email, Password = _passwordService.EncryptPassword(userDto.Password), AgencyId = agencyId },
             Role.Agent => new AgencyUser() { Role = Domain.Models.Role.Agent, Name = userDto.Name, Email = userDto.Email , Password = _passwordService.EncryptPassword(userDto.Password), AgencyId = agencyId },

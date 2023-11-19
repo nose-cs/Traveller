@@ -8,15 +8,15 @@ public class FlightDto
 
     public int FlightNumber { get; set; }
     public string Airline { get; set; } = null!;
-    public string Source { get; set; } = null!;
-    public string Destination { get; set; } = null!;
+    public PlaceDto Source { get; set; } = null!;
+    public PlaceDto Destination { get; set; } = null!;
 
     public static Flight Map(FlightDto flightDto)
     {
         var flight = new Flight()
         {
-            FlightNumber = flightDto.FlightNumber, Airline = flightDto.Airline, Source = flightDto.Source,
-            Destination = flightDto.Destination
+            FlightNumber = flightDto.FlightNumber, Airline = flightDto.Airline, SourceId = flightDto.Source.Id,
+            DestinationId = flightDto.Destination.Id
         };
         if (flightDto.Id is null)
         {
@@ -31,8 +31,8 @@ public class FlightDto
     {
         return new FlightDto()
         {
-            Id = flight.Id, FlightNumber = flight.FlightNumber, Airline = flight.Airline, Source = flight.Source,
-            Destination = flight.Destination
+            Id = flight.Id, FlightNumber = flight.FlightNumber, Airline = flight.Airline, 
+            Source = PlaceDto.Map(flight.Source), Destination = PlaceDto.Map(flight.Destination)
         };
     }
 }

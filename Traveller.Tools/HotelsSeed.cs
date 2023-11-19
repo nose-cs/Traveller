@@ -19,151 +19,151 @@ public partial class Program
             new Hotel
             {
                 Name = "The Grand Hotel",
-                Address = "123 Main Street, New York, NY",
+                AddressId = Random.Next(1,200),
                 Category = Category.FourStars
             },
             new Hotel
             {
                 Name = "The Ritz Carlton",
-                Address = "456 Broadway, Los Angeles, CA",
+                AddressId = Random.Next(1,200),
                 Category = Category.ThreeStars
             },
             new Hotel
             {
                 Name = "The Plaza Hotel",
-                Address = "789 Fifth Avenue, New York, NY",
+                AddressId = Random.Next(1,200),
                 Category = Category.FiveStars
             },
             new Hotel
             {
                 Name = "The Waldorf Astoria",
-                Address = "321 Park Avenue, New York, NY",
+                AddressId = Random.Next(1,200),
                 Category = Category.ThreeStars
             },
             new Hotel
             {
                 Name = "The Four Seasons",
-                Address = "654 Broadway, New York, NY",
+                AddressId = Random.Next(1,200),
                 Category = Category.TwoStars
             },
             new Hotel
             {
                 Name = "The Beverly Wilshire",
-                Address = "987 Wilshire Boulevard, Los Angeles, CA",
+                AddressId = Random.Next(1,200),
                 Category = Category.FourStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Delaire",
-                Address = "111 Del Mar Drive, Delaire, DE",
+                AddressId = Random.Next(1,200),
                 Category = Category.FiveStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Cancun",
-                Address = "222 Cancun Drive, Cancun, MX",
+                AddressId = Random.Next(1,200),
                 Category = Category.FourStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Bangkok",
-                Address = "333 Silom Road, Bangkok, TH",
+                AddressId = Random.Next(1,200),
                 Category = Category.FiveStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, St. Thomas",
-                Address = "444 St. Thomas Drive, St. Thomas, VI",
+                AddressId = Random.Next(1,200),
                 Category = Category.OneStar
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Paris",
-                Address = "555 Champs-Elysées, Paris, FR",
+                AddressId = Random.Next(1,200),
                 Category = Category.FiveStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Rome",
-                Address = "666 Via Veneto, Rome, IT",
+                AddressId = Random.Next(1,200),
                 Category = Category.FourStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Geneva",
-                Address = "777 Rue du Rhône, Geneva, CH",
+                AddressId = Random.Next(1,200),
                 Category = Category.FiveStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, San Francisco",
-                Address = "888 Union Square, San Francisco, CA",
+                AddressId = Random.Next(1,200),
                 Category = Category.FiveStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Boston",
-                Address = "999 Commonwealth Avenue, Boston, MA",
+                AddressId = Random.Next(1,200),
                 Category = Category.ThreeStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, San Diego",
-                Address = "1111 Horton Plaza, San Diego, CA",
+                AddressId = Random.Next(1,200),
                 Category = Category.FourStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Chicago",
-                Address = "2222 Michigan Avenue, Chicago, IL",
+                AddressId = Random.Next(1,200),
                 Category = Category.ThreeStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Miami",
-                Address = "3333 Collins Avenue, Miami, FL",
+                AddressId = Random.Next(1,200),
                 Category = Category.OneStar
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Honolulu",
-                Address = "4444 Kalakaua Avenue, Honolulu, HI",
+                AddressId = Random.Next(1,200),
                 Category = Category.TwoStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Orlando",
-                Address = "5555 International Drive, Orlando, FL",
+                AddressId = Random.Next(1,200),
                 Category = Category.ThreeStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Las Vegas",
-                Address = "6666 Las Vegas Boulevard South, Las Vegas, NV",
+                AddressId = Random.Next(1,200),
                 Category = Category.FourStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, San Antonio",
-                Address = "7777 Commerce Street, San Antonio, TX",
+                AddressId = Random.Next(1,200),
                 Category = Category.FiveStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Dallas",
-                Address = "8888 Market Center Drive, Dallas, TX",
+                AddressId = Random.Next(1,200),
                 Category = Category.TwoStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Atlanta",
-                Address = "9999 Peachtree Street, Atlanta, GA",
+                AddressId = Random.Next(1,200),
                 Category = Category.FourStars
             },
             new Hotel
             {
                 Name = "The Ritz-Carlton, Seattle",
-                Address = "11111 University Street, Seattle, WA",
+                AddressId = Random.Next(1,200),
                 Category = Category.ThreeStars
             }
         };

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231119075844_Add place table")]
+    partial class Addplacetable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,8 +63,9 @@ namespace Traveller.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AddressId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -76,8 +80,6 @@ namespace Traveller.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
 
                     b.ToTable("Agencies");
                 });
@@ -118,23 +120,21 @@ namespace Traveller.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("DestinationId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Destination")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("FlightNumber")
                         .HasColumnType("integer");
 
-                    b.Property<int>("SourceId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DestinationId");
-
                     b.HasIndex("Id")
                         .IsUnique();
-
-                    b.HasIndex("SourceId");
 
                     b.ToTable("Flights");
                 });
@@ -231,8 +231,9 @@ namespace Traveller.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AddressId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("Category")
                         .HasColumnType("integer");
@@ -242,8 +243,6 @@ namespace Traveller.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
 
                     b.HasIndex("Id")
                         .IsUnique();
@@ -483,10 +482,6 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("City");
-
-                    b.HasIndex("Country");
-
                     b.HasIndex("Id")
                         .IsUnique();
 
@@ -684,11 +679,11 @@ namespace Traveller.Persistence.Migrations
                 {
                     b.HasBaseType("Traveller.Domain.Models.User");
 
-                    b.Property<string>("Country")
+                    b.Property<string>("Nationality")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasIndex("Country");
+                    b.HasIndex("Nationality");
 
                     b.ToTable("Tourists");
                 });
@@ -721,36 +716,6 @@ namespace Traveller.Persistence.Migrations
                         .HasForeignKey("ToursId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.Agency", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.Place", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Address");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.Flight", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.Place", "Destination")
-                        .WithMany()
-                        .HasForeignKey("DestinationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Traveller.Domain.Models.Place", "Source")
-                        .WithMany()
-                        .HasForeignKey("SourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Destination");
-
-                    b.Navigation("Source");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.FlightOffer", b =>
@@ -789,17 +754,6 @@ namespace Traveller.Persistence.Migrations
                     b.Navigation("Offer");
 
                     b.Navigation("Tourist");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.Hotel", b =>
-                {
-                    b.HasOne("Traveller.Domain.Models.Place", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Address");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.HotelOffer", b =>

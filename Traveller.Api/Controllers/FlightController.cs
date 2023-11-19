@@ -49,8 +49,8 @@ public class FlightController : ControllerBase
 
             dbFlight.FlightNumber = flightDto.FlightNumber;
             dbFlight.Airline = flightDto.Airline;
-            dbFlight.Destination = flightDto.Destination;
-            dbFlight.Source = flightDto.Source;
+            dbFlight.DestinationId = flightDto.Destination.Id;
+            dbFlight.SourceId = flightDto.Source.Id;
             
             await _repositories.Flights.SaveChangesAsync();
             

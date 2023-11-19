@@ -136,7 +136,7 @@ public class PackageOfferController : ControllerBase
                                                                                         return dto;
                                                                                     }).ToArray());
 
-    
+    [HttpGet("filter")]
     public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.PackageOffers.Find().Where(pa => (filter.ProductId == null || pa.Id == filter.ProductId)

@@ -18,6 +18,10 @@ public partial class Program
         var serviceProvider = services.BuildServiceProvider();
         _appDbContext = serviceProvider.GetService<TravellerContext>()!;
 
+        await AddPlacesAsync();
+        if (await _appDbContext.SaveChangesAsync() > 0)
+            Console.WriteLine("Place's data successfully seeded!");
+        
         await AddAgenciesAsync();
         await AddHotelsAsync();
         if (await _appDbContext.SaveChangesAsync() > 0)
@@ -26,6 +30,6 @@ public partial class Program
         await AddHotelOffersAsync();
 
         if (await _appDbContext.SaveChangesAsync() > 0)
-            Console.WriteLine("Offers data successfully seeded!");
+            Console.WriteLine("Offer's data successfully seeded!");
     }
 }

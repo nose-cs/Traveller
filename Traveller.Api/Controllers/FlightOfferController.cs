@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Migrations;
 using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
@@ -34,16 +32,16 @@ public class FlightOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        FlightOffer Offer = new FlightOffer(); 
-        OfferDto.Map<Flight, FlightReservation, FlightOffer>(Offer, offerDto);
+        var offer = new FlightOffer(); 
+        OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer, offerDto);
 
-        Offer.Id = 0;
+        offer.Id = 0;
 
-        Offer.AgencyId = agencyId;
+        offer.AgencyId = agencyId;
 
         try
         {
-            await _repository.FlightOffers.AddAsync(Offer);
+            await _repository.FlightOffers.AddAsync(offer);
             
             await _repository.FlightOffers.SaveChangesAsync();
             return Ok();

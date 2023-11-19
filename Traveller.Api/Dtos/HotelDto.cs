@@ -6,12 +6,12 @@ public class HotelDto
 {
     public int? Id { get; set; }
     public string Name { get; set; } = null!;
-    public string Address { get; set; } = null!;
+    public PlaceDto Address { get; set; } = null!;
     public Category Category { get; set; }
 
     public static Hotel Map(HotelDto hotelDto)
     {
-        var hotel = new Hotel() { Name = hotelDto.Name, Address = hotelDto.Address, Category = hotelDto.Category };
+        var hotel = new Hotel() { Name = hotelDto.Name, AddressId = hotelDto.Address.Id, Category = hotelDto.Category };
         if (hotelDto.Id is null)
         {
             return hotel;
@@ -22,6 +22,6 @@ public class HotelDto
     }
     public static HotelDto Map(Hotel hotel)
     {
-        return new HotelDto() { Id = hotel.Id, Address = hotel.Address, Name = hotel.Name, Category = hotel.Category};
+        return new HotelDto() { Id = hotel.Id, Address = PlaceDto.Map(hotel.Address), Name = hotel.Name, Category = hotel.Category};
     }
 }

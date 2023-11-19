@@ -10,7 +10,7 @@ public class TouristConfiguration : EntityConfiguration<Tourist>
 
     protected override void ConfigureEntity(EntityTypeBuilder<Tourist> builder)
     {
-        builder.HasIndex(t => t.Nationality);
+        builder.HasIndex(t => t.Country);
         builder.UseTptMappingStrategy();
     }
 }
