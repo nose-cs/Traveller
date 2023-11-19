@@ -18,13 +18,13 @@ public partial class Program
 
     private static readonly List<string> Adjectives = new()
     {
-        "wonderful",
-        "amazing",
-        "beautiful",
-        "breathtaking",
-        "stunning",
-        "luxurious",
-        "modern",
+        "a wonderful",
+        "an amazing",
+        "a beautiful",
+        "a breathtaking",
+        "a stunning",
+        "a luxurious",
+        "a modern",
     };
 
     private static IEnumerable<TourOffer> GenerateTourOffers()
@@ -37,7 +37,7 @@ public partial class Program
             return new TourOffer
             {
                 Title =
-                    $"{Verb[Random.Next(0, Verb.Count)]} {Adjectives[Random.Next(0, Adjectives.Count)]} to {destinationPlace.City}, {destinationPlace.Country}",
+                    $"{Verb[Random.Next(0, Verb.Count)]} {Adjectives[Random.Next(0, Adjectives.Count)]} tour to {destinationPlace.City}, {destinationPlace.Country}",
                 Description = "",
                 Price = Random.Next(100, 1000),
                 Capacity = Random.Next(1, 10),

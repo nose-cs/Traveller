@@ -34,6 +34,7 @@ public partial class Program
 
         await AddHotelOffersAsync();
         await AddTourOffersAsync();
+        await AddFlightOffersAsync();
         if (await _appDbContext.SaveChangesAsync() > 0)
             Console.WriteLine("Offer's data successfully seeded!");
     }

@@ -4,13 +4,13 @@ namespace Traveller.Tools;
 
 public partial class Program
 {
-    private static IEnumerable<Flight> Flights = null!; 
+    private static IEnumerable<Flight> _flights = null!; 
     private const int FlightsCount = 50;
     
     private static async Task AddFlightsAsync()
     {
-        Flights = GenerateFlights();
-        foreach (var flight in Flights)
+        _flights = GenerateFlights();
+        foreach (var flight in _flights)
         {
             await _appDbContext.AddAsync(flight);
         }
