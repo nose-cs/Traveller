@@ -33,7 +33,9 @@ public class TravellerContext : DbContext
     {
         var hotels = GenerateHotels();
         var hotelOffers = GenerateHotelOffers();
+        var agencies = GenerateAgencies();
 
+        modelBuilder.Entity<Agency>().HasData(agencies);
         modelBuilder.Entity<Hotel>().HasData(hotels);
         modelBuilder.Entity<HotelOffer>().HasData(hotelOffers);
 
@@ -270,15 +272,75 @@ public class TravellerContext : DbContext
 
     private static HotelOffer[] GenerateHotelOffers()
     {
-        return Enumerable.Range(1, 500).Select(i => new HotelOffer
+        var date = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+        
+        return Enumerable.Range(1, 501).Select(i => new HotelOffer
         {
+            Id = i,
             Description = GenerateSequentialDescription(i),
             Price = Random.Next(100, 2000),
             Capacity = Random.Next(1, 10),
-            StartDate = DateTime.Now.AddDays(i),
-            EndDate = DateTime.Now.AddDays(i + Random.Next(10, 1000)),
+            StartDate = date.AddDays(Random.Next(1, 10)),
+            EndDate = date.AddDays(i + Random.Next(10, 1000)),
             AgencyId = i % 10 + 1,
             ProductId = i % 25 + 1
         }).ToArray();
+    }
+
+    private static Agency[] GenerateAgencies()
+    {
+        return new[]
+        {
+            new Agency
+            {
+                Id = 1, Name = "Sunshine Travel", Fax = "+1-800-123-4567", Email = "sunshine@travel.com",
+                Address = "123 Main Street, New York, NY 10001"
+            },
+            new Agency
+            {
+                Id = 2, Name = "Dream Tours", Fax = "+1-888-987-6543", Email = "dream@tours.com",
+                Address = "456 Park Avenue, Los Angeles, CA 90001"
+            },
+            new Agency
+            {
+                Id = 3, Name = "Paradise Holidays", Fax = "+1-877-765-4321", Email = "paradise@holidays.com",
+                Address = "789 Broadway, Chicago, IL 60601"
+            },
+            new Agency
+            {
+                Id = 4, Name = "Explorer Adventures", Fax = "+1-866-543-2109", Email = "explorer@adventures.com",
+                Address = "101 Market Street, San Francisco, CA 94101"
+            },
+            new Agency
+            {
+                Id = 5, Name = "Star Travel", Fax = "+1-855-321-0987", Email = "star@travel.com",
+                Address = "202 Main Street, Boston, MA 02101"
+            },
+            new Agency
+            {
+                Id = 6, Name = "Wonder Tours", Fax = "+1-844-210-9876", Email = "wonder@tours.com",
+                Address = "303 Park Avenue, Miami, FL 33101"
+            },
+            new Agency
+            {
+                Id = 7, Name = "Bliss Holidays", Fax = "+1-833-098-7654", Email = "bliss@holidays.com",
+                Address = "404 Broadway, Seattle, WA 98101"
+            },
+            new Agency
+            {
+                Id = 8, Name = "Adventure Zone", Fax = "+1-822-765-4320", Email = "adventure@zone.com",
+                Address = "505 Market Street, Denver, CO 80201"
+            },
+            new Agency
+            {
+                Id = 9, Name = "Sky Travel", Fax = "+1-811-432-1098", Email = "sky@travel.com",
+                Address = "606 Main Street, Houston, TX 77001"
+            },
+            new Agency
+            {
+                Id = 10, Name = "Magic Tours", Fax = "+1-800-109-8765", Email = "magic@tours.com",
+                Address = "707 Park Avenue, Atlanta, GA 30301"
+            }
+        };
     }
 }
