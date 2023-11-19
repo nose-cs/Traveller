@@ -5,6 +5,7 @@ namespace Traveller.Domain.Models;
 public class HotelOffer : IOffer<Hotel, HotelReservation, HotelOffer>
 {
     public int Id { get; set; }
+    public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
     public double Price { get; set; }
     public int Capacity { get; set; }

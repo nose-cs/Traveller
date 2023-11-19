@@ -7,6 +7,7 @@ public interface IOffer<TProduct, TReservation, TOffer> : IDbModel
     where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
     where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
 {
+    string Title { get; set; }
     string Description { get; set; }
     double Price { get; set; }
     int Capacity { get; set; }

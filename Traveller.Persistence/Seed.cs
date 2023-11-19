@@ -194,19 +194,17 @@ public static class ModelBuilderExtensions
         };
     }
 
-    private static readonly List<string> Phrases = new()
+    private static readonly List<string> Title = new()
     {
-        ". Perfect for a romantic weekend",
-        " with a stunning view",
-        " with a private balcony",
-        " with a cozy atmosphere",
-        ". Spacious room with a breathtaking view of the city",
-        " with a cozy atmosphere and a beautiful view",
-        " with a comfortable atmosphere and a stunning view",
-        " with a beautiful view and modern amenities"
+        "",
+        "with a stunning view",
+        "with a private balcony",
+        "with a cozy atmosphere",
+        "with a breathtaking view of the city",
+        "with a beautiful view and modern amenities"
     };
 
-    private static readonly List<string> Words = new()
+    private static readonly List<string> Rooms = new()
     {
         "Single room",
         "Luxury suite",
@@ -226,7 +224,7 @@ public static class ModelBuilderExtensions
         "Queen room"
     };
 
-    private static readonly List<string> Phrases2 = new()
+    private static readonly List<string> Phrases = new()
     {
         "Enjoy the serenity and comfort of our rooms, each equipped with modern amenities. Our dedicated staff is here to ensure your stay is as comfortable as possible. Book now and discover the luxury of our hotel.",
         "Experience the elegance and charm of our hotel, where you can relax in our spacious rooms, enjoy our delicious cuisine, and explore the nearby attractions. Whether you are traveling for business or pleasure, our hotel will make you feel at home. Reserve your room today and get ready for an unforgettable stay.",
@@ -238,15 +236,32 @@ public static class ModelBuilderExtensions
         "Our hotel is a haven of tranquility and relaxation, where you can escape the hustle and bustle of the city. Our rooms are cozy and inviting, with soft beds and pillows, and soothing colors. Our hotel also features a pool, a garden, and a lounge, where you can unwind and recharge. Our hotel is also close to nature, with many parks, trails, and beaches nearby. Book your room now and treat yourself to our hotel.",
         "Our hotel is a boutique hotel that offers a unique and personalized stay. Our rooms are individually decorated, with artistic touches and original details. Our hotel also has a rooftop terrace, a library, and a café, where you can enjoy the views, the books, and the coffee. Our hotel is located in a vibrant neighborhood, with many galleries, museums, and theaters nearby. Book your room now and discover our hotel.",
         "Our hotel is a family-friendly hotel that offers a fun and enjoyable stay. Our rooms are spacious and bright, with plenty of space for everyone. Our hotel also has a playground, a game room, and a kids’ club, where you can have fun and make new friends. Our hotel is also near many family attractions, such as amusement parks, zoos, and aquariums. Book your room now and have a blast at our hotel.",
-        "Our hotel is a business hotel that offers a professional and productive stay. Our rooms are sleek and modern, with high-speed internet, work desks, and ergonomic chairs. Our hotel also has a business center, a meeting room, and a conference hall, where you can conduct your work and events. Our hotel is also near the airport, the train station, and the business district. Book your room now and get down to business at our hotel."
+        "Our hotel is a business hotel that offers a professional and productive stay. Our rooms are sleek and modern, with high-speed internet, work desks, and ergonomic chairs. Our hotel also has a business center, a meeting room, and a conference hall, where you can conduct your work and events. Our hotel is also near the airport, the train station, and the business district. Book your room now and get down to business at our hotel.",
+        "Our hotel is a pet-friendly hotel that offers a comfortable and convenient stay. Our rooms are spacious and clean, with plenty of space for your furry friend. Our hotel also has a dog park, a pet spa, and a pet store, where you can pamper your pet. Our hotel is also near many pet-friendly attractions, such as dog parks, pet stores, and pet-friendly restaurants. Book your room now and bring your pet along for the ride.",
+        "Our hotel is a romantic hotel that offers a cozy and intimate stay. Our rooms are spacious and elegant, with soft lighting and plush bedding. Our hotel also has a spa, a restaurant, and a bar, where you can enjoy a romantic dinner and drinks. Our hotel is also near many romantic attractions, such as parks, gardens, and beaches. Book your room now and spend a romantic weekend at our hotel.",
+        "Our hotel is a luxury hotel that offers a lavish and indulgent stay. Our rooms are spacious and elegant, with plush bedding and soft lighting. Our hotel also has a spa, a restaurant, and a bar, where you can enjoy a gourmet meal and a glass of wine. Our hotel is also near many luxury attractions, such as museums, theaters, and shopping malls. Book your room now and treat yourself to a luxurious stay at our hotel.",
+        "Our hotel is a budget hotel that offers a comfortable and affordable stay. Our rooms are clean and cozy, with all the essentials you need. Our hotel also has a restaurant, a bar, and a lounge, where you can enjoy a delicious meal and a refreshing drink. Our hotel is also near many budget attractions, such as parks, museums, and shopping malls. Book your room now and save money on your next trip.",
+        "Our hotel is a boutique hotel that offers a unique and personalized stay. Our rooms are individually decorated, with artistic touches and original details. Our hotel also has a rooftop terrace, a library, and a café, where you can enjoy the views, the books, and the coffee. Our hotel is located in a vibrant neighborhood, with many galleries, museums, and theaters nearby. Book your room now and discover our hotel.",
     };
 
-    private static string GenerateSequentialDescription(int index)
+    private static readonly List<string> Verb = new()
     {
-        var word = Words[index % Words.Count];
+        "Experience a",
+        "Enjoy a",
+        "Discover a",
+        "Relax in a",
+        "Escape to a"
+    };
+
+    private static (string Title, string Description) GenerateSequentialTitleDescription(int index)
+    {
         var phrase = Phrases[index % Phrases.Count];
-        var phrase2 = Phrases2[index % Phrases2.Count];
-        return $"{word}{phrase}.\n{phrase2}";
+        var verb = Verb[index % Verb.Count];
+        
+        var title = $"{Rooms[index % Rooms.Count]} {Title[index % Title.Count]}";
+        var description = $"{verb} {title}.\n{phrase}";
+        
+        return (title, description);
     }
 
     private static readonly Random Random = new();
@@ -255,16 +270,21 @@ public static class ModelBuilderExtensions
     {
         var date = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
 
-        return Enumerable.Range(1, 500).Select(i => new HotelOffer
+        return Enumerable.Range(1, 500).Select(i =>
         {
-            Id = i,
-            Description = GenerateSequentialDescription(i),
-            Price = Random.Next(100, 2000),
-            Capacity = Random.Next(1, 10),
-            StartDate = date.AddDays(Random.Next(1, 10)),
-            EndDate = date.AddDays(i + Random.Next(10, 1000)),
-            AgencyId = i % 10 + 1,
-            ProductId = i % 25 + 1
+            var (title, description) = GenerateSequentialTitleDescription(i);
+            return new HotelOffer
+            {
+                Id = i,
+                Title = title, 
+                Description = description,
+                Price = Random.Next(100, 2000),
+                Capacity = Random.Next(1, 10),
+                StartDate = date.AddDays(Random.Next(1, 10)),
+                EndDate = date.AddDays(i + Random.Next(10, 1000)),
+                AgencyId = i % 10 + 1,
+                ProductId = i % 25 + 1
+            };
         }).ToArray();
     }
 

@@ -33,7 +33,5 @@ public class TravellerContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(TravellerContext).Assembly);
-        
-        modelBuilder.Seed();
     }
 }
