@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231119204642_Add flights to package reservation")]
+    partial class Addflightstopackagereservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -497,10 +500,6 @@ namespace Traveller.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<double>("Total")
                         .HasColumnType("double precision");
 
@@ -509,16 +508,9 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("UserId");
 
                     b.ToTable("Payment");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("Payment");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Place", b =>
@@ -725,17 +717,6 @@ namespace Traveller.Persistence.Migrations
                     b.ToTable("Users");
 
                     b.UseTptMappingStrategy();
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.PaymentByCard", b =>
-                {
-                    b.HasBaseType("Traveller.Domain.Models.Payment");
-
-                    b.Property<string>("CardNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("PaymentByCard");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.ExtendedTour", b =>

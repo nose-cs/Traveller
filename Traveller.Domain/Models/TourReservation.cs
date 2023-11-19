@@ -14,4 +14,6 @@ public class TourReservation : IReservation<Tour, TourReservation, TourOffer>
     public virtual TourOffer Offer { get; set; } = null!;
     public int TouristId { get; set; }
     public virtual Tourist Tourist { get; set; } = null!;
+    public int PaymentId { get; set; }
+    public virtual Payment Payment { get; set; } = null!;
 }

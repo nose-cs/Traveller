@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231119202536_Add payment to reservation")]
+    partial class Addpaymenttoreservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -446,14 +449,8 @@ namespace Traveller.Persistence.Migrations
                     b.Property<DateTime>("ArrivalDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ArrivalFlightId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("DepartureDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("DepartureFlightId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("NumberOfTravellers")
                         .HasColumnType("integer");
@@ -471,10 +468,6 @@ namespace Traveller.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ArrivalFlightId");
-
-                    b.HasIndex("DepartureFlightId");
 
                     b.HasIndex("Id")
                         .IsUnique();
@@ -497,10 +490,6 @@ namespace Traveller.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<double>("Total")
                         .HasColumnType("double precision");
 
@@ -509,16 +498,9 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Id")
-                        .IsUnique();
-
                     b.HasIndex("UserId");
 
                     b.ToTable("Payment");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("Payment");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Place", b =>
@@ -725,17 +707,6 @@ namespace Traveller.Persistence.Migrations
                     b.ToTable("Users");
 
                     b.UseTptMappingStrategy();
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.PaymentByCard", b =>
-                {
-                    b.HasBaseType("Traveller.Domain.Models.Payment");
-
-                    b.Property<string>("CardNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("PaymentByCard");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.ExtendedTour", b =>
@@ -973,18 +944,6 @@ namespace Traveller.Persistence.Migrations
 
             modelBuilder.Entity("Traveller.Domain.Models.PackageReservation", b =>
                 {
-                    b.HasOne("Traveller.Domain.Models.FlightReservation", "ArrivalFlight")
-                        .WithMany("ArrivalReservations")
-                        .HasForeignKey("ArrivalFlightId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Traveller.Domain.Models.FlightReservation", "DepartureFlight")
-                        .WithMany("DepartureReservations")
-                        .HasForeignKey("DepartureFlightId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Traveller.Domain.Models.PackageOffer", "Offer")
                         .WithMany("Reservations")
                         .HasForeignKey("OfferId")
@@ -1002,10 +961,6 @@ namespace Traveller.Persistence.Migrations
                         .HasForeignKey("TouristId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("ArrivalFlight");
-
-                    b.Navigation("DepartureFlight");
 
                     b.Navigation("Offer");
 
@@ -1137,13 +1092,6 @@ namespace Traveller.Persistence.Migrations
             modelBuilder.Entity("Traveller.Domain.Models.FlightOffer", b =>
                 {
                     b.Navigation("Reservations");
-                });
-
-            modelBuilder.Entity("Traveller.Domain.Models.FlightReservation", b =>
-                {
-                    b.Navigation("ArrivalReservations");
-
-                    b.Navigation("DepartureReservations");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.HotelOffer", b =>
