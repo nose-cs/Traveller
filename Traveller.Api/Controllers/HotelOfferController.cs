@@ -125,7 +125,7 @@ public class HotelOfferController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-
+    [AllowAnonymous]
     [HttpGet]
     public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.HotelOffers.Find().ToArray().Select(offer => {
                                                                                         var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
@@ -156,5 +156,27 @@ public class HotelOfferController : ControllerBase
             _logger.LogError(e.Message);
             return BadRequest(e.Message);
         }
+    }
+    
+    [HttpGet("getHotelOffers")]
+    public IActionResult GetHotelOffers([FromQuery] OfferFilterDTO filter)
+    {
+        var offers = _repository.HotelOffers.Find().Where(ho =>
+            (filter.ProductId == null || ho.Product.Id == filter.ProductId)
+            && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
+            && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
+            && (filter.StartDate == null ||
+                ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
+                                                     ho.EndDate >= filter.StartDate))
+            && (filter.AgencyId == null || ho.Agency.Id == filter.AgencyId)
+            && (filter.objectName == null || string.Equals(ho.Product.Name, filter.objectName,
+                StringComparison.CurrentCultureIgnoreCase))).ToArray().Select(offer =>
+        {
+            var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
+            dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+            dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
+            return dto;
+        });
+        return Ok(offers);
     }
 }

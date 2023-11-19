@@ -136,6 +136,25 @@ public class PackageOfferController : ControllerBase
                                                                                         return dto;
                                                                                     }).ToArray());
 
+    
+    public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
+    {
+        var offers = _repository.PackageOffers.Find().Where(pa => (filter.ProductId == null || pa.Id == filter.ProductId)
+                && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
+                && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
+                && (filter.StartDate == null || pa.StartDate <= filter.StartDate
+                    && (pa.EndDate == null || pa.EndDate >= filter.StartDate))
+                && (filter.AgencyId == null || pa.Agency.Id == filter.AgencyId)
+                && filter.Facilities == null || filter.Facilities.All(fa =>
+                    pa.Product.Facilities.Any(t => t.Facility == fa)))
+            .ToArray().Select(offer => {
+                var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repository.Packages.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers);
+    }
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {

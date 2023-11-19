@@ -159,4 +159,25 @@ public class TourOfferController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    [HttpGet("getTourOffers")]
+    
+    public IActionResult GetTourOffers([FromQuery] OfferFilterDTO filter)
+    {
+        var offers = _repository.TourOffers.Find().Where(to =>
+                (filter.ProductId == null || to.Product.Id == filter.ProductId)
+                && (filter.StartPrice == null || to.Price >= filter.StartPrice)
+                && (filter.EndPrice == null || to.Price <= filter.EndPrice)
+                && (filter.StartDate == null ||
+                    to.StartDate <= filter.StartDate && (to.EndDate == null ||
+                                                         to.EndDate >= filter.StartDate))
+                && (filter.AgencyId == null || to.Agency.Id == filter.AgencyId))
+            .ToArray().Select(offer =>
+            {
+                var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repository.Tours.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers);
+    }
 }
