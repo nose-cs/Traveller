@@ -15,12 +15,14 @@ public enum Day
 
 public class Tour : IProduct
 {
-    public string ArrivalPlace { get; set; } = null!;
-    public string DeparturePlace { get; set; } = null!;
-    public Day ArrivalDay { get; set; }
+    public int SourcePlaceId { get; set; }
+    public Place SourcePlace { get; set; } = null!;
+    public int DestinationPlaceId { get; set; }
+    public Place DestinationPlace { get; set; } = null!;
+    public Day SourceDay { get; set; }
     public ushort Duration { get; set; }
-    public TimeOnly ArrivalTime { get; set; }
-    public TimeOnly DepartureTime { get; set; }
+    public TimeOnly SourceTime { get; set; }
+    public TimeOnly DestinationTime { get; set; }
 
     public virtual ICollection<Package> Packages { get; set; } = new List<Package>();
     public int Id { get; set; }

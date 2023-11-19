@@ -34,12 +34,13 @@ public class TourRepository : ITourRepository
 
     public IEnumerable<Tour> Find()
     {
-        return _context.Tours;
+        return _context.Tours.Include(t=> t.DestinationPlace).Include(t=> t.SourcePlace).AsNoTracking();
     }
 
     public async ValueTask<Tour?> FindById(int key)
     {
-        return await _context.Tours.FindAsync(key);
+        return await _context.Tours.AsNoTracking().Include(t => t.DestinationPlace).Include(t => t.SourcePlace)
+            .FirstOrDefaultAsync(t => t.Id == key);
     }
 
     public async Task<IEnumerable<Package>?> FindPackages(int key)
@@ -50,6 +51,12 @@ public class TourRepository : ITourRepository
 
     public string GetName(int key)
     {
-        return _context.Tours.Where(tour => tour.Id == key).Select(tour => tour.ArrivalPlace + " - " + tour.DeparturePlace).First();
+        return _context.Tours.AsNoTracking()
+            .Include(t => t.DestinationPlace)
+            .Include(t => t.SourcePlace)
+            .Where(tour => tour.Id == key)
+            .Select(tour =>
+                $"{tour.SourcePlace.City}, {tour.SourcePlace.Country} - {tour.DestinationPlace.City}, {tour.DestinationPlace.Country}")
+            .First();
     }
 }

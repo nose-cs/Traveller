@@ -7,7 +7,8 @@ public class Agency : IDbModel
     public string Name { get; set; } = null!;
     public string Fax { get; set; } = null!;
     public string Email { get; set; } = null!;
-    public string Address { get; set; } = null!;
+    public int AddressId { get; set; }
+    public Place Address { get; set; } = null!;
     
     public virtual ICollection<TourOffer> Tours { get; set; } = new List<TourOffer>();
     public virtual ICollection<PackageOffer> Packages { get; set; } = new List<PackageOffer>();

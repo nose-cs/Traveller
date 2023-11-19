@@ -19,7 +19,7 @@ public class PackageDto
             Id = package.Id, Name = package.Name, Duration = package.Duration,
             Facilities = package.Facilities.Select(pf =>
                 new FacilityDto(pf.FacilityId, pf.Facility.Name, pf.Facility.Description, pf.Price)),
-            Tours = package.Tours.Select(t => (t.Id, t.ArrivalPlace + " - " + t.DeparturePlace))
+            Tours = package.Tours.Select(t => (t.Id, $"{t.SourcePlace.City}, {t.SourcePlace.Country} - {t.DestinationPlace.City}, {t.DestinationPlace.Country}"))
         };
     }
 

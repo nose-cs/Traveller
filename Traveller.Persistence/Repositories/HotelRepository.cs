@@ -1,4 +1,5 @@
-﻿using Traveller.Domain.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
@@ -33,12 +34,12 @@ public class HotelRepository : IHotelRepository
 
     public IEnumerable<Hotel> Find()
     {
-        return _context.Hotels;
+        return _context.Hotels.Include(h => h.Address);
     }
 
     public async ValueTask<Hotel?> FindById(int key)
     {
-        return await _context.Hotels.FindAsync(key);
+        return await _context.Hotels.AsNoTracking().Include(h => h.Address).FirstOrDefaultAsync(h => h.Id == key);
     }
 
     public string GetName(int key)

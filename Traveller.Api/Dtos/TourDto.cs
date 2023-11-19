@@ -4,39 +4,38 @@ namespace Traveller.Dtos;
 
 public class TourDto
 {
-    public record TourInfo(string Place, Day Day, TimeOnly Time);
+    public record TourInfo(PlaceDto Place, Day Day, TimeOnly Time);
     public int? Id { get; init; }
-    public TourInfo ArrivalInfo { get; init; } = null!;
-    public TourInfo DepartureInfo { get; init; } = null!;
+    public TourInfo SourceInfo { get; init; } = null!;
+    public TourInfo DestinationInfo { get; init; } = null!;
     public ushort Duration { get; set; }
 
     public static TourDto Map(Tour tour)
     {
-        var arrivalInfo = new TourInfo(tour.ArrivalPlace, tour.ArrivalDay, tour.ArrivalTime);
-        var departureDay = (Day)((int)(tour.ArrivalDay + tour.Duration) % 7);
-        var departureInfo =
-            new TourInfo(tour.DeparturePlace, departureDay, tour.DepartureTime);
+        var sourcePlaceInfo = PlaceDto.Map(tour.SourcePlace);
+        var destinationPlaceInfo = PlaceDto.Map(tour.DestinationPlace);
+        var sourceInfo = new TourInfo(sourcePlaceInfo, tour.SourceDay, tour.SourceTime);
+        var destinationDay = (Day)((int)(tour.SourceDay + tour.Duration) % 7);
+        var destinationInfo = new TourInfo(destinationPlaceInfo, destinationDay, tour.DestinationTime);
         return new TourDto()
         {
-            Id = tour.Id, ArrivalInfo = arrivalInfo, DepartureInfo = departureInfo, Duration = tour.Duration
+            Id = tour.Id, SourceInfo = sourceInfo, DestinationInfo = destinationInfo, Duration = tour.Duration
         };
     }
 
     public static Tour Map(TourDto tourDto)
     {
-        var tour = tourDto.Duration > 0 ? new Tour()
+        var tour = tourDto.Duration > 0 ? new Tour
         {
-            ArrivalPlace = tourDto.ArrivalInfo.Place, ArrivalDay = tourDto.ArrivalInfo.Day,
-            ArrivalTime = tourDto.ArrivalInfo.Time, DeparturePlace = tourDto.DepartureInfo.Place,
-            Duration = tourDto.Duration,
-            DepartureTime = tourDto.DepartureInfo.Time
-        } : new ExtendedTour()
+            SourceDay = tourDto.SourceInfo.Day, SourceTime = tourDto.SourceInfo.Time,
+            SourcePlaceId = tourDto.SourceInfo.Place.Id, DestinationPlaceId = tourDto.DestinationInfo.Place.Id,
+            DestinationTime = tourDto.DestinationInfo.Time, Duration = tourDto.Duration,
+            
+        } : new ExtendedTour
         {
-            ArrivalPlace = tourDto.ArrivalInfo.Place, ArrivalDay = tourDto.ArrivalInfo.Day,
-            ArrivalTime = tourDto.ArrivalInfo.Time, DeparturePlace = tourDto.DepartureInfo.Place,
-            Duration = tourDto.Duration,
-            DepartureTime = tourDto.DepartureInfo.Time
-        } ;
+            SourceDay = tourDto.SourceInfo.Day, SourceTime = tourDto.SourceInfo.Time, 
+            DestinationTime = tourDto.DestinationInfo.Time, Duration = tourDto.Duration
+        };
         if (tourDto.Id is null)
         {
             return tour;

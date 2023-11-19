@@ -46,7 +46,7 @@ public class HotelController : ControllerBase
                 return NotFound($"Hotel with id {id} doesn't exist");
             }
 
-            dbHotel.Address = hotelDto.Address;
+            dbHotel.AddressId = hotelDto.Address.Id;
             dbHotel.Name = hotelDto.Name;
             dbHotel.Category = dbHotel.Category;
             
@@ -86,7 +86,7 @@ public class HotelController : ControllerBase
         Ok(_repositories.Hotels.Find().
                 Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
                       (filter.Name is null || ho.Name.Contains(filter.Name)) &&
-                      (filter.Address is null || ho.Address.Contains(filter.Address)) &&
+                      (filter.Address is null) &&
                       (filter.ProductId is null || ho.Id == filter.ProductId))).
                 Select(HotelDto.Map));
         
