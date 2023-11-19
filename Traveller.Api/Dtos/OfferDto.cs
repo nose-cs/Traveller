@@ -8,6 +8,7 @@ namespace Traveller.Dtos
     {
 
         public int? Id { get; set; }
+        public string Title {  get; set; }
         public string Description { get; set; }
         public double Price { get; set; }
         public int Capacity { get; set; }
@@ -22,6 +23,7 @@ namespace Traveller.Dtos
                                                                                                                  where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
                                                                                                                  where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
         {
+            offer.Title = offerDto.Title;
             offer.Description = offerDto.Description;
             offer.Price = offerDto.Price;
             offer.Capacity = offerDto.Capacity;
@@ -39,6 +41,7 @@ namespace Traveller.Dtos
             return new OfferDto()
             {
                 Id = offer.Id,
+                Title = offer.Title,
                 Description = offer.Description,
                 Price = offer.Price,
                 Capacity = offer.Capacity,
