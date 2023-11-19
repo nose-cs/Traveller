@@ -4,9 +4,13 @@ namespace Traveller.Tools;
 
 public partial class Program
 {
-   private static async Task AddPlacesAsync()
+    private static IEnumerable<Place> _places = null!;
+    private const int PlacesCount = 200;
+
+    private static async Task AddPlacesAsync()
     {
-        foreach (var place in GeneratePlaces())
+        _places = GeneratePlaces();
+        foreach (var place in _places)
         {
             await _appDbContext.AddAsync(place);
         }
@@ -15,18 +19,20 @@ public partial class Program
     private static IEnumerable<Place> GeneratePlaces()
     {
         var cities = GetCities();
-        return Enumerable.Range(1, 200).Select(_ =>
+        var addresses = GetAddresses();
+
+        return Enumerable.Range(1, PlacesCount).Select(_ =>
         {
             var (country, city) = cities.ElementAt(Random.Next(0, cities.Length));
             return new Place
             {
                 Country = country,
                 City = city,
-                Address = GetAddresses()[Random.Next(0, GetAddresses().Length)]
+                Address = addresses[Random.Next(0, addresses.Length)]
             };
         });
     }
-    
+
     private static (string, string)[] GetCities()
     {
         return new[]

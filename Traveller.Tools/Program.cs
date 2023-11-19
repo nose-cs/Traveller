@@ -21,14 +21,19 @@ public partial class Program
         await AddPlacesAsync();
         if (await _appDbContext.SaveChangesAsync() > 0)
             Console.WriteLine("Place's data successfully seeded!");
-        
+
         await AddAgenciesAsync();
         await AddHotelsAsync();
+        await AddFlightsAsync();
         if (await _appDbContext.SaveChangesAsync() > 0)
             Console.WriteLine("Data successfully seeded!");
 
-        await AddHotelOffersAsync();
+        await AddToursAsync();
+        if (await _appDbContext.SaveChangesAsync() > 0)
+            Console.WriteLine("Tour's data successfully seeded!");
 
+        await AddHotelOffersAsync();
+        await AddTourOffersAsync();
         if (await _appDbContext.SaveChangesAsync() > 0)
             Console.WriteLine("Offer's data successfully seeded!");
     }
