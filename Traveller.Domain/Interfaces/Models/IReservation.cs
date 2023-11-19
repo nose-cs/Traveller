@@ -16,4 +16,7 @@ public interface IReservation<TProduct, TReservation, TOffer> : IDbModel
     TOffer Offer { get; set; }
     int TouristId { get; set; }
     Tourist Tourist { get; set; }
+    
+    int PaymentId { get; set; }
+    Payment Payment { get; set; }
 }

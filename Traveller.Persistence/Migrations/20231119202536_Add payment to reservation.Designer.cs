@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231119202536_Add payment to reservation")]
+    partial class Addpaymenttoreservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("HotelsId");
 
-                    b.ToTable("ExtendedTourHotel", (string)null);
+                    b.ToTable("ExtendedTourHotel");
                 });
 
             modelBuilder.Entity("PackageTour", b =>
@@ -49,7 +52,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("ToursId");
 
-                    b.ToTable("PackageTour", (string)null);
+                    b.ToTable("PackageTour");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Agency", b =>
@@ -79,7 +82,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("AddressId");
 
-                    b.ToTable("Agencies", (string)null);
+                    b.ToTable("Agencies");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Facility", b =>
@@ -103,7 +106,7 @@ namespace Traveller.Persistence.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("Facilities", (string)null);
+                    b.ToTable("Facilities");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Flight", b =>
@@ -136,7 +139,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("SourceId");
 
-                    b.ToTable("Flights", (string)null);
+                    b.ToTable("Flights");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.FlightOffer", b =>
@@ -182,7 +185,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("FlightOffers", (string)null);
+                    b.ToTable("FlightOffers");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.FlightReservation", b =>
@@ -226,7 +229,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("TouristId");
 
-                    b.ToTable("FlightReservations", (string)null);
+                    b.ToTable("FlightReservations");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Hotel", b =>
@@ -254,7 +257,7 @@ namespace Traveller.Persistence.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("Hotels", (string)null);
+                    b.ToTable("Hotels");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.HotelOffer", b =>
@@ -300,7 +303,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("HotelOffers", (string)null);
+                    b.ToTable("HotelOffers");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.HotelReservation", b =>
@@ -344,7 +347,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("TouristId");
 
-                    b.ToTable("HotelReservations", (string)null);
+                    b.ToTable("HotelReservations");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Package", b =>
@@ -367,7 +370,7 @@ namespace Traveller.Persistence.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("Packages", (string)null);
+                    b.ToTable("Packages");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.PackageFacility", b =>
@@ -386,7 +389,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("PackageId");
 
-                    b.ToTable("PackageFacility", (string)null);
+                    b.ToTable("PackageFacility");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.PackageOffer", b =>
@@ -432,7 +435,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("PackageOffers", (string)null);
+                    b.ToTable("PackageOffers");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.PackageReservation", b =>
@@ -476,7 +479,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("TouristId");
 
-                    b.ToTable("PackageReservations", (string)null);
+                    b.ToTable("PackageReservations");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Payment", b =>
@@ -497,7 +500,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Payment", (string)null);
+                    b.ToTable("Payment");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Place", b =>
@@ -529,7 +532,7 @@ namespace Traveller.Persistence.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("Place", (string)null);
+                    b.ToTable("Place");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Tour", b =>
@@ -571,7 +574,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("SourcePlaceId");
 
-                    b.ToTable("Tours", (string)null);
+                    b.ToTable("Tours");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("Tour");
 
@@ -621,7 +624,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("TourOffers", (string)null);
+                    b.ToTable("TourOffers");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.TourReservation", b =>
@@ -665,7 +668,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("TouristId");
 
-                    b.ToTable("TourReservations", (string)null);
+                    b.ToTable("TourReservations");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.User", b =>
@@ -701,7 +704,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("Role");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.UseTptMappingStrategy();
                 });
@@ -722,7 +725,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("AgencyId");
 
-                    b.ToTable("AgencyUsers", (string)null);
+                    b.ToTable("AgencyUsers");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.Tourist", b =>
@@ -735,7 +738,7 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("Country");
 
-                    b.ToTable("Tourists", (string)null);
+                    b.ToTable("Tourists");
                 });
 
             modelBuilder.Entity("ExtendedTourHotel", b =>

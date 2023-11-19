@@ -9,5 +9,6 @@ public class TourReservationConfiguration : EntityConfiguration<TourReservation>
     {
         builder.HasOne(tr => tr.Tourist).WithMany(t => t.TourReservations).HasForeignKey(fr => fr.TouristId);
         builder.HasOne(tr => tr.Offer).WithMany(o => o.Reservations).HasForeignKey(fr => fr.OfferId);
+        builder.HasOne(tr => tr.Payment).WithOne();
     }
 }

@@ -14,4 +14,6 @@ public class HotelReservation : IReservation<Hotel, HotelReservation, HotelOffer
     public virtual HotelOffer Offer { get; set; } = null!;
     public int TouristId { get; set; }
     public virtual Tourist Tourist { get; set; } = null!;
+    public int PaymentId { get; set; }
+    public virtual Payment Payment { get; set; } = null!;
 }
