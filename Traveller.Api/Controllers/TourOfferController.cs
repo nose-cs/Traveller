@@ -34,7 +34,8 @@ public class TourOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        TourOffer Offer = OfferDto.Map<Tour, TourReservation, TourOffer>(offerDto);
+        TourOffer Offer = new TourOffer();
+        OfferDto.Map<Tour, TourReservation, TourOffer>(Offer, offerDto);
 
         Offer.Id = 0;
 
@@ -81,7 +82,7 @@ public class TourOfferController : ControllerBase
             if(dbOffer.ProductId != offerDto.ProductId && await _repository.Tours.FindById(offerDto.ProductId) == null)
                 return NotFound($"Tour id: {offerDto.ProductId} doesn´t exists");
 
-            dbOffer = OfferDto.Map<Tour, TourReservation, TourOffer>(offerDto);
+            OfferDto.Map<Tour, TourReservation, TourOffer>(dbOffer, offerDto);
             
             await _repository.TourOffers.SaveChangesAsync();
             
@@ -131,7 +132,7 @@ public class TourOfferController : ControllerBase
     public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.TourOffers.Find().ToArray().Select(offer => {
                                                                                         var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
                                                                                         dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
+                                                                                        dto.ProductName = _repository.Tours.GetName(offer.ProductId);
                                                                                         return dto;
                                                                                     }).ToArray());
 
@@ -148,7 +149,7 @@ public class TourOfferController : ControllerBase
 
             var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(dbOffer);
             dto.AgencyName = _repository.Agencies.GetName(dbOffer.AgencyId);
-            dto.ProductName = _repository.Hotels.GetName(dbOffer.ProductId);
+            dto.ProductName = _repository.Tours.GetName(dbOffer.ProductId);
 
             return Ok(dto);
         }
@@ -157,5 +158,26 @@ public class TourOfferController : ControllerBase
             _logger.LogError(e.Message);
             return BadRequest(e.Message);
         }
+    }
+    [HttpGet("getTourOffers")]
+    
+    public IActionResult GetTourOffers([FromQuery] OfferFilterDTO filter)
+    {
+        var offers = _repository.TourOffers.Find().Where(to =>
+                (filter.ProductId == null || to.Product.Id == filter.ProductId)
+                && (filter.StartPrice == null || to.Price >= filter.StartPrice)
+                && (filter.EndPrice == null || to.Price <= filter.EndPrice)
+                && (filter.StartDate == null ||
+                    to.StartDate <= filter.StartDate && (to.EndDate == null ||
+                                                         to.EndDate >= filter.StartDate))
+                && (filter.AgencyId == null || to.Agency.Id == filter.AgencyId))
+            .ToArray().Select(offer =>
+            {
+                var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repository.Tours.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers);
     }
 }

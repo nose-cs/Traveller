@@ -228,21 +228,34 @@ public class TravellerContext : DbContext
 
     private static readonly List<string> Phrases = new()
     {
-        ". Perfect for a romantic weekend.",
-        " with a stunning view.",
-        " with a private balcony.",
-        " with a cozy atmosphere.",
-        ". Spacious room with a breathtaking view of the city.",
-        " with a cozy atmosphere and a beautiful view.",
-        " with a comfortable atmosphere and a stunning view.",
-        " with a beautiful view and modern amenities."
+        ". Perfect for a romantic weekend",
+        " with a stunning view",
+        " with a private balcony",
+        " with a cozy atmosphere",
+        ". Spacious room with a breathtaking view of the city",
+        " with a cozy atmosphere and a beautiful view",
+        " with a comfortable atmosphere and a stunning view",
+        " with a beautiful view and modern amenities"
     };
 
     private static readonly List<string> Words = new()
     {
         "Single room",
         "Luxury suite",
-        "Deluxe room"
+        "Deluxe room", 
+        "Standard room", 
+        "Family room", 
+        "Junior suite", 
+        "Executive room", 
+        "Superior room",
+        "Presidential suite",
+        "Penthouse suite",
+        "Studio suite",
+        "Double room",
+        "Twin room",
+        "Triple room",
+        "King room",
+        "Queen room"
     };
 
     private static readonly List<string> Phrases2 = new()
@@ -265,7 +278,7 @@ public class TravellerContext : DbContext
         var word = Words[index % Words.Count];
         var phrase = Phrases[index % Phrases.Count];
         var phrase2 = Phrases2[index % Phrases2.Count];
-        return $"Experience the {word}. {phrase}.\n{phrase2}";
+        return $"Experience the {word}{phrase}.\n{phrase2}";
     }
 
     private static readonly Random Random = new();
@@ -273,8 +286,8 @@ public class TravellerContext : DbContext
     private static HotelOffer[] GenerateHotelOffers()
     {
         var date = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
-        
-        return Enumerable.Range(1, 501).Select(i => new HotelOffer
+
+        return Enumerable.Range(1, 500).Select(i => new HotelOffer
         {
             Id = i,
             Description = GenerateSequentialDescription(i),

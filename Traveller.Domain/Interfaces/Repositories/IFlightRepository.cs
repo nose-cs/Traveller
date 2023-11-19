@@ -4,5 +4,5 @@ namespace Traveller.Domain.Interfaces.Repositories;
 
 public interface IFlightRepository : IRepository<Flight, int>
 {
-    
+    string GetName(int key);
 }

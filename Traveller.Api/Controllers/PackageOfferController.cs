@@ -34,7 +34,8 @@ public class PackageOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        PackageOffer Offer = OfferDto.Map<Package, PackageReservation, PackageOffer>(offerDto);
+        PackageOffer Offer = new PackageOffer(); 
+        OfferDto.Map<Package, PackageReservation, PackageOffer>(Offer, offerDto);
 
         Offer.Id = 0;
 
@@ -81,7 +82,7 @@ public class PackageOfferController : ControllerBase
             if(dbOffer.ProductId != offerDto.ProductId && await _repository.Packages.FindById(offerDto.ProductId) == null)
                 return NotFound($"Package id: {offerDto.ProductId} doesn´t exists");
 
-            dbOffer = OfferDto.Map<Package, PackageReservation, PackageOffer>(offerDto);
+            OfferDto.Map<Package, PackageReservation, PackageOffer>(dbOffer, offerDto);
             
             await _repository.PackageOffers.SaveChangesAsync();
             
@@ -131,10 +132,29 @@ public class PackageOfferController : ControllerBase
     public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.PackageOffers.Find().ToArray().Select(offer => {
                                                                                         var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
                                                                                         dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
+                                                                                        dto.ProductName = _repository.Packages.GetName(offer.ProductId);
                                                                                         return dto;
                                                                                     }).ToArray());
 
+    
+    public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
+    {
+        var offers = _repository.PackageOffers.Find().Where(pa => (filter.ProductId == null || pa.Id == filter.ProductId)
+                && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
+                && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
+                && (filter.StartDate == null || pa.StartDate <= filter.StartDate
+                    && (pa.EndDate == null || pa.EndDate >= filter.StartDate))
+                && (filter.AgencyId == null || pa.Agency.Id == filter.AgencyId)
+                && filter.Facilities == null || filter.Facilities.All(fa =>
+                    pa.Product.Facilities.Any(t => t.Facility == fa)))
+            .ToArray().Select(offer => {
+                var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repository.Packages.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers);
+    }
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
@@ -148,7 +168,7 @@ public class PackageOfferController : ControllerBase
 
             var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(dbOffer);
             dto.AgencyName = _repository.Agencies.GetName(dbOffer.AgencyId);
-            dto.ProductName = _repository.Hotels.GetName(dbOffer.ProductId);
+            dto.ProductName = _repository.Packages.GetName(dbOffer.ProductId);
 
             return Ok(dto);
         }
