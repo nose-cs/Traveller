@@ -27,8 +27,11 @@ public class TourReservationController : ControllerBase
         {
             TourReservation reservation = new TourReservation();
             ReservationDto.Map<Tour, TourReservation, TourOffer>(reservation, reservationDto);
+            if (reservationDto.paymentDto.Total < reservationDto.Price)
+                return BadRequest("The payment is not enough");
+            await _repositories.Payment.AddAsync(PaymentDto.Map(reservationDto.paymentDto));
+            await _repositories.Payment.SaveChangesAsync();
             await _repositories.TourReservations.AddAsync(reservation);
-            
             await _repositories.TourReservations.SaveChangesAsync();
             return Ok();
         }
@@ -45,13 +48,16 @@ public class TourReservationController : ControllerBase
         try
         {
             var dbTourReservation = await _repositories.TourReservations.FindById(id);
+            int old_PaymentId = dbTourReservation.PaymentId;//no quiero que nadie pueda modificar el PaymentId
             if (dbTourReservation is null)
             {
                 return NotFound($"Tour Reservation with id {id} doesn't exist");
             }
             
             ReservationDto.Map<Tour, TourReservation, TourOffer>(dbTourReservation, reservationDto);
-            
+            dbTourReservation.PaymentId = old_PaymentId;
+
+            await _repositories.Payment.SaveChangesAsync();
             await _repositories.TourReservations.SaveChangesAsync();
             
             return Ok();
@@ -68,6 +74,8 @@ public class TourReservationController : ControllerBase
     {
         try
         {
+            var dbTourReservation = await _repositories.TourReservations.FindById(id);
+            await _repositories.Payment.Remove(dbTourReservation.PaymentId);
             await _repositories.TourReservations.Remove(id);
             await _repositories.TourReservations.SaveChangesAsync();
             

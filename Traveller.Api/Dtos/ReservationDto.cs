@@ -13,6 +13,9 @@ public class ReservationDto
 
     public int OfferId { get; set; }
     public int TouristId { get; set; }
+    public int PaymentId { get; set; }
+    public PaymentDto? paymentDto { get; set; }
+
     public static void Map<TProduct, TReservation, TOffer>(TReservation reservation, ReservationDto reservationDto) where TProduct : class, IProduct, new()
                                                                                                                     where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
                                                                                                                     where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
@@ -22,6 +25,7 @@ public class ReservationDto
         reservation.NumberOfTravellers = reservationDto.NumberOfTravellers;
         reservation.OfferId = reservationDto.OfferId;
         reservation.TouristId = reservationDto.TouristId;
+        reservation.PaymentId = reservationDto.PaymentId;
         if (reservationDto.Id != null)
             reservation.Id = (int)reservationDto.Id;
         if (reservationDto.ArrivalDate != null)
@@ -39,7 +43,8 @@ public class ReservationDto
             ArrivalDate = reservation.ArrivalDate,
             NumberOfTravellers = reservation.NumberOfTravellers,
             OfferId = reservation.OfferId,
-            TouristId = reservation.TouristId
+            TouristId = reservation.TouristId,
+            PaymentId = reservation.PaymentId
         };
     }
 }

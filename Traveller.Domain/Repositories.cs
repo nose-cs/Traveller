@@ -20,6 +20,7 @@ namespace Traveller.Persistence.Repositories
         public IPackageRepository Packages;
         public IPackageReservationRepository PackageReservations;
         public IPackageOfferRepository PackageOffers;
+        public IPaymentRepository Payment;
         public ITourOfferRepository TourOffers;
         public ITourRepository Tours;
         public ITourReservationRepository TourReservations;
@@ -37,6 +38,7 @@ namespace Traveller.Persistence.Repositories
                             IPackageRepository Packages,
                             IPackageOfferRepository PackageOffers,
                             IPackageReservationRepository PackageReservations,
+                            IPaymentRepository Payment,
                             ITourRepository Tours,
                             ITourOfferRepository TourOffers,
                             ITourReservationRepository TourReservations,
@@ -53,6 +55,7 @@ namespace Traveller.Persistence.Repositories
             this.PackageOffers = PackageOffers;
             this.Packages = Packages;
             this.PackageReservations = PackageReservations;
+            this.Payment = Payment;
             this.TourOffers = TourOffers;
             this.Tours = Tours;
             this.TourReservations = TourReservations;

@@ -13,7 +13,7 @@ public partial class Program
         var services = new ServiceCollection();
 
         services.AddDbContext<TravellerContext>(options =>
-            options.UseNpgsql("Server=localhost; Port=5432; Database=Traveller; Username=postgres; Password=root"));
+            options.UseNpgsql("Server=localhost; Port=5432; Database=Traveller; Username=postgres; Password=1234"));
 
         var serviceProvider = services.BuildServiceProvider();
         _appDbContext = serviceProvider.GetService<TravellerContext>()!;

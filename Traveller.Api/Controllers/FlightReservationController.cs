@@ -25,11 +25,15 @@ public class FlightReservationController : ControllerBase
     {
         FlightReservation reservation = new FlightReservation();
         ReservationDto.Map<Flight, FlightReservation, FlightOffer>(reservation, reservationDto);
+        if (reservationDto.paymentDto.Total < reservationDto.Price)
+            return BadRequest("The payment is not enough");
         try
         {
             await _repositories.FlightReservations.AddAsync(reservation);
-            
+            await _repositories.Payment.AddAsync(PaymentDto.Map(reservationDto.paymentDto));
+            await _repositories.Payment.SaveChangesAsync();
             await _repositories.FlightReservations.SaveChangesAsync();
+            
             return Ok();
         }
         catch (Exception e)
@@ -45,13 +49,15 @@ public class FlightReservationController : ControllerBase
         try
         {
             var dbFlightReservation = await _repositories.FlightReservations.FindById(id);
+            int old_PaymentId = dbFlightReservation.PaymentId;//no quiero que nadie pueda modificar el PaymentId
             if (dbFlightReservation is null)
             {
                 return NotFound($"Flight Reservation with id {id} doesn't exist");
             }
 
             ReservationDto.Map<Flight, FlightReservation, FlightOffer>(dbFlightReservation, reservationDto);
-            
+            dbFlightReservation.PaymentId = old_PaymentId;
+
             await _repositories.FlightReservations.SaveChangesAsync();
             
             return Ok();
@@ -68,7 +74,10 @@ public class FlightReservationController : ControllerBase
     {
         try
         {
+            var dbFlightReservation = await _repositories.FlightReservations.FindById(id);
+            await _repositories.Payment.Remove(dbFlightReservation.PaymentId);
             await _repositories.FlightReservations.Remove(id);
+            await _repositories.Payment.SaveChangesAsync();
             await _repositories.FlightReservations.SaveChangesAsync();
             
             return Ok();
