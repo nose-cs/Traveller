@@ -8,6 +8,7 @@ public class PaymentConfiguration : EntityConfiguration<Payment>
 {
     protected override void ConfigureEntity(EntityTypeBuilder<Payment> builder)
     {
+        builder.ToTable("Payments");
         builder.UseTphMappingStrategy();
     }
 }
