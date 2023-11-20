@@ -2,7 +2,7 @@
 
 namespace Traveller.Tools;
 
-public partial class Program
+public static partial class Program
 {
     private static IEnumerable<Tour> _tours = null!;
     private const int ToursCount = 50;
