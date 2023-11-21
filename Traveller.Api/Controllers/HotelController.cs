@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Traveller.Domain.Models;
 using Traveller.Dtos;
 using Traveller.Persistence.Repositories;
 
@@ -103,6 +104,26 @@ public class HotelController : ControllerBase
             }
 
             return Ok(HotelDto.Map(dbHotel));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.Message);
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpGet("{id:int}/offers")]
+    public async Task<ActionResult<IEnumerable<OfferDto>>> GetOffers([FromRoute] int id)
+    {
+        try
+        {
+            var hotel = await _repositories.Hotels.FindById(id);
+            if (hotel is null)
+            {
+                return NotFound($"Hotel with id {id} doesn't exist");
+            }
+            var offers = await _repositories.Hotels.GetOffers(id);
+            return Ok(offers.Select(OfferDto.Map<Hotel, HotelReservation, HotelOffer>));
         }
         catch (Exception e)
         {

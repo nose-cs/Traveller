@@ -2,7 +2,7 @@
 
 namespace Traveller.Tools;
 
-public partial class Program
+public static partial class Program
 {
     private static IEnumerable<Agency> _agencies = null!;
     private const int AgenciesCount = 10;

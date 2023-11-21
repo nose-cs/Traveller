@@ -4,7 +4,7 @@ using Traveller.Persistence;
 
 namespace Traveller.Tools;
 
-public partial class Program
+public static partial class Program
 {
     private static TravellerContext _appDbContext = null!;
 
@@ -18,6 +18,11 @@ public partial class Program
         var serviceProvider = services.BuildServiceProvider();
         _appDbContext = serviceProvider.GetService<TravellerContext>()!;
 
+        await Seed();
+    }
+
+    private static async Task Seed()
+    {
         await AddPlacesAsync();
         if (await _appDbContext.SaveChangesAsync() > 0)
             Console.WriteLine("Place's data successfully seeded!");
@@ -31,6 +36,10 @@ public partial class Program
         await AddToursAsync();
         if (await _appDbContext.SaveChangesAsync() > 0)
             Console.WriteLine("Tour's data successfully seeded!");
+
+        await AddUsers();
+        if (await _appDbContext.SaveChangesAsync() > 0)
+            Console.WriteLine("User's data successfully seeded!");
 
         await AddHotelOffersAsync();
         await AddTourOffersAsync();

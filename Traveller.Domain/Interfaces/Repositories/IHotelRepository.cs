@@ -5,4 +5,6 @@ namespace Traveller.Domain.Interfaces.Repositories;
 public interface IHotelRepository : IRepository<Hotel, int>
 {
     string GetName(int key);
+    
+    Task<IEnumerable<HotelOffer>> GetOffers(int key);
 }

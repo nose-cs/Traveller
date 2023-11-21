@@ -2,11 +2,11 @@
 
 namespace Traveller.Tools;
 
-public partial class Program
+public static partial class Program
 {
-    private static IEnumerable<Flight> _flights = null!; 
+    private static IEnumerable<Flight> _flights = null!;
     private const int FlightsCount = 50;
-    
+
     private static async Task AddFlightsAsync()
     {
         _flights = GenerateFlights();
@@ -15,7 +15,7 @@ public partial class Program
             await _appDbContext.AddAsync(flight);
         }
     }
-    
+
     private static readonly List<string> Airlines = new()
     {
         "Cubana de Aviación",
