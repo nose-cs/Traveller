@@ -3,6 +3,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Traveller.Domain\Traveller.Domain.csproj"/>
         <ProjectReference Include="..\Traveller.Persistence\Traveller.Persistence.csproj"/>
+        <ProjectReference Include="..\Traveller.Api\Traveller.Api.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -14,4 +14,8 @@ public class FlightReservation : IReservation<Flight, FlightReservation, FlightO
     public virtual FlightOffer Offer { get; set; } = null!;
     public int TouristId { get; set; }
     public virtual Tourist Tourist { get; set; } = null!;
+    public int PaymentId { get; set; }
+    public virtual Payment Payment { get; set; } = null!;
+    public virtual ICollection<PackageReservation> ArrivalReservations { get; set; } = new List<PackageReservation>();
+    public virtual ICollection<PackageReservation> DepartureReservations { get; set; } = new List<PackageReservation>();
 }

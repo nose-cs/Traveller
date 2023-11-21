@@ -14,4 +14,10 @@ public class PackageReservation : IReservation<Package, PackageReservation, Pack
     public virtual PackageOffer Offer { get; set; } = null!;
     public int TouristId { get; set; }
     public virtual Tourist Tourist { get; set; } = null!;
+    public int PaymentId { get; set; }
+    public virtual Payment Payment { get; set; } = null!;
+    public int ArrivalFlightId { get; set; }
+    public virtual FlightReservation ArrivalFlight { get; set; } = null!;
+    public int DepartureFlightId { get; set; }
+    public virtual FlightReservation DepartureFlight { get; set; } = null!;
 }

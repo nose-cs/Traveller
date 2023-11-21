@@ -46,4 +46,9 @@ public class HotelRepository : IHotelRepository
     {
         return _context.Hotels.Where(hotel => hotel.Id == key).Select(hotel => hotel.Name).First();
     }
+
+    public Task<IEnumerable<HotelOffer>> GetOffers(int key)
+    {
+        return Task.FromResult<IEnumerable<HotelOffer>>(_context.HotelOffers.AsNoTracking().Include(ho => ho.Agency).Where(ho => ho.ProductId == key));
+    }
 }
