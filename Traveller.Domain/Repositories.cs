@@ -1,49 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Traveller.Domain.Interfaces.Repositories;
+﻿using Traveller.Domain.Interfaces.Repositories;
 
-namespace Traveller.Persistence.Repositories
+namespace Traveller.Domain
 {
     public class Repositories
     {
-        public IAgencyRepository Agencies;
-        public IFacilityRepository Facilties;
-        public IFlightOfferRepository FlightOffers;
-        public IFlightRepository Flights;
-        public IHotelOfferRepository HotelOffers;
-        public IHotelRepository Hotels;
-        public IPackageOfferRepository PackageOffers;
-        public IPackageRepository Packages;
-        public ITourOfferRepository TourOffers;
-        public ITourRepository Tours;
-        public IUserRepository Users;
+        public readonly IAgencyRepository Agencies;
+        public readonly IFacilityRepository Facilties;
+        public readonly IFlightOfferRepository FlightOffers;
+        public readonly IFlightRepository Flights;
+        public readonly IHotelOfferRepository HotelOffers;
+        public readonly IHotelRepository Hotels;
+        public readonly IPackageOfferRepository PackageOffers;
+        public readonly IPackageRepository Packages;
+        public readonly ITourOfferRepository TourOffers;
+        public readonly ITourRepository Tours;
+        public readonly IUserRepository Users;
 
-        public Repositories(IAgencyRepository Agencies, 
-                            IFacilityRepository Facilties,
-                            IFlightOfferRepository FlightOffers,
-                            IFlightRepository Flights,
-                            IHotelOfferRepository HotelOffers,
-                            IHotelRepository Hotels,
-                            IPackageOfferRepository PackageOffers,
-                            IPackageRepository Packages,
-                            ITourOfferRepository TourOffers,
-                            ITourRepository Tours,
-                            IUserRepository Users)
+        public Repositories(IAgencyRepository agencies,
+            IFacilityRepository facilties,
+            IFlightOfferRepository flightOffers,
+            IFlightRepository flights,
+            IHotelOfferRepository hotelOffers,
+            IHotelRepository hotels,
+            IPackageOfferRepository packageOffers,
+            IPackageRepository packages,
+            ITourOfferRepository tourOffers,
+            ITourRepository tours,
+            IUserRepository users)
         {
-            this.Agencies = Agencies;
-            this.Facilties = Facilties;
-            this.FlightOffers = FlightOffers;
-            this.Flights = Flights;
-            this.HotelOffers = HotelOffers;
-            this.Hotels = Hotels;
-            this.PackageOffers = PackageOffers;
-            this.Packages = Packages;
-            this.TourOffers = TourOffers;
-            this.Tours = Tours;
-            this.Users = Users;
+            Agencies = agencies;
+            Facilties = facilties;
+            FlightOffers = flightOffers;
+            Flights = flights;
+            HotelOffers = hotelOffers;
+            Hotels = hotels;
+            PackageOffers = packageOffers;
+            Packages = packages;
+            TourOffers = tourOffers;
+            Tours = tours;
+            Users = users;
         }
     }
 }

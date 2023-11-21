@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 

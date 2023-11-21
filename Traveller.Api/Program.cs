@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Traveller.Domain;
 using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Persistence;
 using Traveller.Persistence.Repositories;

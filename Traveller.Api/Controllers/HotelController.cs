@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 

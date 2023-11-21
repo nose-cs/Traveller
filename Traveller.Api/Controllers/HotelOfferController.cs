@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 
@@ -162,7 +162,7 @@ public class HotelOfferController : ControllerBase
     public IActionResult GetHotelOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.HotelOffers.Find().Where(ho =>
-            (filter.ProductId == null || ho.Product.Id == filter.ProductId)
+            (filter.ProductId == null || ho.ProductId == filter.ProductId)
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
             && (filter.StartDate == null ||

@@ -8,16 +8,16 @@ public class TourDto
     public int? Id { get; init; }
     public TourInfo SourceInfo { get; init; } = null!;
     public TourInfo DestinationInfo { get; init; } = null!;
-    public ushort Duration { get; set; }
+    public uint Duration { get; set; }
 
     public static TourDto Map(Tour tour)
     {
         var sourcePlaceInfo = PlaceDto.Map(tour.SourcePlace);
         var destinationPlaceInfo = PlaceDto.Map(tour.DestinationPlace);
         var sourceInfo = new TourInfo(sourcePlaceInfo, tour.SourceDay, tour.SourceTime);
-        var destinationDay = (Day)((int)(tour.SourceDay + tour.Duration) % 7);
+        var destinationDay = (Day)(((uint)tour.SourceDay + tour.Duration) % 7);
         var destinationInfo = new TourInfo(destinationPlaceInfo, destinationDay, tour.DestinationTime);
-        return new TourDto()
+        return new TourDto
         {
             Id = tour.Id, SourceInfo = sourceInfo, DestinationInfo = destinationInfo, Duration = tour.Duration
         };
