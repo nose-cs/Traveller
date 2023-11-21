@@ -4,10 +4,11 @@ namespace Traveller.Domain.Models;
 
 public enum Role
 {
-    Tourist,
-    Agent,
-    MarketingEmployee,
-    Admin
+    Tourist = 0,
+    Agent = 1,
+    MarketingEmployee = 2,
+    AgencyAdmin = 3,
+    TravellerAdmin = 4
 }
 
 public class User : IDbModel
