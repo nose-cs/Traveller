@@ -39,7 +39,7 @@ public class IdentityController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<ActionResult<TokenDto>> Signup([FromBody] UserDto userDto)
@@ -50,7 +50,7 @@ public class IdentityController : ControllerBase
             {
                 return Unauthorized("You don't have permission for this action");
             }
-            
+
             var token = await _loginService.CreateAccount(userDto, 0);
             return Ok(TokenDto.Map(token));
         }

@@ -9,7 +9,7 @@ namespace Traveller.Controllers;
 public class TourController : ControllerBase
 {
     private readonly Repositories _repositories;
- 
+
     private readonly ILogger<HotelController> _logger;
 
     public TourController(ILogger<HotelController> logger, Repositories repositories)
@@ -24,7 +24,7 @@ public class TourController : ControllerBase
         try
         {
             await _repositories.Tours.AddAsync(TourDto.Map(tourDto));
-            
+
             await _repositories.Tours.SaveChangesAsync();
             return Ok();
         }
@@ -34,7 +34,7 @@ public class TourController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
+
     [HttpPut("{id:int}")]
     public async Task<ActionResult> Update([FromBody] TourDto tourDto, [FromRoute] int id)
     {
@@ -52,9 +52,9 @@ public class TourController : ControllerBase
             dbTour.DestinationPlaceId = tourDto.DestinationInfo.Place.Id;
             dbTour.DestinationTime = tourDto.DestinationInfo.Time;
             dbTour.Duration = tourDto.Duration;
-            
+
             await _repositories.Tours.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
@@ -63,7 +63,7 @@ public class TourController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
@@ -71,7 +71,7 @@ public class TourController : ControllerBase
         {
             await _repositories.Tours.Remove(id);
             await _repositories.Tours.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
@@ -83,14 +83,14 @@ public class TourController : ControllerBase
 
     [HttpGet]
     public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_repositories.Tours.Find().Select(TourDto.Map));
-    
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
         try
         {
             var dbTour = await _repositories.Tours.FindById(id);
-            if (dbTour  is null)
+            if (dbTour is null)
             {
                 return NotFound($"Tour with id {id} doesn't exist");
             }
@@ -114,6 +114,7 @@ public class TourController : ControllerBase
             {
                 return NotFound($"Tour with id {id} doesn't exist");
             }
+
             return Ok(packages.Select(PackageDto.Map));
         }
         catch (Exception e)

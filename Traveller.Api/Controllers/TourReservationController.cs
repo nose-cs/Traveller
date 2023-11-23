@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Repositories;
+
 namespace Traveller.Controllers;
 
 [ApiController]
@@ -11,7 +12,7 @@ namespace Traveller.Controllers;
 public class TourReservationController : ControllerBase
 {
     private readonly Repositories _repositories;
- 
+
     private readonly ILogger<TourReservationController> _logger;
 
     public TourReservationController(ILogger<TourReservationController> logger, Repositories repositories)
@@ -26,17 +27,17 @@ public class TourReservationController : ControllerBase
     {
         if (await _repositories.TourOffers.FindById(reservationDto.OfferId) == null)
             return NotFound($"Tour Offer id: {reservationDto.OfferId} doesn´t exists");
-        
-        var token = Request.Headers.Authorization[0]!.Substring(7);
+
+        var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        if ((role == "Tourist") && (userId != reservationDto.TouristId))
-            return BadRequest($"Tourists can only make reservations for themselves");
+        if (role == "Tourist" && userId != reservationDto.TouristId)
+            return Unauthorized($"Tourists can only make reservations for themselves");
 
         try
         {
-            TourReservation reservation = new TourReservation();
+            var reservation = new TourReservation();
             ReservationDto.Map<Tour, TourReservation, TourOffer>(reservation, reservationDto);
             if (reservationDto.paymentDto.Total < reservationDto.Price)
                 return BadRequest("The payment is not enough");
@@ -49,7 +50,7 @@ public class TourReservationController : ControllerBase
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
@@ -61,43 +62,43 @@ public class TourReservationController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        if ((role == "Tourist") && (userId != reservationDto.TouristId))
+        if (role == "Tourist" && userId != reservationDto.TouristId)
             return BadRequest($"Tourists can only change their own reservations");
-        
+
         try
         {
             var dbTourReservation = await _repositories.TourReservations.FindById(id);
             if (dbTourReservation is null)
                 return NotFound($"Tour Reservation with id {id} doesn't exist");
-            int old_PaymentId = dbTourReservation.PaymentId;    //no quiero que nadie pueda modificar el PaymentId
-            double old_Price = dbTourReservation.Price;        //ni los turistas el precio
-            
+            var oldPaymentId = dbTourReservation.PaymentId; //no quiero que nadie pueda modificar el PaymentId
+            var oldPrice = dbTourReservation.Price; //ni los turistas el precio
+
             ReservationDto.Map<Tour, TourReservation, TourOffer>(dbTourReservation, reservationDto);
-            dbTourReservation.PaymentId = old_PaymentId;
+            dbTourReservation.PaymentId = oldPaymentId;
             if (role == "Tourist")
-                dbTourReservation.Price = old_Price;
+                dbTourReservation.Price = oldPrice;
 
             await _repositories.Payment.SaveChangesAsync();
             await _repositories.TourReservations.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = ("Agent, Tourist"))]
+    [Authorize(Roles = "Agent, Tourist")]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        
+
         try
         {
             var dbTourReservation = await _repositories.TourReservations.FindById(id);
@@ -108,25 +109,25 @@ public class TourReservationController : ControllerBase
             await _repositories.Payment.Remove(dbTourReservation.PaymentId);
             await _repositories.TourReservations.Remove(id);
             await _repositories.TourReservations.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
     [HttpGet]
-    [Authorize(Roles = ("Agent, Tourist"))]
+    [Authorize(Roles = "Agent, Tourist")]
     public ActionResult<IEnumerable<ReservationDto>> GetAll()
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        
+
         var dtos = _repositories.TourReservations.Find().Select(ReservationDto.Map<Tour, TourReservation, TourOffer>);
 
         if (role == "Tourist")
@@ -142,7 +143,7 @@ public class TourReservationController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        
+
         try
         {
             var tourReservation = await _repositories.TourReservations.FindById(id);
@@ -150,12 +151,12 @@ public class TourReservationController : ControllerBase
                 return NotFound($"Tour reservation with id {id} doesn't exist");
             if ((role == "Tourist") && (userId != tourReservation.TouristId))
                 return BadRequest($"Tourists can only see their own reservations");
-            return Ok(ReservationDto.Map<Tour, TourReservation, TourOffer>(tourReservation));  
+            return Ok(ReservationDto.Map<Tour, TourReservation, TourOffer>(tourReservation));
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 }

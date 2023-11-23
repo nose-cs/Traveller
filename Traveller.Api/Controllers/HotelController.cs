@@ -10,14 +10,14 @@ namespace Traveller.Controllers;
 public class HotelController : ControllerBase
 {
     private readonly Repositories _repositories;
- 
+
     private readonly ILogger<HotelController> _logger;
 
     public HotelController(ILogger<HotelController> logger, Repositories repositories)
     {
         _logger = logger;
         _repositories = repositories;
-    } 
+    }
 
     [HttpPost]
     public async Task<ActionResult> Create(HotelDto hotelDto)
@@ -25,7 +25,7 @@ public class HotelController : ControllerBase
         try
         {
             await _repositories.Hotels.AddAsync(HotelDto.Map(hotelDto));
-            
+
             await _repositories.Hotels.SaveChangesAsync();
             return Ok();
         }
@@ -35,7 +35,7 @@ public class HotelController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
+
     [HttpPut("{id:int}")]
     public async Task<ActionResult> Update([FromBody] HotelDto hotelDto, [FromRoute] int id)
     {
@@ -50,9 +50,9 @@ public class HotelController : ControllerBase
             dbHotel.AddressId = hotelDto.Address.Id;
             dbHotel.Name = hotelDto.Name;
             dbHotel.Category = dbHotel.Category;
-            
+
             await _repositories.Hotels.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
@@ -61,7 +61,7 @@ public class HotelController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
@@ -69,7 +69,7 @@ public class HotelController : ControllerBase
         {
             await _repositories.Hotels.Remove(id);
             await _repositories.Hotels.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
@@ -84,13 +84,12 @@ public class HotelController : ControllerBase
 
     [HttpGet("Get")]
     public ActionResult<IEnumerable<HotelDto>> Get([FromQuery] HotelFilterDTO filter) =>
-        Ok(_repositories.Hotels.Find().
-                Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
-                      (filter.Name is null || ho.Name.Contains(filter.Name)) &&
-                      (filter.Address is null) &&
-                      (filter.ProductId is null || ho.Id == filter.ProductId))).
-                Select(HotelDto.Map));
-        
+        Ok(_repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
+                                                    (filter.Name is null || ho.Name.Contains(filter.Name)) &&
+                                                    (filter.Address is null) &&
+                                                    (filter.ProductId is null || ho.Id == filter.ProductId)))
+            .Select(HotelDto.Map));
+
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
@@ -122,6 +121,7 @@ public class HotelController : ControllerBase
             {
                 return NotFound($"Hotel with id {id} doesn't exist");
             }
+
             var offers = await _repositories.Hotels.GetOffers(id);
             return Ok(offers.Select(OfferDto.Map<Hotel, HotelReservation, HotelOffer>));
         }

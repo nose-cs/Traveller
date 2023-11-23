@@ -27,12 +27,12 @@ public class FlightOfferController : ControllerBase
     {
         if (await _repository.Flights.FindById(offerDto.ProductId) == null)
             return NotFound($"Flight id: {offerDto.ProductId} doesn´t exists");
-        
+
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        var offer = new FlightOffer(); 
+        var offer = new FlightOffer();
         OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer, offerDto);
 
         offer.Id = 0;
@@ -42,7 +42,7 @@ public class FlightOfferController : ControllerBase
         try
         {
             await _repository.FlightOffers.AddAsync(offer);
-            
+
             await _repository.FlightOffers.SaveChangesAsync();
             return Ok();
         }
@@ -52,7 +52,7 @@ public class FlightOfferController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
+
     [HttpPut]
     [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Update([FromBody] OfferDto offerDto)
@@ -72,18 +72,19 @@ public class FlightOfferController : ControllerBase
                 return NotFound($"Flight offer with id {offerDto.Id} doesn't exist");
             }
 
-            if(dbOffer.AgencyId != agencyId)
+            if (dbOffer.AgencyId != agencyId)
             {
                 return Unauthorized("Flight offer´s agency doesn´t match with user agency");
             }
 
-            if(dbOffer.ProductId != offerDto.ProductId && await _repository.Flights.FindById(offerDto.ProductId) == null)
+            if (dbOffer.ProductId != offerDto.ProductId &&
+                await _repository.Flights.FindById(offerDto.ProductId) == null)
                 return NotFound($"Flight id: {offerDto.ProductId} doesn´t exists");
 
             OfferDto.Map<Flight, FlightReservation, FlightOffer>(dbOffer, offerDto);
-            
+
             await _repository.FlightOffers.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
@@ -92,7 +93,7 @@ public class FlightOfferController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
@@ -116,7 +117,7 @@ public class FlightOfferController : ControllerBase
         {
             await _repository.FlightOffers.Remove(id);
             await _repository.FlightOffers.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
@@ -127,13 +128,14 @@ public class FlightOfferController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.FlightOffers.Find().ToArray().Select(offer => {
-                                                                                        var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
-                                                                                        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Flights.GetName(offer.ProductId);
-                                                                                        return dto;
-                                                                                    }).ToArray());
-    
+    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.FlightOffers.Find().ToArray().Select(offer =>
+    {
+        var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
+        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+        dto.ProductName = _repository.Flights.GetName(offer.ProductId);
+        return dto;
+    }).ToArray());
+
     [HttpGet("getFlightOffers")]
     public IActionResult GetFlightOffers([FromQuery] OfferFilterDTO filter)
     {
@@ -152,7 +154,8 @@ public class FlightOfferController : ControllerBase
                 dto.ProductName = _repository.Flights.GetName(offer.ProductId);
                 return dto;
             });
-        return Ok(offers); }
+        return Ok(offers);
+    }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)

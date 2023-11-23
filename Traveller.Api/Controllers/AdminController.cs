@@ -21,8 +21,8 @@ public class AdminController : ControllerBase
         _loginService = loginService;
         _logger = logger;
     }
-    
-    
+
+
     [Authorize(Roles = ("AgencyAdmin"))]
     [HttpPost("registerAgencyUser")]
     public async Task<ActionResult> SignupAdmin([FromBody] UserDto userDto)
@@ -51,7 +51,7 @@ public class AdminController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpPost("registerTravellerAdmin")]
     public async Task<ActionResult> RegisterTravellerAdmin([FromBody] UserDto userDto)
     {

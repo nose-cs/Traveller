@@ -9,7 +9,7 @@ namespace Traveller.Controllers;
 public class FlightController : ControllerBase
 {
     private readonly Repositories _repositories;
- 
+
     private readonly ILogger<HotelController> _logger;
 
     public FlightController(ILogger<HotelController> logger, Repositories repositories)
@@ -24,7 +24,7 @@ public class FlightController : ControllerBase
         try
         {
             await _repositories.Flights.AddAsync(FlightDto.Map(flightDto));
-            
+
             await _repositories.Flights.SaveChangesAsync();
             return Ok();
         }
@@ -34,7 +34,7 @@ public class FlightController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
+
     [HttpPut("{id:int}")]
     public async Task<ActionResult> Update([FromBody] FlightDto flightDto, [FromRoute] int id)
     {
@@ -50,9 +50,9 @@ public class FlightController : ControllerBase
             dbFlight.Airline = flightDto.Airline;
             dbFlight.DestinationId = flightDto.Destination.Id;
             dbFlight.SourceId = flightDto.Source.Id;
-            
+
             await _repositories.Flights.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
@@ -61,7 +61,7 @@ public class FlightController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
@@ -69,7 +69,7 @@ public class FlightController : ControllerBase
         {
             await _repositories.Flights.Remove(id);
             await _repositories.Flights.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
