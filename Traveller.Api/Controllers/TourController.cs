@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
+using Traveller.Domain.Models;
 using Traveller.Dtos;
 
 namespace Traveller.Controllers;
@@ -122,5 +123,24 @@ public class TourController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+    
+    [HttpGet("{id:int}/offers")]
+    public IActionResult GetTourOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
+    {
+        var offers = _repositories.TourOffers.Find().Where(
+                to => to.ProductId == id
+                      && (filter.StartPrice == null || to.Price >= filter.StartPrice)
+                      && (filter.EndPrice == null || to.Price <= filter.EndPrice)
+                      && (filter.StartDate == null || to.StartDate <= filter.StartDate && (to.EndDate == null || to.EndDate >= filter.StartDate))
+                      && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
+            .ToArray().Select(offer =>
+            {
+                var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
+                dto.AgencyName = _repositories.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repositories.Flights.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers);
     }
 }

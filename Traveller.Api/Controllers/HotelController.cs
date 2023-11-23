@@ -110,25 +110,23 @@ public class HotelController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-
+    
     [HttpGet("{id:int}/offers")]
-    public async Task<ActionResult<IEnumerable<OfferDto>>> GetOffers([FromRoute] int id)
+    public IActionResult GetHotelOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
     {
-        try
-        {
-            var hotel = await _repositories.Hotels.FindById(id);
-            if (hotel is null)
+        var offers = _repositories.HotelOffers.Find().Where(
+                to => to.ProductId == id
+                      && (filter.StartPrice == null || to.Price >= filter.StartPrice)
+                      && (filter.EndPrice == null || to.Price <= filter.EndPrice)
+                      && (filter.StartDate == null || to.StartDate <= filter.StartDate && (to.EndDate == null || to.EndDate >= filter.StartDate))
+                      && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
+            .ToArray().Select(offer =>
             {
-                return NotFound($"Hotel with id {id} doesn't exist");
-            }
-
-            var offers = await _repositories.Hotels.GetOffers(id);
-            return Ok(offers.Select(OfferDto.Map<Hotel, HotelReservation, HotelOffer>));
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
+                var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
+                dto.AgencyName = _repositories.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repositories.Flights.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers);
     }
 }
