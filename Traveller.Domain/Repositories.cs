@@ -1,44 +1,65 @@
-﻿using Traveller.Domain.Interfaces.Repositories;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Traveller.Domain.Interfaces.Repositories;
 
-namespace Traveller.Domain
+namespace Traveller.Persistence.Repositories
 {
     public class Repositories
     {
-        public readonly IAgencyRepository Agencies;
-        public readonly IFacilityRepository Facilties;
-        public readonly IFlightOfferRepository FlightOffers;
-        public readonly IFlightRepository Flights;
-        public readonly IHotelOfferRepository HotelOffers;
-        public readonly IHotelRepository Hotels;
-        public readonly IPackageOfferRepository PackageOffers;
-        public readonly IPackageRepository Packages;
-        public readonly ITourOfferRepository TourOffers;
-        public readonly ITourRepository Tours;
-        public readonly IUserRepository Users;
+        public IAgencyRepository Agencies;
+        public IFacilityRepository Facilties;
+        public IFlightOfferRepository FlightOffers;
+        public IFlightRepository Flights;
+        public IFlightReservationRepository FlightReservations;
+        public IHotelOfferRepository HotelOffers;
+        public IHotelRepository Hotels;
+        public IHotelReservationRepository HotelReservations;
+        public IPackageRepository Packages;
+        public IPackageReservationRepository PackageReservations;
+        public IPackageOfferRepository PackageOffers;
+        public IPaymentRepository Payment;
+        public ITourOfferRepository TourOffers;
+        public ITourRepository Tours;
+        public ITourReservationRepository TourReservations;
+        public IUserRepository Users;
 
-        public Repositories(IAgencyRepository agencies,
-            IFacilityRepository facilties,
-            IFlightOfferRepository flightOffers,
-            IFlightRepository flights,
-            IHotelOfferRepository hotelOffers,
-            IHotelRepository hotels,
-            IPackageOfferRepository packageOffers,
-            IPackageRepository packages,
-            ITourOfferRepository tourOffers,
-            ITourRepository tours,
-            IUserRepository users)
+
+        public Repositories(IAgencyRepository Agencies, 
+                            IFacilityRepository Facilties,
+                            IFlightOfferRepository FlightOffers,
+                            IFlightRepository Flights,
+                            IFlightReservationRepository FlightReservations,
+                            IHotelOfferRepository HotelOffers,
+                            IHotelRepository Hotels,
+                            IHotelReservationRepository HotelReservations,
+                            IPackageRepository Packages,
+                            IPackageOfferRepository PackageOffers,
+                            IPackageReservationRepository PackageReservations,
+                            IPaymentRepository Payment,
+                            ITourRepository Tours,
+                            ITourOfferRepository TourOffers,
+                            ITourReservationRepository TourReservations,
+                            IUserRepository Users)
         {
-            Agencies = agencies;
-            Facilties = facilties;
-            FlightOffers = flightOffers;
-            Flights = flights;
-            HotelOffers = hotelOffers;
-            Hotels = hotels;
-            PackageOffers = packageOffers;
-            Packages = packages;
-            TourOffers = tourOffers;
-            Tours = tours;
-            Users = users;
+            this.Agencies = Agencies;
+            this.Facilties = Facilties;
+            this.FlightOffers = FlightOffers;
+            this.Flights = Flights;
+            this.FlightReservations = FlightReservations;
+            this.HotelOffers = HotelOffers;
+            this.HotelReservations = HotelReservations;
+            this.Hotels = Hotels;
+            this.PackageOffers = PackageOffers;
+            this.Packages = Packages;
+            this.PackageReservations = PackageReservations;
+            this.Payment = Payment;
+            this.TourOffers = TourOffers;
+            this.Tours = Tours;
+            this.TourReservations = TourReservations;
+            this.Users = Users;
         }
     }
 }
