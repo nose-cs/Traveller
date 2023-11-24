@@ -8,7 +8,7 @@ public class PackageOffer : IOffer<Package, PackageReservation, PackageOffer>
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
     public double Price { get; set; }
-    public int Capacity { get; set; }
+    public uint Capacity { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     

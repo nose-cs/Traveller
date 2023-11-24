@@ -20,7 +20,7 @@ public class Tour : IProduct
     public int DestinationPlaceId { get; set; }
     public Place DestinationPlace { get; set; } = null!;
     public Day SourceDay { get; set; }
-    public ushort Duration { get; set; }
+    public uint Duration { get; set; }
     public TimeOnly SourceTime { get; set; }
     public TimeOnly DestinationTime { get; set; }
 
