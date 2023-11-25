@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using Traveller.Domain.Models;
+using Traveller.Exceptions;
 
 namespace Traveller.Services;
 
@@ -8,6 +9,10 @@ public class PasswordService : IPasswordService
     private const string Salt = "randomSalt";
     public string EncryptPassword(string password)
     {
+        if (password is null)
+        {
+            throw new BadRequestException("Password can't be null");
+        }
         var passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
         var saltBytes = System.Text.Encoding.UTF8.GetBytes(Salt);
 

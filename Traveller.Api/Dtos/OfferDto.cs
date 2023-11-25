@@ -1,6 +1,4 @@
-﻿using Traveller.Domain;
-using Traveller.Domain.Interfaces.Models;
-using Traveller.Domain.Models;
+﻿using Traveller.Domain.Interfaces.Models;
 
 namespace Traveller.Dtos
 {
@@ -8,10 +6,10 @@ namespace Traveller.Dtos
     {
 
         public int? Id { get; set; }
-        public string Title {  get; set; }
-        public string Description { get; set; }
+        public string Title { get; set; } = null!;
+        public string Description { get; set; } = null!;
         public double Price { get; set; }
-        public int Capacity { get; set; }
+        public uint Capacity { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string? AgencyName { get; set; }

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Traveller.Domain.Interfaces.Repositories;
+﻿using Traveller.Domain.Interfaces.Repositories;
 
-namespace Traveller.Persistence.Repositories
+namespace Traveller.Domain
 {
     public class Repositories
     {

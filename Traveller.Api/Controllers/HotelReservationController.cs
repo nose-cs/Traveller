@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualBasic;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
+using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
 using Traveller.Persistence.Repositories;
+
 namespace Traveller.Controllers;
 
 [ApiController]
@@ -13,7 +15,7 @@ namespace Traveller.Controllers;
 public class HotelReservationController : ControllerBase
 {
     private readonly Repositories _repositories;
- 
+
     private readonly ILogger<HotelReservationController> _logger;
 
     public HotelReservationController(ILogger<HotelReservationController> logger, Repositories repositories)
@@ -28,7 +30,7 @@ public class HotelReservationController : ControllerBase
     {
         if (await _repositories.HotelOffers.FindById(reservationDto.OfferId) == null)
             return NotFound($"Hotel Offer id: {reservationDto.OfferId} doesn´t exists");
-        
+
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
@@ -51,7 +53,7 @@ public class HotelReservationController : ControllerBase
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
@@ -65,14 +67,14 @@ public class HotelReservationController : ControllerBase
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
         if ((role == "Tourist") && (userId != reservationDto.TouristId))
             return BadRequest($"Tourists can only change their own reservations");
-        
+
         try
         {
             var dbHotelReservation = await _repositories.HotelReservations.FindById(id);
             if (dbHotelReservation is null)
                 return NotFound($"Hotel Reservation with id {id} doesn't exist");
-            int old_PaymentId = dbHotelReservation.PaymentId;//no quiero que nadie pueda modificar el PaymentId
-            double old_Price = dbHotelReservation.Price;     //ni los turistas el precio
+            int old_PaymentId = dbHotelReservation.PaymentId; //no quiero que nadie pueda modificar el PaymentId
+            double old_Price = dbHotelReservation.Price; //ni los turistas el precio
 
             ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(dbHotelReservation, reservationDto);
             dbHotelReservation.PaymentId = old_PaymentId;
@@ -80,16 +82,16 @@ public class HotelReservationController : ControllerBase
                 dbHotelReservation.Price = old_Price;
 
             await _repositories.HotelReservations.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
@@ -98,7 +100,7 @@ public class HotelReservationController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        
+
         try
         {
             var dbHotelReservation = await _repositories.HotelReservations.FindById(id);
@@ -110,13 +112,13 @@ public class HotelReservationController : ControllerBase
             await _repositories.HotelReservations.Remove(id);
             await _repositories.Payment.SaveChangesAsync();
             await _repositories.HotelReservations.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
@@ -127,9 +129,10 @@ public class HotelReservationController : ControllerBase
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
-        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value); 
-        
-        var dtos = _repositories.HotelReservations.Find().Select(ReservationDto.Map<Hotel, HotelReservation, HotelOffer>);
+        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
+
+        var dtos = _repositories.HotelReservations.Find()
+            .Select(ReservationDto.Map<Hotel, HotelReservation, HotelOffer>);
 
         if (role == "Tourist")
             dtos = dtos.Where(rsv => (rsv.TouristId == userId));
@@ -144,7 +147,7 @@ public class HotelReservationController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        
+
         try
         {
             var hotelReservation = await _repositories.HotelReservations.FindById(id);
@@ -152,12 +155,12 @@ public class HotelReservationController : ControllerBase
                 return NotFound($"Hotel reservation with id {id} doesn't exist");
             if ((role == "Tourist") && (userId != hotelReservation.TouristId))
                 return BadRequest($"Tourists can only see their own reservations");
-            return Ok(ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(hotelReservation));  
+            return Ok(ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(hotelReservation));
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 

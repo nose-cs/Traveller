@@ -1,4 +1,5 @@
 ﻿using Traveller.Domain.Models;
+using Traveller.Exceptions;
 
 namespace Traveller.Dtos;
 
@@ -22,7 +23,7 @@ public class PlaceDto
 
     public static Place Map(PlaceDto placeDto)
     {
-        if (placeDto.Address != null && placeDto.City != null && placeDto.Country != null)
+        if (placeDto is { Address: not null, City: not null, Country: not null })
         {
             return new Place
             {
@@ -31,9 +32,7 @@ public class PlaceDto
                 Country = placeDto.Country
             };
         }
-        else
-        {
-            throw new ArgumentException("Data is not valid");
-        }
+        
+        throw new BadRequestException("Data is not valid");
     }
 }
