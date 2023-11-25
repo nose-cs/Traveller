@@ -11,4 +11,7 @@ public class Flight : IProduct
     public int DestinationId { get; set; }
     public Place Destination { get; set; } = null!;
     public int Id { get; set; }
+    
+    public int ImageId { get; set; }
+    public Image Image { get; set; } = null!;
 }

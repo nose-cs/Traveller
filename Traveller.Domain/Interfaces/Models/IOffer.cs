@@ -20,5 +20,8 @@ public interface IOffer<TProduct, TReservation, TOffer> : IDbModel
     int ProductId { get; set; }
     TProduct Product { get; set; }
     
+    int ImageId { get; set; }
+    Image Image { get; set; }
+    
     ICollection<TReservation> Reservations { get; set; }
 }
