@@ -34,23 +34,23 @@ public class PackageRepository : IPackageRepository
 
     public IEnumerable<Package> Find()
     {
-        return _context.Packages;
+        return _context.Packages.Include(p => p.Image);
     }
 
     public async ValueTask<Package?> FindById(int key)
     {
-        return await _context.Packages.FindAsync(key);
+        return await _context.Packages.Include(p => p.Image).FirstOrDefaultAsync(p => p.Id == key);
     }
     
-    public async Task<IEnumerable<Tour>?>  FindTours(int key)
+    public async Task<IEnumerable<Tour>?> FindTours(int key)
     {
-        var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).FirstOrDefaultAsync(p => p.Id == key);
+        var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).Include(p => p.Image).FirstOrDefaultAsync(p => p.Id == key);
         return package?.Tours;
     }
     
     public async Task<IEnumerable<Tour>?> FindFacilities(int key)
     {
-        var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).FirstOrDefaultAsync(p => p.Id == key);
+        var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).ThenInclude(t => t.Image).FirstOrDefaultAsync(p => p.Id == key);
         return package?.Tours;
     }
 

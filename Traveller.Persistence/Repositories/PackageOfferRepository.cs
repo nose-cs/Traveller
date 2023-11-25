@@ -1,4 +1,5 @@
-﻿using Traveller.Domain.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
@@ -19,10 +20,10 @@ public class PackageOfferRepository : IPackageOfferRepository
 
     public async Task Remove(int key)
     {
-        var Offer = await FindById(key);
-        if (Offer is not null)
+        var offer = await FindById(key);
+        if (offer is not null)
         {
-            _context.Remove(Offer);
+            _context.Remove(offer);
         }
     }
 
@@ -33,11 +34,12 @@ public class PackageOfferRepository : IPackageOfferRepository
 
     public IEnumerable<PackageOffer> Find()
     {
-        return _context.PackageOffers;
+        return _context.PackageOffers.Include(x => x.Image);
     }
 
     public async ValueTask<PackageOffer?> FindById(int key)
     {
-        return await _context.PackageOffers.FindAsync(key);
+        return await _context.PackageOffers.Include(x => x.Image)
+            .FirstOrDefaultAsync(x => x.Id == key);
     }
 }

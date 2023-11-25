@@ -34,12 +34,12 @@ public class AgencyRepository : IAgencyRepository
 
     public IEnumerable<Agency> Find()
     {
-        return _context.Agencies;
+        return _context.Agencies.Include(x => x.Address);
     }
 
     public async ValueTask<Agency?> FindById(int key)
     {
-        return await _context.Agencies.FindAsync(key);
+        return await _context.Agencies.Include(x => x.Address).FirstOrDefaultAsync(x => x.Id == key);
     }
 
     public string GetName(int key)
