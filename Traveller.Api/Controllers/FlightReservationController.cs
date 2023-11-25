@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
@@ -161,5 +162,33 @@ public class FlightReservationController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+
+    [HttpGet("getSales")]
+    [Authorize(Roles = ("MarketingEmployee, Admin"))]
+    public ActionResult GetSales([FromQuery] SalesRequest request)
+    {
+        switch (request.GroupBy)
+        {
+            case GroupBy.Day:
+                return Ok(_repositories.FlightReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                                              .GroupBy(reservation => DateOnly.FromDateTime(reservation.ArrivalDate))
+                                              .OrderBy(group => group.Key)
+                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }));
+            case GroupBy.Year:
+                return Ok(_repositories.FlightReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                                              .GroupBy(reservation => reservation.ArrivalDate.Year)
+                                              .OrderBy(group => group.Key)
+                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }));
+            case GroupBy.Month:
+                return Ok(_repositories.FlightReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                                              .GroupBy(reservation => reservation.ArrivalDate.Year)
+                                              .OrderBy(group => group.Key)
+                                              .Select(group => group.GroupBy(reservation => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(reservation.ArrivalDate.ToString("MMMM"))).OrderBy(group => group.Key))
+                                              .Select(year => year.Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }))
+                                              .SelectMany(response => response));
+        }
+
+        return BadRequest("The Group is not supported");
     }
 }
