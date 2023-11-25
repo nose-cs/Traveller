@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using Traveller.Domain.Interfaces.Repositories;
+using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Migrations;
-using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 
@@ -29,32 +27,32 @@ public class TourOfferController : ControllerBase
     {
         if (await _repository.Tours.FindById(offerDto.ProductId) == null)
             return NotFound($"Tour id: {offerDto.ProductId} doesn´t exists");
-        
+
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        TourOffer Offer = new TourOffer();
-        OfferDto.Map<Tour, TourReservation, TourOffer>(Offer, offerDto);
+        var offer = new TourOffer();
+        OfferDto.Map<Tour, TourReservation, TourOffer>(offer, offerDto);
 
-        Offer.Id = 0;
+        offer.Id = 0;
 
-        Offer.AgencyId = agencyId;
+        offer.AgencyId = agencyId;
 
         try
         {
-            await _repository.TourOffers.AddAsync(Offer);
-            
+            await _repository.TourOffers.AddAsync(offer);
+
             await _repository.TourOffers.SaveChangesAsync();
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpPut]
     [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Update([FromBody] OfferDto offerDto)
@@ -74,27 +72,27 @@ public class TourOfferController : ControllerBase
                 return NotFound($"Tour offer with id {offerDto.Id} doesn't exist");
             }
 
-            if(dbOffer.AgencyId != agencyId)
+            if (dbOffer.AgencyId != agencyId)
             {
                 return Unauthorized("Tour offer´s agency doesn´t match with user agency");
             }
 
-            if(dbOffer.ProductId != offerDto.ProductId && await _repository.Tours.FindById(offerDto.ProductId) == null)
+            if (dbOffer.ProductId != offerDto.ProductId && await _repository.Tours.FindById(offerDto.ProductId) == null)
                 return NotFound($"Tour id: {offerDto.ProductId} doesn´t exists");
 
             OfferDto.Map<Tour, TourReservation, TourOffer>(dbOffer, offerDto);
-            
+
             await _repository.TourOffers.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
@@ -118,23 +116,24 @@ public class TourOfferController : ControllerBase
         {
             await _repository.TourOffers.Remove(id);
             await _repository.TourOffers.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.TourOffers.Find().ToArray().Select(offer => {
-                                                                                        var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
-                                                                                        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Tours.GetName(offer.ProductId);
-                                                                                        return dto;
-                                                                                    }).ToArray());
+    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.TourOffers.Find().ToArray().Select(offer =>
+    {
+        var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
+        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+        dto.ProductName = _repository.Tours.GetName(offer.ProductId);
+        return dto;
+    }).ToArray());
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
@@ -156,11 +155,11 @@ public class TourOfferController : ControllerBase
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
+
     [HttpGet("getTourOffers")]
-    
     public IActionResult GetTourOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.TourOffers.Find().Where(to =>

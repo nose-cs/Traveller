@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Traveller.Domain.Interfaces.Repositories;
+using Traveller.Domain;
+using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 
@@ -10,7 +10,7 @@ namespace Traveller.Controllers;
 public class FlightController : ControllerBase
 {
     private readonly Repositories _repositories;
- 
+
     private readonly ILogger<HotelController> _logger;
 
     public FlightController(ILogger<HotelController> logger, Repositories repositories)
@@ -25,17 +25,17 @@ public class FlightController : ControllerBase
         try
         {
             await _repositories.Flights.AddAsync(FlightDto.Map(flightDto));
-            
+
             await _repositories.Flights.SaveChangesAsync();
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpPut("{id:int}")]
     public async Task<ActionResult> Update([FromBody] FlightDto flightDto, [FromRoute] int id)
     {
@@ -51,18 +51,18 @@ public class FlightController : ControllerBase
             dbFlight.Airline = flightDto.Airline;
             dbFlight.DestinationId = flightDto.Destination.Id;
             dbFlight.SourceId = flightDto.Source.Id;
-            
+
             await _repositories.Flights.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
@@ -70,13 +70,13 @@ public class FlightController : ControllerBase
         {
             await _repositories.Flights.Remove(id);
             await _repositories.Flights.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
@@ -99,7 +99,26 @@ public class FlightController : ControllerBase
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+    
+    [HttpGet("{id:int}/offers")]
+    public IActionResult GetFlightOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
+    {
+        var offers = _repositories.FlightOffers.Find().Where(
+                to => to.ProductId == id
+                && (filter.StartPrice == null || to.Price >= filter.StartPrice)
+                && (filter.EndPrice == null || to.Price <= filter.EndPrice)
+                && (filter.StartDate == null || to.StartDate <= filter.StartDate && (to.EndDate == null || to.EndDate >= filter.StartDate))
+                && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
+            .ToArray().Select(offer =>
+            {
+                var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
+                dto.AgencyName = _repositories.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repositories.Flights.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers);
     }
 }

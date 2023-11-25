@@ -5,7 +5,6 @@ namespace Traveller.Dtos;
 public class FlightDto
 {
     public int? Id { get; set; }
-
     public int FlightNumber { get; set; }
     public string Airline { get; set; } = null!;
     public PlaceDto Source { get; set; } = null!;

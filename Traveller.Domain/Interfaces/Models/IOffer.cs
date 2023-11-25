@@ -10,7 +10,7 @@ public interface IOffer<TProduct, TReservation, TOffer> : IDbModel
     string Title { get; set; }
     string Description { get; set; }
     double Price { get; set; }
-    int Capacity { get; set; }
+    uint Capacity { get; set; }
     DateTime StartDate { get; set; }
     DateTime? EndDate { get; set; }
     

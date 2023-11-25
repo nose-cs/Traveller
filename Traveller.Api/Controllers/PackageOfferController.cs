@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using Traveller.Domain.Interfaces.Repositories;
+using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Migrations;
-using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 
@@ -29,32 +27,32 @@ public class PackageOfferController : ControllerBase
     {
         if (await _repository.Packages.FindById(offerDto.ProductId) == null)
             return NotFound($"Package id: {offerDto.ProductId} doesn´t exists");
-        
+
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        PackageOffer Offer = new PackageOffer(); 
-        OfferDto.Map<Package, PackageReservation, PackageOffer>(Offer, offerDto);
+        var offer = new PackageOffer();
+        OfferDto.Map<Package, PackageReservation, PackageOffer>(offer, offerDto);
 
-        Offer.Id = 0;
+        offer.Id = 0;
 
-        Offer.AgencyId = agencyId;
+        offer.AgencyId = agencyId;
 
         try
         {
-            await _repository.PackageOffers.AddAsync(Offer);
-            
+            await _repository.PackageOffers.AddAsync(offer);
+
             await _repository.PackageOffers.SaveChangesAsync();
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpPut]
     [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Update([FromBody] OfferDto offerDto)
@@ -74,27 +72,28 @@ public class PackageOfferController : ControllerBase
                 return NotFound($"Package offer with id {offerDto.Id} doesn't exist");
             }
 
-            if(dbOffer.AgencyId != agencyId)
+            if (dbOffer.AgencyId != agencyId)
             {
                 return Unauthorized("Package offer´s agency doesn´t match with user agency");
             }
 
-            if(dbOffer.ProductId != offerDto.ProductId && await _repository.Packages.FindById(offerDto.ProductId) == null)
+            if (dbOffer.ProductId != offerDto.ProductId &&
+                await _repository.Packages.FindById(offerDto.ProductId) == null)
                 return NotFound($"Package id: {offerDto.ProductId} doesn´t exists");
 
             OfferDto.Map<Package, PackageReservation, PackageOffer>(dbOffer, offerDto);
-            
+
             await _repository.PackageOffers.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
     [HttpDelete("{id:int}")]
     [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
@@ -118,36 +117,39 @@ public class PackageOfferController : ControllerBase
         {
             await _repository.PackageOffers.Remove(id);
             await _repository.PackageOffers.SaveChangesAsync();
-            
+
             return Ok();
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.PackageOffers.Find().ToArray().Select(offer => {
-                                                                                        var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
-                                                                                        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                                                                        dto.ProductName = _repository.Packages.GetName(offer.ProductId);
-                                                                                        return dto;
-                                                                                    }).ToArray());
+    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.PackageOffers.Find().ToArray().Select(offer =>
+    {
+        var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
+        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+        dto.ProductName = _repository.Packages.GetName(offer.ProductId);
+        return dto;
+    }).ToArray());
 
     [HttpGet("filter")]
     public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
     {
-        var offers = _repository.PackageOffers.Find().Where(pa => (filter.ProductId == null || pa.Id == filter.ProductId)
+        var offers = _repository.PackageOffers.Find().Where(pa =>
+                (filter.ProductId == null || pa.Id == filter.ProductId)
                 && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
                 && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
                 && (filter.StartDate == null || pa.StartDate <= filter.StartDate
                     && (pa.EndDate == null || pa.EndDate >= filter.StartDate))
                 && (filter.AgencyId == null || pa.Agency.Id == filter.AgencyId)
-                && filter.Facilities == null || filter.Facilities.All(fa =>
-                    pa.Product.Facilities.Any(t => t.Facility == fa)))
-            .ToArray().Select(offer => {
+                && (filter.Facilities == null || filter.Facilities.All(fa =>
+                    pa.Product.Facilities.Any(t => t.Facility == fa))))
+            .ToArray().Select(offer =>
+            {
                 var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
                 dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
                 dto.ProductName = _repository.Packages.GetName(offer.ProductId);
@@ -155,6 +157,7 @@ public class PackageOfferController : ControllerBase
             });
         return Ok(offers);
     }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
@@ -175,7 +178,7 @@ public class PackageOfferController : ControllerBase
         catch (Exception e)
         {
             _logger.LogError(e.Message);
-            return BadRequest(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
 
