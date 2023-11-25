@@ -177,4 +177,21 @@ public class FlightOfferController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("getSales")]
+    [Authorize(Roles = ("MarketingEmployee, Admin"))]
+    public ActionResult GetSales([FromQuery] SalesRequest request)
+    {
+        return Ok(_repository.FlightReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                    .GroupBy(reservation => reservation.OfferId)
+                    .OrderBy(group => group.Key)
+                    .Join(_repository.FlightOffers.Find(), groupReservation => groupReservation.Key, offer => offer.Id,
+                            (group, offer) => new SalesResponse
+                            {
+                                Group = group.Key.ToString(),
+                                Description = offer.Title,
+                                Total = group.Count(),
+                                MoneyAmount = group.Sum(reservation => reservation.Price)
+                            }));
+    }
 }
