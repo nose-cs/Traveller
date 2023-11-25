@@ -29,7 +29,7 @@ public static partial class Program
                     $"{Verb[Random.Next(0, Verb.Count)]} {Adjectives[Random.Next(0, Adjectives.Count)]} flight to {destinationPlace.City}",
                 Description = "",
                 Price = Random.Next(100, 1000),
-                Capacity = Random.Next(1, 10),
+                Capacity = (uint)Random.Next(1, 10),
                 StartDate = date.AddDays(Random.Next(1, 10)),
                 EndDate = date.AddDays(i + Random.Next(10, 1000)),
                 AgencyId = i % AgenciesCount + 1,

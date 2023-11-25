@@ -34,8 +34,13 @@ public static partial class Program
         },
         new AgencyUser
         {
-            Name = "Admin", Email = "admin@gmail", Password = PasswordService.EncryptPassword("1234"),
-            Role = Role.Admin, AgencyId = 1
+            Name = "Admin", Email = "agencyAdmin@gmail", Password = PasswordService.EncryptPassword("1234"),
+            Role = Role.AgencyAdmin, AgencyId = 1
+        },
+        new User
+        {
+            Name = "TravellerAdmin", Email = "admin@gmail", Password = PasswordService.EncryptPassword("1234"),
+            Role = Role.TravellerAdmin
         }
     };
 }

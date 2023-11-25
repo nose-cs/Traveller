@@ -31,7 +31,7 @@ public static partial class Program
                 Title = title,
                 Description = description,
                 Price = Random.Next(100, 2000),
-                Capacity = Random.Next(1, 10),
+                Capacity = (uint)Random.Next(1, 1000),
                 StartDate = date.AddDays(Random.Next(1, 10)),
                 EndDate = date.AddDays(i + Random.Next(10, 1000)),
                 AgencyId = i % AgenciesCount + 1,
