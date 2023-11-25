@@ -128,15 +128,6 @@ public class FlightOfferController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.FlightOffers.Find().ToArray().Select(offer =>
-    {
-        var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
-        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-        dto.ProductName = _repository.Flights.GetName(offer.ProductId);
-        return dto;
-    }).ToArray());
-
-    [HttpGet("getFlightOffers")]
     public IActionResult GetFlightOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.FlightOffers.Find().Where(to =>

@@ -128,15 +128,6 @@ public class PackageOfferController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.PackageOffers.Find().ToArray().Select(offer =>
-    {
-        var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
-        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-        dto.ProductName = _repository.Packages.GetName(offer.ProductId);
-        return dto;
-    }).ToArray());
-
-    [HttpGet("filter")]
     public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.PackageOffers.Find().Where(pa =>

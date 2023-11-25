@@ -127,16 +127,6 @@ public class HotelOfferController : ControllerBase
         }
     }
 
-    [AllowAnonymous]
-    [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.HotelOffers.Find().ToArray().Select(offer =>
-    {
-        var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
-        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-        dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
-        return dto;
-    }).ToArray());
-
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
@@ -161,7 +151,7 @@ public class HotelOfferController : ControllerBase
         }
     }
 
-    [HttpGet("getHotelOffers")]
+    [HttpGet]
     public IActionResult GetHotelOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.HotelOffers.Find().Where(ho =>
