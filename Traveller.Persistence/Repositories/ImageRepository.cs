@@ -1,4 +1,6 @@
-﻿using Traveller.Domain.Interfaces.Repositories;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
@@ -32,6 +34,12 @@ public class ImageRepository : IImageRepository
     {
         return _context.Set<Image>();
     }
+
+    public IEnumerable<Image> FindWithInclude<TInclude>(Expression<Func<Image, TInclude>> include)
+    {
+        return _context.Set<Image>().Include(include);
+    }
+
     public async ValueTask<Image?> FindById(int key)
     {
         return await _context.Set<Image>().FindAsync(key);
