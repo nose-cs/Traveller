@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
@@ -160,5 +162,36 @@ public class HotelReservationController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+
+    [HttpGet("getSales")]
+    [Authorize(Roles = ("MarketingEmployee, Admin"))]
+    public ActionResult GetSales([FromQuery] SalesRequest request)
+    {
+        if (request.GroupBy == null)
+            request.GroupBy = GroupBy.Day;
+
+        switch (request.GroupBy)
+        {
+            case GroupBy.Day:
+                return Ok(_repositories.HotelReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                                              .GroupBy(reservation => DateOnly.FromDateTime(reservation.ArrivalDate))
+                                              .OrderBy(group => group.Key)
+                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }));
+            case GroupBy.Year:
+                return Ok(_repositories.HotelReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                                              .GroupBy(reservation => reservation.ArrivalDate.Year)
+                                              .OrderBy(group => group.Key)
+                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }));
+            case GroupBy.Month:
+                return Ok(_repositories.HotelReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                                              .GroupBy(reservation => reservation.ArrivalDate.Year)
+                                              .OrderBy(group => group.Key)
+                                              .Select(group => group.GroupBy(reservation => reservation.ArrivalDate.Month).OrderBy(group => group.Key))
+                                              .Select(year => year.Select(group => new SalesResponse { Group = Month.getMonth(group.Key), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }))
+                                              .SelectMany(response => response));
+        }
+
+        return BadRequest("The Group is not supported");
     }
 }

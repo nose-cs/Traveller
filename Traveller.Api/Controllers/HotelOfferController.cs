@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
@@ -180,5 +181,22 @@ public class HotelOfferController : ControllerBase
             return dto;
         });
         return Ok(offers);
+    }
+
+    [HttpGet("getSales")]
+    [Authorize(Roles = ("MarketingEmployee, Admin"))]
+    public ActionResult GetSales([FromQuery] SalesRequest request)
+    {
+        return Ok(_repository.HotelReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                    .GroupBy(reservation => reservation.OfferId)
+                    .OrderBy(group => group.Key)
+                    .Join(_repository.HotelOffers.Find(), groupReservation => groupReservation.Key, offer => offer.Id, 
+                            (group, offer) => new SalesResponse 
+                            { 
+                                Group = group.Key.ToString(),
+                                Description = offer.Title,
+                                Total = group.Count(), 
+                                MoneyAmount = group.Sum(reservation => reservation.Price) 
+                            }));
     }
 }
