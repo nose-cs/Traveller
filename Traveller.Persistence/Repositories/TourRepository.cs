@@ -59,4 +59,9 @@ public class TourRepository : ITourRepository
                 $"{tour.SourcePlace.City}, {tour.SourcePlace.Country} - {tour.DestinationPlace.City}, {tour.DestinationPlace.Country}")
             .First();
     }
+
+    public IEnumerable<Tour> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Tour, TInclude>> include)
+    {
+        return _context.Tours.Include(include);
+    }
 }

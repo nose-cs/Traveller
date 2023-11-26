@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 
@@ -33,5 +34,10 @@ public class TourReservationRepository : ITourReservationRepository
     public async ValueTask<TourReservation?> FindById(int key)
     {
         return await _context.TourReservations.FindAsync(key);
+    }
+
+    public IEnumerable<TourReservation> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<TourReservation, TInclude>> include)
+    {
+        return _context.TourReservations.Include(include);
     }
 }

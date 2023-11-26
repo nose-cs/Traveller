@@ -1,4 +1,5 @@
-﻿using Traveller.Domain.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 
 namespace Traveller.Persistence.Repositories;
@@ -39,5 +40,10 @@ public class PackageOfferRepository : IPackageOfferRepository
     public async ValueTask<PackageOffer?> FindById(int key)
     {
         return await _context.PackageOffers.FindAsync(key);
+    }
+
+    public IEnumerable<PackageOffer> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<PackageOffer, TInclude>> include)
+    {
+        return _context.PackageOffers.Include(include);
     }
 }
