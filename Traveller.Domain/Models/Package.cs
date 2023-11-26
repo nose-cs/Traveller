@@ -10,6 +10,4 @@ public class Package : IProduct
     
     public virtual ICollection<PackageFacility> Facilities { get; set; } = null!;
     public virtual ICollection<Tour> Tours { get; set; } = new List<Tour>();
-    public int ImageId { get; set; }
-    public Image Image { get; set; } = null!;
 }

@@ -36,8 +36,7 @@ public class FlightRepository : IFlightRepository
     {
         return _context.Flights.AsNoTracking()
             .Include(f => f.Source)
-            .Include(f => f.Destination)
-            .Include(f => f.Image);
+            .Include(f => f.Destination);
     }
 
     public async ValueTask<Flight?> FindById(int key)
@@ -45,7 +44,6 @@ public class FlightRepository : IFlightRepository
         return await _context.Flights.AsNoTracking()
             .Include(f => f.Source)
             .Include(f => f.Destination)
-            .Include(f => f.Image)
             .FirstOrDefaultAsync(f => f.Id == key);
     }
 
