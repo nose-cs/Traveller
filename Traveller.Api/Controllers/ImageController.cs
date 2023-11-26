@@ -32,11 +32,12 @@ public class FileController : ControllerBase
             {
                 return BadRequest(" File not selected");
             }
-
-            var path = await _fileService.SaveFileAsync(file, file.FileName);
-            var image = new Image { ImagePath = path };
+            
+            var image = new Image { Name = file.FileName };
             await _repositories.Images.AddAsync(image);
             await _repositories.Images.SaveChangesAsync();
+            
+            await _fileService.SaveFileAsync(file, image.Name, image.Id);
             return Ok(image.Id);
         }
         catch (Exception e)
@@ -57,7 +58,8 @@ public class FileController : ControllerBase
                 return NotFound($"Image with id {id} doesn't exist");
             }
 
-            _fileService.DeleteFile(dbImage.ImagePath);
+            var path = _fileService.GetPath(dbImage.Name, dbImage.Id);
+            _fileService.DeleteFile(path);
 
             await _repositories.Images.Remove(dbImage.Id);
             await _repositories.Images.SaveChangesAsync();
@@ -81,7 +83,8 @@ public class FileController : ControllerBase
             {
                 return NotFound($"Image with id {id} doesn't exist");
             }
-            var fileDto = new FileDto { Id = id, FileData = _fileService.GetFile(dbImage.ImagePath) };
+            var path = _fileService.GetPath(dbImage.Name, dbImage.Id);
+            var fileDto = new FileDto { Id = id, Name = dbImage.Name, FilePath = path};
             return Ok(fileDto);
         }
         catch (Exception e)

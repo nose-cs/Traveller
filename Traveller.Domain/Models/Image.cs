@@ -5,5 +5,5 @@ namespace Traveller.Domain.Models;
 public class Image : IDbModel
 {
     public int Id { get; set; }
-    public string ImagePath { get; set; } = null!;
+    public string Name { get; set; } = null!;
 }

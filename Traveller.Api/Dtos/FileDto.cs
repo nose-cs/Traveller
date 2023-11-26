@@ -1,9 +1,8 @@
-﻿using Traveller.Domain.Models;
-
-namespace Traveller.Dtos;
+﻿namespace Traveller.Dtos;
 
 public class FileDto
 {
     public int Id { get; set; }
-    public byte[] FileData { get; set; } = null!;
+    public string Name { get; set; } = null!;
+    public string FilePath { get; set; } = null!;
 }
