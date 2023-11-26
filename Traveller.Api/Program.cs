@@ -34,11 +34,13 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IFacilityRepository, FacilityRepository>();
 builder.Services.AddScoped<IAgencyRepository, AgencyRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IImageRepository, ImageRepository>();
 builder.Services.AddScoped<Repositories>();
 
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<LoginService>();
+builder.Services.AddScoped<FileService>();
 
 builder.Services.AddControllers();
 
@@ -70,9 +72,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowOrigin", _builder =>
+    options.AddPolicy("AllowOrigin", corsPolicyBuilder =>
     {
-        _builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        corsPolicyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     });
 });
 
