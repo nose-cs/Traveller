@@ -12,11 +12,7 @@ public static partial class Program
     private static async Task AddHotelOffersAsync()
     {
         _hotelsOffers = GenerateHotelOffers();
-
-        foreach (var hotelOffer in _hotelsOffers)
-        {
-            await _appDbContext.AddAsync(hotelOffer);
-        }
+        await _appDbContext.AddRangeAsync(_hotelsOffers);
     }
 
     private static IEnumerable<HotelOffer> GenerateHotelOffers()
@@ -35,7 +31,8 @@ public static partial class Program
                 StartDate = date.AddDays(Random.Next(1, 10)),
                 EndDate = date.AddDays(i + Random.Next(10, 1000)),
                 AgencyId = i % AgenciesCount + 1,
-                ProductId = i % HotelCount + 1
+                ProductId = i % HotelCount + 1,
+                ImageId = 1
             };
         });
     }

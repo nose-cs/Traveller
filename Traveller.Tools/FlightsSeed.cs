@@ -10,10 +10,7 @@ public static partial class Program
     private static async Task AddFlightsAsync()
     {
         _flights = GenerateFlights();
-        foreach (var flight in _flights)
-        {
-            await _appDbContext.AddAsync(flight);
-        }
+        await _appDbContext.AddRangeAsync(_flights);
     }
 
     private static readonly List<string> Airlines = new()

@@ -10,10 +10,7 @@ public static partial class Program
     private static async Task AddToursAsync()
     {
         _tours = GenerateTours();
-        foreach (var tour in _tours)
-        {
-            await _appDbContext.AddAsync(tour);
-        }
+        await _appDbContext.AddRangeAsync(_tours);
     }
 
     private static IEnumerable<Tour> GenerateTours()
@@ -31,7 +28,8 @@ public static partial class Program
                     SourceTime = TimeOnly.FromDateTime(DateTime.Now),
                     SourcePlaceId = Random.Next(1, PlacesCount),
                     DestinationTime = TimeOnly.FromDateTime(DateTime.UtcNow),
-                    DestinationPlaceId = Random.Next(1, PlacesCount)
+                    DestinationPlaceId = Random.Next(1, PlacesCount),
+                    ImageId = 1
                 };
 
             var take = Random.Next(1, 10);
@@ -44,7 +42,8 @@ public static partial class Program
                 SourcePlaceId = Random.Next(1, PlacesCount),
                 DestinationTime = TimeOnly.FromDateTime(DateTime.UtcNow),
                 DestinationPlaceId = Random.Next(1, PlacesCount),
-                Hotels = _hotels.Skip(skip).Take(take).ToList()
+                Hotels = _hotels.Skip(skip).Take(take).ToList(),
+                ImageId = 1
             };
         });
     }

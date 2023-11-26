@@ -10,10 +10,7 @@ public static partial class Program
     private static async Task AddFlightOffersAsync()
     {
         _flightOffers = GenerateFlightOffers();
-        foreach (var flightOffer in _flightOffers)
-        {
-            await _appDbContext.AddAsync(flightOffer);
-        }
+        await _appDbContext.AddRangeAsync(_flightOffers);
     }
 
     private static IEnumerable<FlightOffer> GenerateFlightOffers()
@@ -33,7 +30,8 @@ public static partial class Program
                 StartDate = date.AddDays(Random.Next(1, 10)),
                 EndDate = date.AddDays(i + Random.Next(10, 1000)),
                 AgencyId = i % AgenciesCount + 1,
-                ProductId = i % ToursCount + 1
+                ProductId = i % ToursCount + 1,
+                ImageId = 1
             };
         });
     }

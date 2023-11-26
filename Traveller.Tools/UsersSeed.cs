@@ -9,10 +9,7 @@ public static partial class Program
 
     private static async Task AddUsers()
     {
-        foreach (var user in Users)
-        {
-            await _appDbContext.AddAsync(user);
-        }
+        await _appDbContext.AddRangeAsync(Users);
     }
 
     private static readonly User[] Users =
