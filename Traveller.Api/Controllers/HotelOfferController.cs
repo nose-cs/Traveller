@@ -162,18 +162,17 @@ public class HotelOfferController : ControllerBase
         }
     }
 
-    [HttpGet("getHotelOffers")]
+    [HttpGet("GetHotelsWithFilter")]
     public IActionResult GetHotelOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.HotelOffers.Find().Where(ho =>
-            (filter.ProductId == null || ho.ProductId == filter.ProductId)
+             (filter.ProductId == null || ho.ProductId == filter.ProductId)   
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
             && (filter.StartDate == null ||
                 ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
                                                      ho.EndDate >= filter.StartDate))
-            && (filter.AgencyId == null || ho.Agency.Id == filter.AgencyId)
-            && (filter.objectName == null || string.Equals(ho.Product.Name, filter.objectName,
+             && (filter.objectName == null || string.Equals(ho.Product.Name, filter.objectName,
                 StringComparison.CurrentCultureIgnoreCase))).ToArray().Select(offer =>
         {
             var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
