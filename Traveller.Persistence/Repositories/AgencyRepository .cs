@@ -46,4 +46,9 @@ public class AgencyRepository : IAgencyRepository
     {
         return _context.Agencies.Where(agency => agency.Id == key).Select(agency => agency.Name).First();
     }
+
+    public IEnumerable<Agency> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Agency, TInclude>> include)
+    {
+        return _context.Agencies.Include(include);
+    }
 }

@@ -184,16 +184,19 @@ public class TourOfferController : ControllerBase
     [Authorize(Roles = ("MarketingEmployee, Admin"))]
     public ActionResult GetSales([FromQuery] SalesRequest request)
     {
-        return Ok(_repository.TourReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+        var token = Request.Headers.Authorization[0]!.Substring(7);
+        var jwt = new JwtSecurityToken(token);
+        var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+        return Ok(_repository.TourReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                     .GroupBy(reservation => reservation.OfferId)
                     .OrderBy(group => group.Key)
-                    .Join(_repository.TourOffers.Find(), groupReservation => groupReservation.Key, offer => offer.Id,
-                            (group, offer) => new SalesResponse
-                            {
-                                Group = group.Key.ToString(),
-                                Description = offer.Title,
-                                Total = group.Count(),
-                                MoneyAmount = group.Sum(reservation => reservation.Price)
-                            }));
+                    .Select(group => new SalesResponse
+                    {
+                        Group = group.Key.ToString(),
+                        Description = group.First().Offer.Title,
+                        Total = group.Count(),
+                        MoneyAmount = group.Sum(reservation => reservation.Price)
+                    }));
     }
 }

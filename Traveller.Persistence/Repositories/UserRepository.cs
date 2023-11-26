@@ -46,4 +46,9 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users.FindAsync(key);
     }
+
+    public IEnumerable<User> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<User, TInclude>> include)
+    {
+        return _context.Users.Include(include);
+    }
 }

@@ -47,4 +47,9 @@ public class FlightRepository : IFlightRepository
     {
         return _context.Flights.Where(flight => flight.Id == key).Select(flight => flight.Airline + ": " + flight.Source + " - " + flight.Destination).First();
     }
+
+    public IEnumerable<Flight> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Flight, TInclude>> include)
+    {
+        return _context.Flights.Include(include);
+    }
 }
