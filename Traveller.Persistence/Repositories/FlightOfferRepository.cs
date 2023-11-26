@@ -41,4 +41,9 @@ public class FlightOfferRepository : IFlightOfferRepository
     {
         return await _context.FlightOffers.Include(x => x.Image).FirstOrDefaultAsync(x => x.Id == key);
     }
+
+    public IEnumerable<FlightOffer> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<FlightOffer, TInclude>> include)
+    {
+        return _context.FlightOffers.Include(include);
+    }
 }

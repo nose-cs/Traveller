@@ -41,4 +41,9 @@ public class TourOfferRepository : ITourOfferRepository
     {
         return await _context.TourOffers.Include(x => x.Image).FirstOrDefaultAsync(x => x.Id == key);
     }
+
+    public IEnumerable<TourOffer> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<TourOffer, TInclude>> include)
+    {
+        return _context.TourOffers.Include(include);
+    }
 }

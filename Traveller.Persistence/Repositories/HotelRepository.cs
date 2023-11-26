@@ -51,4 +51,9 @@ public class HotelRepository : IHotelRepository
     {
         return Task.FromResult<IEnumerable<HotelOffer>>(_context.HotelOffers.AsNoTracking().Include(ho => ho.Agency).Where(ho => ho.ProductId == key));
     }
+
+    public IEnumerable<Hotel> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Hotel, TInclude>> include)
+    {
+        return _context.Hotels.Include(include);
+    }
 }

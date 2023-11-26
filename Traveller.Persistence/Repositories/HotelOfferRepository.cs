@@ -42,4 +42,9 @@ public class HotelOfferRepository : IHotelOfferRepository
         return await _context.HotelOffers.Include(f => f.Image)
             .FirstOrDefaultAsync(x => x.Id == key);
     }
+
+    public IEnumerable<HotelOffer> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<HotelOffer, TInclude>> include)
+    {
+        return _context.HotelOffers.Include(include);
+    }
 }

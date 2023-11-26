@@ -70,4 +70,9 @@ public class PackageRepository : IPackageRepository
     {
         return _context.Packages.Where(package => package.Id == key).Select(package => package.Name).First();
     }
+
+    public IEnumerable<Package> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Package, TInclude>> include)
+    {
+        return _context.Packages.Include(include);
+    }
 }

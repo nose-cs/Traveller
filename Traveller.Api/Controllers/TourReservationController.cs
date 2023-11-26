@@ -165,24 +165,31 @@ public class TourReservationController : ControllerBase
     [Authorize(Roles = ("MarketingEmployee, Admin"))]
     public ActionResult GetSales([FromQuery] SalesRequest request)
     {
+        var token = Request.Headers.Authorization[0]!.Substring(7);
+        var jwt = new JwtSecurityToken(token);
+        var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+        if (request.GroupBy == null)
+            request.GroupBy = GroupBy.Day;
+
         switch (request.GroupBy)
         {
             case GroupBy.Day:
-                return Ok(_repositories.TourReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                return Ok(_repositories.TourReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                                               .GroupBy(reservation => DateOnly.FromDateTime(reservation.ArrivalDate))
                                               .OrderBy(group => group.Key)
                                               .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }));
             case GroupBy.Year:
-                return Ok(_repositories.TourReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                return Ok(_repositories.TourReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                                               .GroupBy(reservation => reservation.ArrivalDate.Year)
                                               .OrderBy(group => group.Key)
                                               .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }));
             case GroupBy.Month:
-                return Ok(_repositories.TourReservations.Find().Where(reservation => DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                return Ok(_repositories.TourReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                                               .GroupBy(reservation => reservation.ArrivalDate.Year)
                                               .OrderBy(group => group.Key)
-                                              .Select(group => group.GroupBy(reservation => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(reservation.ArrivalDate.ToString("MMMM"))).OrderBy(group => group.Key))
-                                              .Select(year => year.Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }))
+                                              .Select(group => group.GroupBy(reservation => reservation.ArrivalDate.Month).OrderBy(group => group.Key))
+                                              .Select(year => year.Select(group => new SalesResponse { Group = Month.getMonth(group.Key), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }))
                                               .SelectMany(response => response));
         }
 

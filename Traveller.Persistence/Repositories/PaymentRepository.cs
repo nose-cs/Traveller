@@ -41,4 +41,9 @@ public class PaymentRepository : IPaymentRepository
     {
         return await _context.Payment.FindAsync(key);
     }
+
+    public IEnumerable<Payment> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Payment, TInclude>> include)
+    {
+        return _context.Payment.Include(include);
+    }
 }

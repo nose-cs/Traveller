@@ -42,4 +42,9 @@ public class PackageOfferRepository : IPackageOfferRepository
         return await _context.PackageOffers.Include(x => x.Image)
             .FirstOrDefaultAsync(x => x.Id == key);
     }
+
+    public IEnumerable<PackageOffer> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<PackageOffer, TInclude>> include)
+    {
+        return _context.PackageOffers.Include(include);
+    }
 }
