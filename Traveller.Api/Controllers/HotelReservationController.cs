@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Repositories;
 
 namespace Traveller.Controllers;
 
@@ -73,13 +71,13 @@ public class HotelReservationController : ControllerBase
             var dbHotelReservation = await _repositories.HotelReservations.FindById(id);
             if (dbHotelReservation is null)
                 return NotFound($"Hotel Reservation with id {id} doesn't exist");
-            int old_PaymentId = dbHotelReservation.PaymentId; //no quiero que nadie pueda modificar el PaymentId
-            double old_Price = dbHotelReservation.Price; //ni los turistas el precio
+            var oldPaymentId = dbHotelReservation.PaymentId; //no quiero que nadie pueda modificar el PaymentId
+            var oldPrice = dbHotelReservation.Price; //ni los turistas el precio
 
             ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(dbHotelReservation, reservationDto);
-            dbHotelReservation.PaymentId = old_PaymentId;
+            dbHotelReservation.PaymentId = oldPaymentId;
             if (role == "Tourist")
-                dbHotelReservation.Price = old_Price;
+                dbHotelReservation.Price = oldPrice;
 
             await _repositories.HotelReservations.SaveChangesAsync();
 
