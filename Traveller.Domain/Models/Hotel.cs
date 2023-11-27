@@ -20,4 +20,6 @@ public class Hotel : IProduct
     public Category Category { get; set; }
     
     public int Id { get; set; }
+    public int ImageId { get; set; }
+    public Image Image { get; set; } = null!;
 }

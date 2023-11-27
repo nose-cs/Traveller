@@ -34,24 +34,36 @@ public class PackageRepository : IPackageRepository
 
     public IEnumerable<Package> Find()
     {
-        return _context.Packages;
+        return _context.Packages.Include(x => x.Facilities);
     }
 
     public async ValueTask<Package?> FindById(int key)
     {
-        return await _context.Packages.FindAsync(key);
+        return await _context.Packages.Include(x => x.Facilities).FirstOrDefaultAsync(p => p.Id == key);
     }
-    
-    public async Task<IEnumerable<Tour>?>  FindTours(int key)
+
+    public async Task<IEnumerable<Tour>?> FindTours(int key)
     {
-        var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).FirstOrDefaultAsync(p => p.Id == key);
+        var package = await _context.Packages.AsNoTracking()
+            .Include(p => p.Tours).ThenInclude(t => t.Image)
+            .FirstOrDefaultAsync(p => p.Id == key);
         return package?.Tours;
     }
-    
-    public async Task<IEnumerable<Tour>?> FindFacilities(int key)
+
+    public async Task<IEnumerable<Hotel>?> FindHotels(int key)
     {
-        var package = await _context.Packages.AsNoTracking().Include(p => p.Tours).FirstOrDefaultAsync(p => p.Id == key);
-        return package?.Tours;
+        var tours = await FindTours(key);
+        
+        if (tours is null) return null;
+        
+        var toursId = tours.Select(x => x.Id).ToHashSet();
+        
+        var hotels = _context.Set<ExtendedTour>()
+            .Include(x => x.Hotels)
+            .Where(x => toursId.Contains(x.Id))
+            .SelectMany(x => x.Hotels);
+
+        return hotels;
     }
 
     public string GetName(int key)

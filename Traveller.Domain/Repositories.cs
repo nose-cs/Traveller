@@ -4,22 +4,23 @@ namespace Traveller.Domain
 {
     public class Repositories
     {
-        public IAgencyRepository Agencies;
-        public IFacilityRepository Facilties;
-        public IFlightOfferRepository FlightOffers;
-        public IFlightRepository Flights;
-        public IFlightReservationRepository FlightReservations;
-        public IHotelOfferRepository HotelOffers;
-        public IHotelRepository Hotels;
-        public IHotelReservationRepository HotelReservations;
-        public IPackageRepository Packages;
-        public IPackageReservationRepository PackageReservations;
-        public IPackageOfferRepository PackageOffers;
-        public IPaymentRepository Payment;
-        public ITourOfferRepository TourOffers;
-        public ITourRepository Tours;
-        public ITourReservationRepository TourReservations;
-        public IUserRepository Users;
+        public readonly IAgencyRepository Agencies;
+        public readonly IFacilityRepository Facilties;
+        public readonly IFlightOfferRepository FlightOffers;
+        public readonly IFlightRepository Flights;
+        public readonly IFlightReservationRepository FlightReservations;
+        public readonly IHotelOfferRepository HotelOffers;
+        public readonly IHotelRepository Hotels;
+        public readonly IHotelReservationRepository HotelReservations;
+        public readonly IPackageRepository Packages;
+        public readonly IPackageReservationRepository PackageReservations;
+        public readonly IPackageOfferRepository PackageOffers;
+        public readonly IPaymentRepository Payment;
+        public readonly ITourOfferRepository TourOffers;
+        public readonly ITourRepository Tours;
+        public readonly ITourReservationRepository TourReservations;
+        public readonly IUserRepository Users;
+        public readonly IImageRepository Images;
 
 
         public Repositories(IAgencyRepository Agencies, 
@@ -37,7 +38,7 @@ namespace Traveller.Domain
                             ITourRepository Tours,
                             ITourOfferRepository TourOffers,
                             ITourReservationRepository TourReservations,
-                            IUserRepository Users)
+                            IUserRepository Users, IImageRepository images)
         {
             this.Agencies = Agencies;
             this.Facilties = Facilties;
@@ -55,6 +56,7 @@ namespace Traveller.Domain
             this.Tours = Tours;
             this.TourReservations = TourReservations;
             this.Users = Users;
+            Images = images;
         }
     }
 }

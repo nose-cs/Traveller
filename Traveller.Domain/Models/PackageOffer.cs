@@ -16,6 +16,8 @@ public class PackageOffer : IOffer<Package, PackageReservation, PackageOffer>
     public virtual Agency Agency { get; set; } = null!;
     public int ProductId { get; set; }
     public virtual Package Product { get; set; } = null!;
+    public int ImageId { get; set; }
+    public Image Image { get; set; } = null!;
 
     public virtual ICollection<PackageReservation> Reservations { get; set; } = new List<PackageReservation>();
 }

@@ -126,15 +126,6 @@ public class TourOfferController : ControllerBase
         }
     }
 
-    [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.TourOffers.Find().ToArray().Select(offer =>
-    {
-        var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
-        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-        dto.ProductName = _repository.Tours.GetName(offer.ProductId);
-        return dto;
-    }).ToArray());
-
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
@@ -159,7 +150,7 @@ public class TourOfferController : ControllerBase
         }
     }
 
-    [HttpGet("getTourOffers")]
+    [HttpGet]
     public IActionResult GetTourOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.TourOffers.Find().Where(to =>

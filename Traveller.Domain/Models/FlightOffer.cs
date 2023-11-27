@@ -16,6 +16,8 @@ public class FlightOffer : IOffer<Flight, FlightReservation, FlightOffer>
     public virtual Agency Agency { get; set; } = null!;
     public int ProductId { get; set; }
     public virtual Flight Product { get; set; } = null!;
+    public int ImageId { get; set; }
+    public Image Image { get; set; } = null!;
 
     public virtual ICollection<FlightReservation> Reservations { get; set; } = null!;
 }

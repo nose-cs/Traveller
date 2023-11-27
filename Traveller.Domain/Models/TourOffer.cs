@@ -17,6 +17,8 @@ public class TourOffer : IOffer<Tour, TourReservation, TourOffer>
     
     public int ProductId { get; set; }
     public virtual Tour Product { get; set; } = null!;
+    public int ImageId { get; set; }
+    public Image Image { get; set; } = null!;
 
     public virtual ICollection<TourReservation> Reservations { get; set; } = null!;
 }

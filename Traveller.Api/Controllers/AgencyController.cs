@@ -1,21 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
 using Traveller.Dtos;
+using Traveller.Services;
 
 namespace Traveller.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AgencyController : ControllerBase
+[Authorize(Roles = ("TravellerAdmin"))]
+public partial class AgencyController : ControllerBase
 {
     private readonly Repositories _repositories;
 
     private readonly ILogger<HotelController> _logger;
 
-    public AgencyController(Repositories repositories, ILogger<HotelController> logger)
+    public AgencyController(Repositories repositories, ILogger<HotelController> logger, LoginService loginService)
     {
         _repositories = repositories;
         _logger = logger;
+        _loginService = loginService;
     }
     
     [HttpPost]
@@ -75,7 +79,7 @@ public class AgencyController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<FlightDto>> GetAll() => Ok(_repositories.Flights.Find().Select(FlightDto.Map));
+    public ActionResult<IEnumerable<AgencyDto>> GetAll() => Ok(_repositories.Agencies.Find().Select(AgencyDto.Map));
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
@@ -95,26 +99,5 @@ public class AgencyController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
-    }
-
-    [HttpPost]
-    public IActionResult RegisterUser(UserDto user)
-    {
-        //TODO
-        return Ok();
-    }
-    
-    [HttpGet("{id:int}/users")]
-    public IActionResult GetUsers()
-    {
-        //TODO
-        return Ok();
-    }
-    
-    [HttpGet("{idAgency:int}/users/{idUser:int}/reservations")]
-    public IActionResult GetUserReservations([FromRoute] int idAgency, [FromRoute] int idUser)
-    {
-        //TODO
-        return Ok();
     }
 }

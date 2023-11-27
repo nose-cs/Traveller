@@ -17,6 +17,8 @@ public class HotelOffer : IOffer<Hotel, HotelReservation, HotelOffer>
     
     public int ProductId { get; set; }
     public virtual Hotel Product { get; set; } = null!;
+    public int ImageId { get; set; }
+    public Image Image { get; set; } = null!;
 
     public virtual ICollection<HotelReservation> Reservations { get; set; } = null!;
 }

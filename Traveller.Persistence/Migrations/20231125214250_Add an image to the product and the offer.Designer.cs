@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Traveller.Persistence;
@@ -11,9 +12,11 @@ using Traveller.Persistence;
 namespace Traveller.Persistence.Migrations
 {
     [DbContext(typeof(TravellerContext))]
-    partial class TravellerContextModelSnapshot : ModelSnapshot
+    [Migration("20231125214250_Add an image to the product and the offer")]
+    partial class Addanimagetotheproductandtheoffer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,6 +127,9 @@ namespace Traveller.Persistence.Migrations
                     b.Property<int>("FlightNumber")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ImageId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("SourceId")
                         .HasColumnType("integer");
 
@@ -133,6 +139,8 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("Id")
                         .IsUnique();
+
+                    b.HasIndex("ImageId");
 
                     b.HasIndex("SourceId");
 
@@ -370,7 +378,7 @@ namespace Traveller.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Name")
+                    b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -390,6 +398,9 @@ namespace Traveller.Persistence.Migrations
                     b.Property<int>("Duration")
                         .HasColumnType("integer");
 
+                    b.Property<int>("ImageId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -398,6 +409,8 @@ namespace Traveller.Persistence.Migrations
 
                     b.HasIndex("Id")
                         .IsUnique();
+
+                    b.HasIndex("ImageId");
 
                     b.ToTable("Packages");
                 });
@@ -866,6 +879,12 @@ namespace Traveller.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Traveller.Domain.Models.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Traveller.Domain.Models.Place", "Source")
                         .WithMany()
                         .HasForeignKey("SourceId")
@@ -873,6 +892,8 @@ namespace Traveller.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Destination");
+
+                    b.Navigation("Image");
 
                     b.Navigation("Source");
                 });
@@ -1002,6 +1023,17 @@ namespace Traveller.Persistence.Migrations
                     b.Navigation("Payment");
 
                     b.Navigation("Tourist");
+                });
+
+            modelBuilder.Entity("Traveller.Domain.Models.Package", b =>
+                {
+                    b.HasOne("Traveller.Domain.Models.Image", "Image")
+                        .WithMany()
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("Traveller.Domain.Models.PackageFacility", b =>
