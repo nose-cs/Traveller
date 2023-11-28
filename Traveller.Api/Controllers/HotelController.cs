@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Runtime.Intrinsics;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
@@ -125,5 +126,16 @@ public class HotelController : ControllerBase
                 return dto;
             });
         return Ok(offers);
+    }
+
+    [HttpGet("getMostSolds")]
+    public IActionResult GetMostSolds()
+    {
+        return Ok(_repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer)
+                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+                                       .GroupBy(reservation => reservation.Offer.ProductId)
+                                       .OrderBy(group => -group.Count())
+                                       .Take(20)
+                                       .Join(_repositories.Hotels.Find(), group => group.Key, hotel => hotel.Id, (group, hotel) => hotel));
     }
 }
