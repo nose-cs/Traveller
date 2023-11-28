@@ -58,7 +58,7 @@ public class FileController : ControllerBase
                 return NotFound($"Image with id {id} doesn't exist");
             }
 
-            var path = _fileService.GetPath(dbImage.Name, dbImage.Id);
+            var path = _fileService.GetFilePath(dbImage.Name, dbImage.Id);
             _fileService.DeleteFile(path);
 
             await _repositories.Images.Remove(dbImage.Id);
@@ -83,7 +83,7 @@ public class FileController : ControllerBase
             {
                 return NotFound($"Image with id {id} doesn't exist");
             }
-            var path = _fileService.GetPath(dbImage.Name, dbImage.Id);
+            var path = _fileService.GetFilePath(dbImage.Name, dbImage.Id);
             var fileDto = new FileDto { Id = id, Name = dbImage.Name, FilePath = path};
             return Ok(fileDto);
         }

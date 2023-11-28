@@ -4,10 +4,10 @@ public class FileService
 {
     private const string FolderPath = @"C:\Users\anabe\OneDrive\Pictures";
     
-    public string GetPath(string fileName, int id) => Path.Combine(FolderPath, $"({id}) {fileName}");
+    public string GetFilePath(string fileName, int id) => Path.Combine(FolderPath, $"({id}) {fileName}");
     public async Task SaveFileAsync(IFormFile inputStream, string fileName, int id)
     {
-        var filePath = GetPath(fileName, id);
+        var filePath = GetFilePath(fileName, id);
         await using var fileStream = File.Create(filePath);
         await inputStream.CopyToAsync(fileStream);
     }
