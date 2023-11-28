@@ -160,8 +160,8 @@ public class HotelOfferController : ControllerBase
             && (filter.StartDate == null ||
                 ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
                                                      ho.EndDate >= filter.StartDate))
-            && (filter.AgencyId == null || ho.Agency.Id == filter.AgencyId)
-            && (filter.objectName == null || string.Equals(ho.Product.Name, filter.objectName,
+            && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId)
+            && (filter.ProductName == null || string.Equals(ho.Product.Name, filter.ProductName,
                 StringComparison.CurrentCultureIgnoreCase))).ToArray().Select(offer =>
         {
             var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);

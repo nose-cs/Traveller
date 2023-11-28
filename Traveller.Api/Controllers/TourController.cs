@@ -143,4 +143,15 @@ public class TourController : ControllerBase
             });
         return Ok(offers);
     }
+
+    [HttpGet("getMostSolds")]
+    public IActionResult GetMostSolds()
+    {
+        return Ok(_repositories.TourReservations.FindWithInclude(reservation => reservation.Offer)
+                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+                                       .GroupBy(reservation => reservation.Offer.ProductId)
+                                       .OrderBy(group => -group.Count())
+                                       .Take(20)
+                                       .Join(_repositories.Tours.Find(), group => group.Key, model => model.Id, (group, model) => model));
+    }
 }
