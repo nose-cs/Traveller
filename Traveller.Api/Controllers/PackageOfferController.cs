@@ -199,9 +199,9 @@ public class PackageOfferController : ControllerBase
     {
         return Ok(_repository.PackageReservations.FindWithInclude(reservation => reservation.Offer)
                                        .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
-                                       .GroupBy(reservation => reservation.Offer.ProductId)
+                                       .GroupBy(reservation => reservation.OfferId)
                                        .OrderBy(group => -group.Count())
                                        .Take(20)
-                                       .Join(_repository.PackageOffers.Find(), group => group.Key, model => model.Id, (group, model) => model));
+                                       .Select(group => OfferDto.Map<Package, PackageReservation, PackageOffer>(group.First().Offer)));
     }
 }
