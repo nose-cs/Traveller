@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
 
@@ -191,5 +192,16 @@ public class PackageOfferController : ControllerBase
                         Total = group.Count(),
                         MoneyAmount = group.Sum(reservation => reservation.Price)
                     }));
+    }
+
+    [HttpGet("getMostSolds")]
+    public IActionResult GetMostSolds()
+    {
+        return Ok(_repository.PackageReservations.FindWithInclude(reservation => reservation.Offer)
+                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+                                       .GroupBy(reservation => reservation.Offer.ProductId)
+                                       .OrderBy(group => -group.Count())
+                                       .Take(20)
+                                       .Join(_repository.PackageOffers.Find(), group => group.Key, model => model.Id, (group, model) => model));
     }
 }
