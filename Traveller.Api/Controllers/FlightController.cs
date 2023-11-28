@@ -130,6 +130,6 @@ public class FlightController : ControllerBase
                                        .GroupBy(reservation => reservation.Offer.ProductId)
                                        .OrderBy(group => -group.Count())
                                        .Take(20)
-                                       .Join(_repositories.Flights.Find(), group => group.Key, model => model.Id, (group, model) => model));
+                                       .Join(_repositories.Flights.Find(), group => group.Key, model => model.Id, (group, model) => FlightDto.Map(model)));
     }
 }
