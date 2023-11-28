@@ -61,7 +61,7 @@ public class FileController : ControllerBase
                 return NotFound($"Image with id {id} doesn't exist");
             }
 
-            var path = _fileService.GetPath(dbImage.Name, dbImage.Id);
+            var path = _fileService.GetFilePath(dbImage.Name, dbImage.Id);
             _fileService.DeleteFile(path);
 
             await _repositories.Images.Remove(dbImage.Id);

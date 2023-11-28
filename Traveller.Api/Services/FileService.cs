@@ -9,7 +9,7 @@ public class FileService
     public string GetRelativePath(string fileName, int id) => Path.Combine(RelativeFolderPath, $"({id}){fileName}");
     public async Task SaveFileAsync(IFormFile inputStream, string fileName, int id)
     {
-        var filePath = GetPath(fileName, id);
+        var filePath = GetFilePath(fileName, id);
         await using var fileStream = File.Create(filePath);
         await inputStream.CopyToAsync(fileStream);
     }
