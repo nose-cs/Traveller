@@ -121,4 +121,15 @@ public class FlightController : ControllerBase
             });
         return Ok(offers);
     }
+
+    [HttpGet("getMostSolds")]
+    public IActionResult GetMostSolds()
+    {
+        return Ok(_repositories.FlightReservations.FindWithInclude(reservation => reservation.Offer)
+                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+                                       .GroupBy(reservation => reservation.Offer.ProductId)
+                                       .OrderBy(group => -group.Count())
+                                       .Take(20)
+                                       .Join(_repositories.Flights.Find(), group => group.Key, model => model.Id, (group, model) => model));
+    }
 }
