@@ -161,8 +161,8 @@ public class HotelOfferController : ControllerBase
             && (filter.Title == null || ho.Title.ToLower().Contains(filter.Title.ToLower())) 
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
-            && (filter.StartDate == null ||
-                ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
+             && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
+            && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
                                                      ho.EndDate >= filter.StartDate))
             && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId)
             && (filter.ProductName == null || string.Equals(ho.Product.Name, filter.ProductName,
