@@ -75,8 +75,10 @@ public partial class AgencyController
     }
     
     [HttpGet("{id:int}/employees")]
+    [AllowAnonymous]
     public IActionResult GetUsers(int id)
     {
+        //TODO authorize
         return Ok(_repositories.Users.FindAgencyUsers().Where(u => u.AgencyId == id));
     }
     

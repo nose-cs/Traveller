@@ -37,6 +37,11 @@ public class LoginService
         {
             throw new BadRequestException($"Email {userDto.Email} already exists");
         }
+        
+        if (userDto.Password is null)
+        {
+            throw new BadRequestException("Password can't be null");
+        }
 
         user = UserDto.Map(userDto, _passwordService.EncryptPassword(userDto.Password), agencyId);
 
