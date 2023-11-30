@@ -5,6 +5,7 @@ public class FileService
     private const string FolderPath = @"C:\Users\anabe\OneDrive\Pictures";
     
     public string GetFilePath(string fileName, int id) => Path.Combine(FolderPath, $"({id}) {fileName}");
+
     public async Task SaveFileAsync(IFormFile inputStream, string fileName, int id)
     {
         var filePath = GetFilePath(fileName, id);
