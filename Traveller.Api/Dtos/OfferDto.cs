@@ -16,6 +16,7 @@ namespace Traveller.Dtos
         public int? AgencyId { get; set; }
         public string? ProductName { get; set; }
         public int ProductId { get; set; }
+        public int ImageId { get; set; }
 
         public static void Map<TProduct, TReservation, TOffer>(TOffer offer, OfferDto offerDto) where TProduct : class, IProduct, new()
                                                                                                                  where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
@@ -28,6 +29,7 @@ namespace Traveller.Dtos
             offer.StartDate = offerDto.StartDate;
             offer.EndDate = offerDto.EndDate;
             offer.ProductId = offerDto.ProductId;
+            offer.ImageId = offerDto.ImageId;
 
             if (offerDto.Id != null)
                 offer.Id = (int)offerDto.Id;
@@ -46,7 +48,8 @@ namespace Traveller.Dtos
                 StartDate = offer.StartDate,
                 EndDate = offer.EndDate,
                 AgencyId = offer.AgencyId,
-                ProductId = offer.ProductId
+                ProductId = offer.ProductId,
+                ImageId = offer.ImageId
             };
         }
 
