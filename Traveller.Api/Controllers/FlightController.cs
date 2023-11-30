@@ -102,8 +102,24 @@ public class FlightController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
-    [HttpGet("{id:int}/offers")]
+
+    [HttpGet("Get")]
+    public ActionResult<IEnumerable<FlightDto>> Get([FromQuery] FlightFilterDTO filter) =>
+        Ok(_repositories.Flights.Find().Where(fl =>
+            
+                (filter.FlightNumber is null || filter.FlightNumber == fl.FlightNumber)
+                && (filter.Airline is null || fl.Airline.ToLower().Contains(filter.Airline.ToLower()))
+                && (filter.Source is null || fl.Source.Address.Contains(filter.Source)
+                                          || fl.Source.City.Contains(filter.Source) 
+                                          || fl.Source.Country.Contains(filter.Source))
+                && (filter.Destination is null || fl.Destination.Address.Contains(filter.Destination)
+                                               || fl.Destination.Country.Contains(filter.Destination) 
+                                               || fl.Destination.City.Contains(filter.Destination)))
+            .Select(FlightDto.Map));
+            
+
+
+[HttpGet("{id:int}/offers")]
     public IActionResult GetFlightOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
     {
         var offers = _repositories.FlightOffers.Find().Where(
