@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
@@ -9,11 +10,12 @@ namespace Traveller.Controllers;
 
 public partial class AgencyController
 {
-    
+
     private readonly LoginService _loginService;
-    
+
     [HttpPost("{id:int}/register")]
-    public async Task<IActionResult> RegisterUser(UserDto userDto, int id)
+    [AllowAnonymous]
+    public async Task<IActionResult> RegisterUser([FromBody]UserDto userDto, [FromRoute]int id)
     {
         var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
@@ -75,8 +77,7 @@ public partial class AgencyController
     [HttpGet("{id:int}/employees")]
     public IActionResult GetUsers(int id)
     {
-        //TODO
-        return Ok();
+        return Ok(_repositories.Users.FindAgencyUsers().Where(u => u.AgencyId == id));
     }
     
     [HttpGet("{idAgency:int}/employees/{idUser:int}/reservations")]
