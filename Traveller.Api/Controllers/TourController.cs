@@ -152,6 +152,6 @@ public class TourController : ControllerBase
                                        .GroupBy(reservation => reservation.Offer.ProductId)
                                        .OrderBy(group => -group.Count())
                                        .Take(20)
-                                       .Join(_repositories.Tours.Find(), group => group.Key, model => model.Id, (group, model) => model));
+                                       .Join(_repositories.Tours.Find(), group => group.Key, model => model.Id, (group, model) => TourDto.Map(model)));
     }
 }

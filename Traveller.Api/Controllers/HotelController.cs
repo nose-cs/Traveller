@@ -136,6 +136,6 @@ public class HotelController : ControllerBase
                                        .GroupBy(reservation => reservation.Offer.ProductId)
                                        .OrderBy(group => -group.Count())
                                        .Take(20)
-                                       .Join(_repositories.Hotels.Find(), group => group.Key, hotel => hotel.Id, (group, hotel) => hotel));
+                                       .Join(_repositories.Hotels.Find(), group => group.Key, hotel => hotel.Id, (group, hotel) => HotelDto.Map(hotel)));
     }
 }
