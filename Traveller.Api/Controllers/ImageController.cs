@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
@@ -24,6 +25,7 @@ public class FileController : ControllerBase
     }
     
     [HttpPost]
+    [Authorize(Roles = ("MarketingEmployee, Agent, Admin"))]
     public async Task<IActionResult> UploadFile(IFormFile? file)
     {
         try
@@ -48,6 +50,7 @@ public class FileController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = ("MarketingEmployee, Agent, Admin"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
         try
@@ -58,7 +61,7 @@ public class FileController : ControllerBase
                 return NotFound($"Image with id {id} doesn't exist");
             }
 
-            var path = _fileService.GetFilePath(dbImage.Name, dbImage.Id);
+            var path = _fileService.GetPath(dbImage.Name, dbImage.Id);
             _fileService.DeleteFile(path);
 
             await _repositories.Images.Remove(dbImage.Id);
@@ -83,7 +86,7 @@ public class FileController : ControllerBase
             {
                 return NotFound($"Image with id {id} doesn't exist");
             }
-            var path = _fileService.GetFilePath(dbImage.Name, dbImage.Id);
+            var path = _fileService.GetRelativePath(dbImage.Name, dbImage.Id);
             var fileDto = new FileDto { Id = id, Name = dbImage.Name, FilePath = path};
             return Ok(fileDto);
         }
