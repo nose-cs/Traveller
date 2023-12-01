@@ -41,6 +41,7 @@ builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<LoginService>();
 builder.Services.AddScoped<FileService>();
+builder.Services.AddScoped<ExporterService>();
 
 builder.Services.AddControllers();
 

@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
+using Traveller.Services;
 
 namespace Traveller.Controllers;
 
@@ -13,13 +13,15 @@ namespace Traveller.Controllers;
 public class HotelReservationController : ControllerBase
 {
     private readonly Repositories _repositories;
+    private readonly ExporterService _exporterService;
 
     private readonly ILogger<HotelReservationController> _logger;
 
-    public HotelReservationController(ILogger<HotelReservationController> logger, Repositories repositories)
+    public HotelReservationController(ILogger<HotelReservationController> logger, Repositories repositories, ExporterService exporterService)
     {
         _logger = logger;
         _repositories = repositories;
+        _exporterService = exporterService;
     }
 
     [HttpPost]
@@ -170,7 +172,7 @@ public class HotelReservationController : ControllerBase
 
     [HttpGet("getSales")]
     [Authorize(Roles = ("MarketingEmployee, Admin"))]
-    public ActionResult GetSales([FromQuery] SalesRequest request)
+    public ActionResult GetSales([FromQuery] SalesRequest request, [FromQuery] ExportType? export)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
@@ -179,27 +181,44 @@ public class HotelReservationController : ControllerBase
         if (request.GroupBy == null)
             request.GroupBy = GroupBy.Day;
 
+        IEnumerable<SalesResponse> response;
+
         switch (request.GroupBy)
         {
             case GroupBy.Day:
-                return Ok(_repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                response = _repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                                               .GroupBy(reservation => DateOnly.FromDateTime(reservation.ArrivalDate))
                                               .OrderBy(group => group.Key)
-                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }));
+                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) });
+                break;
             case GroupBy.Year:
-                return Ok(_repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                response = _repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                                               .GroupBy(reservation => reservation.ArrivalDate.Year)
                                               .OrderBy(group => group.Key)
-                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }));
+                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) });
+                break;
             case GroupBy.Month:
-                return Ok(_repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                response = _repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                                               .GroupBy(reservation => reservation.ArrivalDate.Year)
                                               .OrderBy(group => group.Key)
                                               .Select(group => group.GroupBy(reservation => reservation.ArrivalDate.Month).OrderBy(group => group.Key))
                                               .Select(year => year.Select(group => new SalesResponse { Group = Month.getMonth(group.Key), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }))
-                                              .SelectMany(response => response));
+                                              .SelectMany(response => response);
+                break;
+            default:
+                return BadRequest("The Group is not supported");
         }
 
-        return BadRequest("The Group is not supported");
+        if (export.HasValue)
+        {
+           return Ok(_exporterService.getDoc("Hotel Reservation Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
+                                                      new string[3] { request.GroupBy.ToString()!, "Total Sales", "Amount (USD)" },
+                                                      new float[3] { 30, 15, 15 },
+                                                      response.SelectMany(sales => new object[] { sales.Group, sales.Total, sales.MoneyAmount }),
+                                                      export.Value
+                                                      ));
+        }
+
+        return Ok(response);
     }
 }
