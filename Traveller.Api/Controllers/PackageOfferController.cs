@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
 
@@ -128,15 +129,6 @@ public class PackageOfferController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.PackageOffers.Find().ToArray().Select(offer =>
-    {
-        var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
-        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-        dto.ProductName = _repository.Packages.GetName(offer.ProductId);
-        return dto;
-    }).ToArray());
-
-    [HttpGet("filter")]
     public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.PackageOffers.Find().Where(pa =>
@@ -198,5 +190,16 @@ public class PackageOfferController : ControllerBase
                         Total = group.Count(),
                         MoneyAmount = group.Sum(reservation => reservation.Price)
                     }));
+    }
+
+    [HttpGet("getMostSolds")]
+    public IActionResult GetMostSolds()
+    {
+        return Ok(_repository.PackageReservations.FindWithInclude(reservation => reservation.Offer)
+                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+                                       .GroupBy(reservation => reservation.OfferId)
+                                       .OrderBy(group => -group.Count())
+                                       .Take(20)
+                                       .Select(group => OfferDto.Map<Package, PackageReservation, PackageOffer>(group.First().Offer)));
     }
 }

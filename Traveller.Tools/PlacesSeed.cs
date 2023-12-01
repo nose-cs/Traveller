@@ -10,10 +10,7 @@ public static partial class Program
     private static async Task AddPlacesAsync()
     {
         _places = GeneratePlaces();
-        foreach (var place in _places)
-        {
-            await _appDbContext.AddAsync(place);
-        }
+        await _appDbContext.AddRangeAsync(_places);
     }
 
     private static IEnumerable<Place> GeneratePlaces()

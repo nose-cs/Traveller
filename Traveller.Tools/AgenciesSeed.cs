@@ -10,10 +10,7 @@ public static partial class Program
     private static async Task AddAgenciesAsync()
     {
         _agencies = GenerateAgencies();
-        foreach (var agency in _agencies)
-        {
-            await _appDbContext.AddAsync(agency);
-        }
+        await _appDbContext.AddRangeAsync(_agencies);
     }
 
     private static IEnumerable<Agency> GenerateAgencies()

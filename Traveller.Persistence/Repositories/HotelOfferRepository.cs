@@ -34,12 +34,13 @@ public class HotelOfferRepository : IHotelOfferRepository
 
     public IEnumerable<HotelOffer> Find()
     {
-        return _context.HotelOffers;
+        return _context.HotelOffers.Include(x => x.Image);
     }
 
     public async ValueTask<HotelOffer?> FindById(int key)
     {
-        return await _context.HotelOffers.FindAsync(key);
+        return await _context.HotelOffers.Include(f => f.Image)
+            .FirstOrDefaultAsync(x => x.Id == key);
     }
 
     public IEnumerable<HotelOffer> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<HotelOffer, TInclude>> include)

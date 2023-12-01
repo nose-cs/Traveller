@@ -36,7 +36,12 @@ public class UserRepository : IUserRepository
     {
         return _context.Users;
     }
-
+    
+    public IQueryable<AgencyUser> FindAgencyUsers()
+    {
+        return _context.AgencyUsers;
+    }
+    
     public async ValueTask<User?> FindByEmail(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);

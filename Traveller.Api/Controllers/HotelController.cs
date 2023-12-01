@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Runtime.Intrinsics;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
@@ -80,9 +81,6 @@ public class HotelController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_repositories.Hotels.Find().Select(HotelDto.Map));
-
-    [HttpGet("Get")]
     public ActionResult<IEnumerable<HotelDto>> Get([FromQuery] HotelFilterDTO filter) =>
         Ok(_repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
                                                     (filter.Name is null || ho.Name.ToLower().Contains(filter.Name.ToLower())) &&
@@ -128,5 +126,16 @@ public class HotelController : ControllerBase
                 return dto;
             });
         return Ok(offers);
+    }
+
+    [HttpGet("getMostSolds")]
+    public IActionResult GetMostSolds()
+    {
+        return Ok(_repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer)
+                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+                                       .GroupBy(reservation => reservation.Offer.ProductId)
+                                       .OrderBy(group => -group.Count())
+                                       .Take(20)
+                                       .Join(_repositories.Hotels.Find(), group => group.Key, hotel => hotel.Id, (group, hotel) => HotelDto.Map(hotel)));
     }
 }

@@ -10,13 +10,10 @@ public static partial class Program
     private static async Task AddHotelsAsync()
     {
         _hotels = GenerateHotels();
-        foreach (var hotel in _hotels)
-        {
-            await _appDbContext.AddAsync(hotel);
-        }
+        await _appDbContext.AddRangeAsync(_hotels);
     }
 
-    private static List<string> HotelNames = new()
+    private static readonly List<string> HotelNames = new()
     {
         "The Grand Hotel", "The Ritz Carlton", "The Plaza Hotel", "The Waldorf Astoria", "The Four Seasons",
         "The Beverly Wilshire", "The Ritz-Carlton", "The Peninsula", "The Savoy", "The Mandarin Oriental",
@@ -29,7 +26,8 @@ public static partial class Program
         {
             Name = HotelNames[i % HotelNames.Count],
             AddressId = Random.Next(1, PlacesCount),
-            Category = (Category)Random.Next(1, 5)
+            Category = (Category)Random.Next(1, 5),
+            ImageId = 1
         });
     }
 }

@@ -10,10 +10,7 @@ public static partial class Program
     private static async Task AddTourOffersAsync()
     {
         _tourOffers = GenerateTourOffers();
-        foreach (var tourOffer in _tourOffers)
-        {
-            await _appDbContext.AddAsync(tourOffer);
-        }
+        await _appDbContext.AddRangeAsync(_tourOffers);
     }
 
     private static readonly List<string> Adjectives = new()
@@ -40,11 +37,12 @@ public static partial class Program
                     $"{Verb[Random.Next(0, Verb.Count)]} {Adjectives[Random.Next(0, Adjectives.Count)]} tour to {destinationPlace.City}, {destinationPlace.Country}",
                 Description = "",
                 Price = Random.Next(100, 1000),
-                Capacity = Random.Next(1, 10),
+                Capacity = (uint)Random.Next(1, 1000),
                 StartDate = date.AddDays(Random.Next(1, 10)),
                 EndDate = date.AddDays(i + Random.Next(10, 1000)),
                 AgencyId = i % AgenciesCount + 1,
-                ProductId = i % ToursCount + 1
+                ProductId = i % ToursCount + 1,
+                ImageId = 1
             };
         });
     }

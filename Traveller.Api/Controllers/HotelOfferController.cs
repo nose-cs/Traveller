@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
@@ -127,17 +126,6 @@ public class HotelOfferController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-
-    [AllowAnonymous]
-    [HttpGet]
-    public ActionResult<IEnumerable<OfferDto>> GetAll() => Ok(_repository.HotelOffers.Find().ToArray().Select(offer =>
-    {
-        var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
-        dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-        dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
-        return dto;
-    }).ToArray());
-
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
@@ -162,16 +150,17 @@ public class HotelOfferController : ControllerBase
         }
     }
 
-    [HttpGet("GetHotelsWithFilter")]
+    [HttpGet]
     public IActionResult GetHotelOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.HotelOffers.Find().Where(ho =>
-             (filter.ProductId == null || ho.ProductId == filter.ProductId)   
+            (filter.ProductId == null || ho.ProductId == filter.ProductId)
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
              && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
             && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
                                                      ho.EndDate >= filter.StartDate))
+            && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId)
              && (filter.ProductName == null || ho.Product.Name.ToLower().Contains(filter.ProductName.ToLower()))).ToArray().Select(offer =>
         {
             var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);

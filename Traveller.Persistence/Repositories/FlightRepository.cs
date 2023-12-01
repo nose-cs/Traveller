@@ -34,12 +34,16 @@ public class FlightRepository : IFlightRepository
 
     public IEnumerable<Flight> Find()
     {
-        return _context.Flights.Include(f => f.Source).Include(f => f.Destination).AsNoTracking();
+        return _context.Flights.AsNoTracking()
+            .Include(f => f.Source)
+            .Include(f => f.Destination);
     }
 
     public async ValueTask<Flight?> FindById(int key)
     {
-        return await _context.Flights.AsNoTracking().Include(f => f.Source).Include(f => f.Destination)
+        return await _context.Flights.AsNoTracking()
+            .Include(f => f.Source)
+            .Include(f => f.Destination)
             .FirstOrDefaultAsync(f => f.Id == key);
     }
 

@@ -34,13 +34,13 @@ public class TourRepository : ITourRepository
 
     public IEnumerable<Tour> Find()
     {
-        return _context.Tours.Include(t=> t.DestinationPlace).Include(t=> t.SourcePlace).AsNoTracking();
+        return _context.Tours.Include(t=> t.DestinationPlace).Include(t=> t.SourcePlace).Include(t => t.Image).AsNoTracking();
     }
 
     public async ValueTask<Tour?> FindById(int key)
     {
         return await _context.Tours.AsNoTracking().Include(t => t.DestinationPlace).Include(t => t.SourcePlace)
-            .FirstOrDefaultAsync(t => t.Id == key);
+            .Include(t => t.Image).FirstOrDefaultAsync(t => t.Id == key);
     }
 
     public async Task<IEnumerable<Package>?> FindPackages(int key)

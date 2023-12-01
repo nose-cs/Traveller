@@ -7,8 +7,8 @@ public class UserDto
 {
     public string Name { get; set; } = null!;
     [EmailAddress] public string Email { get; set; } = null!;
-    public string Password { get; set; } = null!; 
-    public string Nationality { get; set; } = null!;
+    public string? Password { get; set; }
+    public string? Nationality { get; set; }
     public Role Role { get; set; } = Role.Tourist;
 
     public static User Map(UserDto userDto, string encryptedPassword, int agencyId)
@@ -20,7 +20,7 @@ public class UserDto
                 Name = userDto.Name,
                 Email = userDto.Email,
                 Password = encryptedPassword,
-                Country = userDto.Nationality
+                Country = userDto.Nationality!
             },
             Role.MarketingEmployee => new AgencyUser { Role = userDto.Role, Name = userDto.Name, Email = userDto.Email, Password = encryptedPassword, AgencyId = agencyId },
             Role.Agent => new AgencyUser { Role = userDto.Role, Name = userDto.Name, Email = userDto.Email , Password = encryptedPassword, AgencyId = agencyId },

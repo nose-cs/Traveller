@@ -26,6 +26,8 @@ public class Tour : IProduct
 
     public virtual ICollection<Package> Packages { get; set; } = new List<Package>();
     public int Id { get; set; }
+    public int ImageId { get; set; }
+    public Image Image { get; set; } = null!;
 }
 
 public class ExtendedTour : Tour

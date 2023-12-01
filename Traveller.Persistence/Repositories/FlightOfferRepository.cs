@@ -20,10 +20,10 @@ public class FlightOfferRepository : IFlightOfferRepository
 
     public async Task Remove(int key)
     {
-        var Offer = await FindById(key);
-        if (Offer is not null)
+        var offer = await FindById(key);
+        if (offer is not null)
         {
-            _context.Remove(Offer);
+            _context.Remove(offer);
         }
     }
 
@@ -34,12 +34,12 @@ public class FlightOfferRepository : IFlightOfferRepository
 
     public IEnumerable<FlightOffer> Find()
     {
-        return _context.FlightOffers;
+        return _context.FlightOffers.Include(x => x.Image);
     }
 
     public async ValueTask<FlightOffer?> FindById(int key)
     {
-        return await _context.FlightOffers.FindAsync(key);
+        return await _context.FlightOffers.Include(x => x.Image).FirstOrDefaultAsync(x => x.Id == key);
     }
 
     public IEnumerable<FlightOffer> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<FlightOffer, TInclude>> include)
