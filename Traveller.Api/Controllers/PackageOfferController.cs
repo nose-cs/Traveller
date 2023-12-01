@@ -141,9 +141,7 @@ public class PackageOfferController : ControllerBase
                 && (filter.StartDate == null || pa.StartDate <= filter.StartDate
                     && (pa.EndDate == null || pa.EndDate >= filter.StartDate))
                 && (filter.AgencyId == null || pa.Agency.Id == filter.AgencyId)
-                && (filter.Facilities == null || filter.Facilities.All(fa =>
-                    pa.Product.Facilities.Any(t => t.Facility == fa))))
-            .ToArray().Select(offer =>
+               ).ToArray().Select(offer =>
             {
                 var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
                 dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
