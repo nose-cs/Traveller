@@ -14,9 +14,7 @@ public class TourConfiguration : EntityConfiguration<Tour>
         builder.Property(t => t.Duration).IsRequired();
         builder.Property(t => t.SourceTime).IsRequired();
         builder.Property(t => t.DestinationTime).IsRequired();
-        builder
-            .UseTphMappingStrategy()
-            .HasDiscriminator();
+        builder.UseTphMappingStrategy().HasDiscriminator();
     }
 }
 
