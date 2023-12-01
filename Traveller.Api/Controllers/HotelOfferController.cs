@@ -157,12 +157,11 @@ public class HotelOfferController : ControllerBase
             (filter.ProductId == null || ho.ProductId == filter.ProductId)
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
-            && (filter.StartDate == null ||
-                ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
+             && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
+            && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
                                                      ho.EndDate >= filter.StartDate))
             && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId)
-            && (filter.ProductName == null || string.Equals(ho.Product.Name, filter.ProductName,
-                StringComparison.CurrentCultureIgnoreCase))).ToArray().Select(offer =>
+             && (filter.ProductName == null || ho.Product.Name.ToLower().Contains(filter.ProductName.ToLower()))).ToArray().Select(offer =>
         {
             var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
             dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);

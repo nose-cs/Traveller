@@ -83,8 +83,8 @@ public class HotelController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<HotelDto>> Get([FromQuery] HotelFilterDTO filter) =>
         Ok(_repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
-                                                    (filter.Name is null || ho.Name.Contains(filter.Name)) &&
-                                                    (filter.Address is null) &&
+                                                    (filter.Name is null || ho.Name.ToLower().Contains(filter.Name.ToLower())) &&
+                                                    (filter.Address is null || ho.Address.Address.ToLower().Contains(filter.Address.ToLower())) &&
                                                     (filter.ProductId is null || ho.Id == filter.ProductId)))
             .Select(HotelDto.Map));
 

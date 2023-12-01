@@ -9,7 +9,8 @@ public class OfferFilterDTO
     public double? StartPrice { get; set; }
     public double? EndPrice { get; set; }
     public int? AgencyId { get; set; }
+    public int? Capacity { get; set; }
+
     public string? ProductName { get; set; }
     public string? AgencyName { get; set; }
-    public ICollection<Facility>? Facilities { get; set; }
 }
