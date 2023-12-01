@@ -8,7 +8,7 @@ namespace Traveller.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = ("TravellerAdmin"))]
+[Authorize(Roles = ("AgencyAdmin"))]
 public partial class AgencyController : ControllerBase
 {
     private readonly Repositories _repositories;
@@ -49,6 +49,8 @@ public partial class AgencyController : ControllerBase
             {
                 return NotFound($"Agency with id {id} doesn't exist");
             }
+            
+            //TODO 
 
             await _repositories.Agencies.SaveChangesAsync();
 

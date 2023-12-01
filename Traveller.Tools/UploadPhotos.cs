@@ -17,5 +17,5 @@ public static partial class Program
         await _appDbContext.AddRangeAsync(HotelsPhotos);
     }
 
-    private static string[] GetPhotosNames() => Directory.GetFiles($"{ImagesPath}", "*.png").Select(x => x[ImagesPath.Length ..]).ToArray();
+    private static string[] GetPhotosNames() => Directory.GetFiles($"{ImagesPath}", "*.png").Select(x => x[(ImagesPath.Length + 5) ..]).ToArray();
 }
