@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
+using Traveller.Services;
 
 namespace Traveller.Controllers;
 
@@ -12,13 +13,15 @@ namespace Traveller.Controllers;
 public class FlightOfferController : ControllerBase
 {
     private readonly Repositories _repository;
+    private readonly ExporterService _exporterService;
 
     private readonly ILogger<FlightOfferController> _logger;
 
-    public FlightOfferController(ILogger<FlightOfferController> logger, Repositories repository)
+    public FlightOfferController(ILogger<FlightOfferController> logger, Repositories repository, ExporterService exporterService)
     {
         _logger = logger;
         _repository = repository;
+        _exporterService = exporterService;
     }
 
     [HttpPost]
@@ -174,13 +177,13 @@ public class FlightOfferController : ControllerBase
 
     [HttpGet("getSales")]
     [Authorize(Roles = ("MarketingEmployee, Admin"))]
-    public ActionResult GetSales([FromQuery] SalesRequest request)
+    public ActionResult GetSales([FromQuery] SalesRequest request, [FromQuery] ExportType? export)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        return Ok(_repository.FlightReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+        var response = _repository.FlightReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                     .GroupBy(reservation => reservation.OfferId)
                     .OrderBy(group => group.Key)
                     .Select(group => new SalesResponse
@@ -189,6 +192,18 @@ public class FlightOfferController : ControllerBase
                         Description = group.First().Offer.Title,
                         Total = group.Count(),
                         MoneyAmount = group.Sum(reservation => reservation.Price)
-                    }));
+                    });
+
+        if (export.HasValue)
+        {
+            return Ok(_exporterService.getDoc("Flight Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
+                                                       new string[4] { "Id", "Title", "Total Sales", "Amount (USD)" },
+                                                       new float[4] { 15, 50, 15, 15 },
+                                                       response.SelectMany(sales => new object[] { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
+                                                       export.Value
+                                                       ));
+        }
+
+        return Ok(response);
     }
 }
