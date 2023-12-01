@@ -5,6 +5,7 @@ using Traveller.Domain;
 using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
+using Traveller.Services;
 
 namespace Traveller.Controllers;
 
@@ -13,13 +14,15 @@ namespace Traveller.Controllers;
 public class PackageOfferController : ControllerBase
 {
     private readonly Repositories _repository;
+    private readonly ExporterService _exporterService;
 
     private readonly ILogger<TourOfferController> _logger;
 
-    public PackageOfferController(ILogger<TourOfferController> logger, Repositories repository)
+    public PackageOfferController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService)
     {
         _logger = logger;
         _repository = repository;
+        _exporterService = exporterService;
     }
 
     [HttpPost]
@@ -176,13 +179,13 @@ public class PackageOfferController : ControllerBase
 
     [HttpGet("getSales")]
     [Authorize(Roles = ("MarketingEmployee, Admin"))]
-    public ActionResult GetSales([FromQuery] SalesRequest request)
+    public ActionResult GetSales([FromQuery] SalesRequest request, [FromQuery] ExportType? export)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        return Ok(_repository.PackageReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+        var response = _repository.PackageReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
                     .GroupBy(reservation => reservation.OfferId)
                     .OrderBy(group => group.Key)
                     .Select(group => new SalesResponse
@@ -191,7 +194,19 @@ public class PackageOfferController : ControllerBase
                         Description = group.First().Offer.Title,
                         Total = group.Count(),
                         MoneyAmount = group.Sum(reservation => reservation.Price)
-                    }));
+                    });
+
+        if (export.HasValue)
+        {
+            return Ok(_exporterService.getDoc("Package Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
+                                                       new string[4] { "Id", "Title", "Total Sales", "Amount (USD)" },
+                                                       new float[4] { 15, 50, 15, 15 },
+                                                       response.SelectMany(sales => new object[] { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
+                                                       export.Value
+                                                       ));
+        }
+
+        return Ok(response);
     }
 
     [HttpGet("getMostSolds")]

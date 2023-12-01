@@ -21,6 +21,7 @@
 
 
     <ItemGroup>
+      <ProjectReference Include="..\Traveller.Export\Traveller.Export.csproj" />
       <ProjectReference Include="..\Traveller.Persistence\Traveller.Persistence.csproj" />
     </ItemGroup>
 
