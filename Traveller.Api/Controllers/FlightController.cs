@@ -80,9 +80,6 @@ public class FlightController : ControllerBase
         }
     }
 
-    [HttpGet]
-    public ActionResult<IEnumerable<FlightDto>> GetAll() => Ok(_repositories.Flights.Find().Select(FlightDto.Map));
-
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
@@ -103,18 +100,18 @@ public class FlightController : ControllerBase
         }
     }
 
-    [HttpGet("Get")]
+    [HttpGet]
     public ActionResult<IEnumerable<FlightDto>> Get([FromQuery] FlightFilterDTO filter) =>
         Ok(_repositories.Flights.Find().Where(fl =>
-            
-                (filter.FlightNumber is null || filter.FlightNumber == fl.FlightNumber)
+                   (filter.Id is null || fl.Id == filter.Id)
+                && (filter.FlightNumber is null || fl.FlightNumber.ToString().Contains(filter.FlightNumber.ToString()!))
                 && (filter.Airline is null || fl.Airline.ToLower().Contains(filter.Airline.ToLower()))
-                && (filter.Source is null || fl.Source.Address.Contains(filter.Source)
-                                          || fl.Source.City.Contains(filter.Source) 
-                                          || fl.Source.Country.Contains(filter.Source))
-                && (filter.Destination is null || fl.Destination.Address.Contains(filter.Destination)
-                                               || fl.Destination.Country.Contains(filter.Destination) 
-                                               || fl.Destination.City.Contains(filter.Destination)))
+                && (filter.Source is null || fl.Source.Address.ToLower().Contains(filter.Source.ToLower())
+                                          || fl.Source.City.ToLower().Contains(filter.Source.ToLower()) 
+                                          || fl.Source.Country.ToLower().Contains(filter.Source.ToLower()))
+                && (filter.Destination is null || fl.Destination.Address.ToLower().Contains(filter.Destination.ToLower())
+                                               || fl.Destination.Country.ToLower().Contains(filter.Destination.ToLower()) 
+                                               || fl.Destination.City.ToLower().Contains(filter.Destination.ToLower())))
             .Select(FlightDto.Map));
             
 

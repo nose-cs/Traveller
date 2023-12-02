@@ -86,15 +86,15 @@ public class TourController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<TourDto>> GetToursWithFilter([FromQuery] TourFilterDTO filter)
         => Ok(_repositories.Tours.Find().Where(fl =>
-
-                (filter.Duration is null || filter.Duration == fl.Duration)
+                   (filter.Id is null || filter.Id == fl.Id)
+                && (filter.Duration is null || filter.Duration == fl.Duration)
                 && (filter.StartDay is null || fl.SourceDay == filter.StartDay)
-                && (filter.Source is null || fl.SourcePlace.Address.Contains(filter.Source)
-                                          || fl.SourcePlace.City.Contains(filter.Source)
-                                          || fl.SourcePlace.Country.Contains(filter.Source))
-                && (filter.Destination is null || fl.DestinationPlace.Address.Contains(filter.Destination)
-                                               || fl.DestinationPlace.Country.Contains(filter.Destination)
-                                               || fl.DestinationPlace.City.Contains(filter.Destination)))
+                && (filter.Source is null || fl.SourcePlace.Address.ToLower().Contains(filter.Source.ToLower())
+                                          || fl.SourcePlace.City.ToLower().Contains(filter.Source.ToLower())
+                                          || fl.SourcePlace.Country.ToLower().Contains(filter.Source.ToLower()))
+                && (filter.Destination is null || fl.DestinationPlace.Address.ToLower().Contains(filter.Destination.ToLower())
+                                               || fl.DestinationPlace.Country.ToLower().Contains(filter.Destination.ToLower())
+                                               || fl.DestinationPlace.City.ToLower().Contains(filter.Destination.ToLower())))
             .Select(TourDto.Map));
 
         [HttpGet("{id:int}")]
