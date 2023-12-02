@@ -132,19 +132,37 @@ public class PackageController : ControllerBase
     public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.Package.Find().Where(pa =>
-                (filter.ProductId == null || pa.Id == filter.ProductId)
-                && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
-                && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
-                && (filter.StartDate == null || pa.StartDate <= filter.StartDate
-                    && (pa.EndDate == null || pa.EndDate >= filter.StartDate))
-                && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId)
-               ).ToArray().Select(offer =>
+            (filter.ProductId == null || pa.Id == filter.ProductId)
+            && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
+            && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
+             && (filter.Capacity == null || pa.Capacity >= filter.Capacity)
+            && (filter.StartDate == null || pa.StartDate <= filter.StartDate && (pa.EndDate == null ||
+                                                     pa.EndDate >= filter.StartDate))
+            && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId));
+
+        if (filter.OrderBy != null)
+        {
+            switch (filter.OrderBy)
             {
-                var dto = PackageDto.Map(offer);
-                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                return dto;
-            });
-        return Ok(offers);
+                case ("Price"):
+                    offers = offers.OrderBy(offer => offer.Price); break;
+                default:
+                    offers = offers.OrderBy(offer => offer.Id); break;
+            }
+        }
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            offers = offers.Reverse();
+
+        var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+                               .ToArray().Select(offer =>
+                               {
+                                   var dto = PackageDto.Map(offer);
+                                   dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                                   return dto;
+                               });
+
+        return Ok(new PaginationResponse<PackageDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
     }
 
     [HttpGet("{id:int}")]
