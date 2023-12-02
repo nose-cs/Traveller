@@ -23,7 +23,8 @@ public class JwtProvider : IJwtProvider
             new(JwtRegisteredClaimNames.Name, user.Name),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new("role", user.Role.ToString()),
-            new("agencyId", user is AgencyUser agencyUser ? agencyUser.AgencyId.ToString() : "")
+            new("agencyId", user is AgencyUser agencyUser ? agencyUser.AgencyId.ToString() : ""),
+            new("country", user is Tourist tourist ? tourist.Country : "")
         };
 
         var signingCredentials = new SigningCredentials(
