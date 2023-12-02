@@ -81,11 +81,23 @@ public class TourController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
+    
 
     [HttpGet]
-    public ActionResult<IEnumerable<HotelDto>> GetAll() => Ok(_repositories.Tours.Find().Select(TourDto.Map));
+    public ActionResult<IEnumerable<TourDto>> GetToursWithFilter([FromQuery] TourFilterDTO filter)
+        => Ok(_repositories.Tours.Find().Where(fl =>
+                   (filter.Id is null || filter.Id == fl.Id)
+                && (filter.Duration is null || filter.Duration == fl.Duration)
+                && (filter.StartDay is null || fl.SourceDay == filter.StartDay)
+                && (filter.Source is null || fl.SourcePlace.Address.ToLower().Contains(filter.Source.ToLower())
+                                          || fl.SourcePlace.City.ToLower().Contains(filter.Source.ToLower())
+                                          || fl.SourcePlace.Country.ToLower().Contains(filter.Source.ToLower()))
+                && (filter.Destination is null || fl.DestinationPlace.Address.ToLower().Contains(filter.Destination.ToLower())
+                                               || fl.DestinationPlace.Country.ToLower().Contains(filter.Destination.ToLower())
+                                               || fl.DestinationPlace.City.ToLower().Contains(filter.Destination.ToLower())))
+            .Select(TourDto.Map));
 
-    [HttpGet("{id:int}")]
+        [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
         try

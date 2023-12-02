@@ -145,7 +145,7 @@ public class PackageOfferController : ControllerBase
                 && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
                 && (filter.StartDate == null || pa.StartDate <= filter.StartDate
                     && (pa.EndDate == null || pa.EndDate >= filter.StartDate))
-                && (filter.AgencyId == null || pa.Agency.Id == filter.AgencyId)
+                && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId)
                ).ToArray().Select(offer =>
             {
                 var dto = PackageDto.Map(offer);

@@ -163,7 +163,7 @@ public class TourOfferController : ControllerBase
                 && (filter.StartDate == null ||
                     to.StartDate <= filter.StartDate && (to.EndDate == null ||
                                                          to.EndDate >= filter.StartDate))
-                && (filter.AgencyId == null || to.Agency.Id == filter.AgencyId))
+                && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
             .ToArray().Select(offer =>
             {
                 var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
