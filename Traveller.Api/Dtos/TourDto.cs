@@ -32,7 +32,7 @@ public class TourDto
             DestinationTime = tourDto.DestinationInfo.Time, Duration = tourDto.Duration,
             
         } : new ExtendedTour
-        {
+        {   
             SourceDay = tourDto.SourceInfo.Day, SourceTime = tourDto.SourceInfo.Time, 
             DestinationTime = tourDto.DestinationInfo.Time, Duration = tourDto.Duration
         };
