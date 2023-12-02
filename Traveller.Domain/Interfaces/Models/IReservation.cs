@@ -2,10 +2,9 @@
 
 namespace Traveller.Domain.Interfaces.Models;
 
-public interface IReservation<TProduct, TReservation, TOffer> : IDbModel
-    where TProduct : class, IProduct, new()
-    where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
-    where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
+public interface IReservation<TReservation, TOffer> : IDbModel
+    where TReservation : class, IReservation<TReservation, TOffer>, new()
+    where TOffer : class, IOffer<TReservation, TOffer>, new()
 {
     double Price { get; set; }
     DateTime DepartureDate { get; set; }
@@ -19,4 +18,11 @@ public interface IReservation<TProduct, TReservation, TOffer> : IDbModel
     
     int PaymentId { get; set; }
     Payment Payment { get; set; }
+}
+
+public interface IReservation<TProduct, TReservation, TOffer> : IReservation<TReservation, TOffer>
+    where TProduct : class, IProduct, new()
+    where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
+    where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
+{
 }
