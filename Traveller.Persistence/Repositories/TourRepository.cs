@@ -39,13 +39,13 @@ public class TourRepository : ITourRepository
 
     public async ValueTask<Tour?> FindById(int key)
     {
-        return await _context.Tours.AsNoTracking().Include(t => t.DestinationPlace).Include(t => t.SourcePlace)
+        return await _context.Tours.Include(t => t.DestinationPlace).Include(t => t.SourcePlace)
             .Include(t => t.Image).FirstOrDefaultAsync(t => t.Id == key);
     }
 
     public async Task<IEnumerable<Package>?> FindPackages(int key)
     {
-        var tour = await _context.Tours.AsNoTracking().Include(t => t.Packages).FirstOrDefaultAsync(t => t.Id == key);
+        var tour = await _context.Tours.Include(t => t.Packages).FirstOrDefaultAsync(t => t.Id == key);
         return tour?.Packages;
     }
 
@@ -58,6 +58,11 @@ public class TourRepository : ITourRepository
             .Select(tour =>
                 $"{tour.SourcePlace.City}, {tour.SourcePlace.Country} - {tour.DestinationPlace.City}, {tour.DestinationPlace.Country}")
             .First();
+    }
+
+    public IEnumerable<Tour> FindTourByIds(HashSet<int> ids)
+    {
+        return _context.Tours.Where(x => ids.Contains(x.Id));
     }
 
     public IEnumerable<Tour> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Tour, TInclude>> include)

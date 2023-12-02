@@ -3,6 +3,7 @@ using System.Runtime.Intrinsics;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
+using Traveller.Services;
 
 namespace Traveller.Controllers;
 
@@ -10,14 +11,16 @@ namespace Traveller.Controllers;
 [Route("api/[controller]")]
 public class HotelController : ControllerBase
 {
+    private readonly FileService _fileService;
     private readonly Repositories _repositories;
 
     private readonly ILogger<HotelController> _logger;
 
-    public HotelController(ILogger<HotelController> logger, Repositories repositories)
+    public HotelController(ILogger<HotelController> logger, Repositories repositories, FileService fileService)
     {
         _logger = logger;
         _repositories = repositories;
+        _fileService = fileService;
     }
 
     [HttpPost]
@@ -81,13 +84,17 @@ public class HotelController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<HotelDto>> Get([FromQuery] HotelFilterDTO filter) =>
-        Ok(_repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
-                                                    (filter.Name is null || ho.Name.ToLower().Contains(filter.Name.ToLower())) &&
-                                                    (filter.Address is null || ho.Address.Address.ToLower().Contains(filter.Address.ToLower())) &&
+    public async Task<ActionResult<IEnumerable<HotelDto>>> Get([FromQuery] HotelFilterDTO filter)
+    {
+        var b = await _repositories.Hotels.FindById(1);
+        return Ok(_repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
+                                                    (filter.Name is null ||
+                                                     ho.Name.ToLower().Contains(filter.Name.ToLower())) &&
+                                                    (filter.Address is null || ho.Address.Address.ToLower()
+                                                        .Contains(filter.Address.ToLower())) &&
                                                     (filter.ProductId is null || ho.Id == filter.ProductId)))
-            .Select(HotelDto.Map));
-
+            .Select(x => HotelDto.Map(x, _fileService.GetRelativePath(x.Image.Name, x.Image.Id), x.Image.Name)));
+    }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
@@ -100,7 +107,7 @@ public class HotelController : ControllerBase
                 return NotFound($"Hotel with id {id} doesn't exist");
             }
 
-            return Ok(HotelDto.Map(dbHotel));
+            return Ok(HotelDto.Map(dbHotel, _fileService.GetRelativePath(dbHotel.Image.Name, dbHotel.Image.Id), dbHotel.Image.Name));
         }
         catch (Exception e)
         {
@@ -136,6 +143,6 @@ public class HotelController : ControllerBase
                                        .GroupBy(reservation => reservation.Offer.ProductId)
                                        .OrderBy(group => -group.Count())
                                        .Take(20)
-                                       .Join(_repositories.Hotels.Find(), group => group.Key, hotel => hotel.Id, (group, hotel) => HotelDto.Map(hotel)));
+                                       .Join(_repositories.Hotels.Find(), group => group.Key, hotel => hotel.Id, (group, hotel) => HotelDto.Map(hotel, _fileService.GetRelativePath(hotel.Image.Name, hotel.Image.Id), hotel.Image.Name)));
     }
 }

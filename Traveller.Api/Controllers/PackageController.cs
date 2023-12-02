@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
-using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
 using Traveller.Services;
@@ -11,14 +10,14 @@ namespace Traveller.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PackageOfferController : ControllerBase
+public class PackageController : ControllerBase
 {
     private readonly Repositories _repository;
     private readonly ExporterService _exporterService;
 
     private readonly ILogger<TourOfferController> _logger;
 
-    public PackageOfferController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService)
+    public PackageController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService)
     {
         _logger = logger;
         _repository = repository;
@@ -27,39 +26,35 @@ public class PackageOfferController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = ("MarketingEmployee"))]
-    public async Task<ActionResult> Create(OfferDto offerDto)
+    public async Task<ActionResult> Create(PackageDto packageDto)
     {
-        if (await _repository.Packages.FindById(offerDto.ProductId) == null)
-            return NotFound($"Package id: {offerDto.ProductId} doesn´t exists");
-
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+        
+        if (packageDto.AgencyId != agencyId)
+            return Unauthorized("Package offer´s agency doesn´t match with user agency");
+        
+        var newPackage = PackageDto.Map(packageDto);
 
-        var offer = new PackageOffer();
-        OfferDto.Map<Package, PackageReservation, PackageOffer>(offer, offerDto);
-
-        offer.Id = 0;
-
-        offer.AgencyId = agencyId;
-
-        try
+        foreach (var facilityId in packageDto.FacilitiesIds)
         {
-            await _repository.PackageOffers.AddAsync(offer);
+            var facility = await _repository.Facilities.FindById(facilityId);
 
-            await _repository.PackageOffers.SaveChangesAsync();
-            return Ok();
+            if (facility == null)
+                return NotFound("Facility - id: " + facilityId + " not found");
+
+            newPackage.Facilities.Add(new PackageFacility{Facility = facility});
         }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
+
+        await _repository.Package.AddWithToursAsync(newPackage, packageDto.ToursIds);
+        await _repository.Package.SaveChangesAsync();
+        return Ok();
     }
 
-    [HttpPut]
+    [HttpPut("{id:int}")]
     [Authorize(Roles = ("MarketingEmployee"))]
-    public async Task<ActionResult> Update([FromBody] OfferDto offerDto)
+    public async Task<ActionResult> Update([FromBody] PackageDto offerDto, int id)
     {
         try
         {
@@ -67,13 +62,10 @@ public class PackageOfferController : ControllerBase
             var jwt = new JwtSecurityToken(token);
             var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-            if (offerDto.Id == null)
-                return BadRequest("Package offer id can´t be null");
-
-            var dbOffer = await _repository.PackageOffers.FindById((int)offerDto.Id);
+            var dbOffer = await _repository.Package.FindById(id);
             if (dbOffer is null)
             {
-                return NotFound($"Package offer with id {offerDto.Id} doesn't exist");
+                return NotFound();
             }
 
             if (dbOffer.AgencyId != agencyId)
@@ -81,13 +73,18 @@ public class PackageOfferController : ControllerBase
                 return Unauthorized("Package offer´s agency doesn´t match with user agency");
             }
 
-            if (dbOffer.ProductId != offerDto.ProductId &&
-                await _repository.Packages.FindById(offerDto.ProductId) == null)
-                return NotFound($"Package id: {offerDto.ProductId} doesn´t exists");
+            dbOffer.Title = offerDto.Title;
+            dbOffer.Duration = offerDto.Duration;
+            dbOffer.Description = offerDto.Description;
+            dbOffer.Price = offerDto.Price;
+            dbOffer.Capacity = offerDto.Capacity;
+            dbOffer.StartDate = offerDto.StartDate;
+            dbOffer.EndDate = offerDto.EndDate;
+            dbOffer.Capacity = offerDto.Capacity;
+            dbOffer.AgencyId = offerDto.AgencyId;
+            dbOffer.ImageId = offerDto.ImageId;
 
-            OfferDto.Map<Package, PackageReservation, PackageOffer>(dbOffer, offerDto);
-
-            await _repository.PackageOffers.SaveChangesAsync();
+            await _repository.Package.SaveChangesAsync();
 
             return Ok();
         }
@@ -106,7 +103,7 @@ public class PackageOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        var dbOffer = await _repository.PackageOffers.FindById(id);
+        var dbOffer = await _repository.Package.FindById(id);
         if (dbOffer is null)
         {
             return NotFound($"Package offer with id {id} doesn't exist");
@@ -119,8 +116,8 @@ public class PackageOfferController : ControllerBase
 
         try
         {
-            await _repository.PackageOffers.Remove(id);
-            await _repository.PackageOffers.SaveChangesAsync();
+            await _repository.Package.Remove(id);
+            await _repository.Package.SaveChangesAsync();
 
             return Ok();
         }
@@ -134,7 +131,7 @@ public class PackageOfferController : ControllerBase
     [HttpGet]
     public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
     {
-        var offers = _repository.PackageOffers.Find().Where(pa =>
+        var offers = _repository.Package.Find().Where(pa =>
                 (filter.ProductId == null || pa.Id == filter.ProductId)
                 && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
                 && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
@@ -143,9 +140,8 @@ public class PackageOfferController : ControllerBase
                 && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId)
                ).ToArray().Select(offer =>
             {
-                var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(offer);
+                var dto = PackageDto.Map(offer);
                 dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                dto.ProductName = _repository.Packages.GetName(offer.ProductId);
                 return dto;
             });
         return Ok(offers);
@@ -156,16 +152,14 @@ public class PackageOfferController : ControllerBase
     {
         try
         {
-            var dbOffer = await _repository.PackageOffers.FindById(id);
+            var dbOffer = await _repository.Package.FindById(id);
             if (dbOffer is null)
             {
                 return NotFound($"Package offer with id {id} doesn't exist");
             }
 
-            var dto = OfferDto.Map<Package, PackageReservation, PackageOffer>(dbOffer);
+            var dto = PackageDto.Map(dbOffer);
             dto.AgencyName = _repository.Agencies.GetName(dbOffer.AgencyId);
-            dto.ProductName = _repository.Packages.GetName(dbOffer.ProductId);
-
             return Ok(dto);
         }
         catch (Exception e)
@@ -197,8 +191,8 @@ public class PackageOfferController : ControllerBase
         if (export.HasValue)
         {
             return Ok(_exporterService.getDoc("Package Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
-                                                       new string[4] { "Id", "Title", "Total Sales", "Amount (USD)" },
-                                                       new float[4] { 15, 50, 15, 15 },
+                                                       new[] { "Id", "Title", "Total Sales", "Amount (USD)" },
+                                                       new float[] { 15, 50, 15, 15 },
                                                        response.SelectMany(sales => new object[] { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
                                                        export.Value
                                                        ));
@@ -215,6 +209,6 @@ public class PackageOfferController : ControllerBase
                                        .GroupBy(reservation => reservation.OfferId)
                                        .OrderBy(group => -group.Count())
                                        .Take(20)
-                                       .Select(group => OfferDto.Map<Package, PackageReservation, PackageOffer>(group.First().Offer)));
+                                       .Select(group => PackageDto.Map(group.First().Offer)));
     }
 }
