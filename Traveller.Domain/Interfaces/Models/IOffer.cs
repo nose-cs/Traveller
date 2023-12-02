@@ -2,10 +2,9 @@
 
 namespace Traveller.Domain.Interfaces.Models;
 
-public interface IOffer<TProduct, TReservation, TOffer> : IDbModel
-    where TProduct : class, IProduct, new()
-    where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
-    where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
+public interface IOffer<TReservation, TOffer> : IDbModel
+    where TReservation : class, IReservation<TReservation, TOffer>, new()
+    where TOffer : class, IOffer<TReservation, TOffer>, new()
 {
     string Title { get; set; }
     string Description { get; set; }
@@ -17,11 +16,17 @@ public interface IOffer<TProduct, TReservation, TOffer> : IDbModel
     int AgencyId { get; set; }
     Agency Agency { get; set; }
 
-    int ProductId { get; set; }
-    TProduct Product { get; set; }
-    
     int ImageId { get; set; }
     Image Image { get; set; }
     
     ICollection<TReservation> Reservations { get; set; }
+}
+
+public interface IOffer<TProduct, TReservation, TOffer> : IOffer<TReservation, TOffer>
+    where TProduct : class, IProduct, new()
+    where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
+    where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
+{
+    int ProductId { get; set; }
+    TProduct Product { get; set; }
 }

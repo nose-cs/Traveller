@@ -2,7 +2,7 @@
 
 namespace Traveller.Domain.Models;
 
-public class PackageReservation : IReservation<Package, PackageReservation, PackageOffer>
+public class PackageReservation: IReservation<PackageReservation, Package>
 {
     public int Id { get; set; }
     public double Price { get; set; }
@@ -11,7 +11,7 @@ public class PackageReservation : IReservation<Package, PackageReservation, Pack
     public int NumberOfTravellers { get; set; }
     
     public int OfferId { get; set; }
-    public virtual PackageOffer Offer { get; set; } = null!;
+    public virtual Package Offer { get; set; } = null!;
     public int TouristId { get; set; }
     public virtual Tourist Tourist { get; set; } = null!;
     public int PaymentId { get; set; }
