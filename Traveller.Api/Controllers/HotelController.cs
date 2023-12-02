@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Mvc;
 using System.Runtime.Intrinsics;
 using Traveller.Domain;
 using Traveller.Domain.Models;
@@ -86,14 +87,33 @@ public class HotelController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HotelDto>>> Get([FromQuery] HotelFilterDTO filter)
     {
-        var b = await _repositories.Hotels.FindById(1);
-        return Ok(_repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
+        var items = _repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
                                                     (filter.Name is null ||
                                                      ho.Name.ToLower().Contains(filter.Name.ToLower())) &&
                                                     (filter.Address is null || ho.Address.Address.ToLower()
                                                         .Contains(filter.Address.ToLower())) &&
-                                                    (filter.ProductId is null || ho.Id == filter.ProductId)))
-            .Select(x => HotelDto.Map(x, _fileService.GetRelativePath(x.Image.Name, x.Image.Id), x.Image.Name)));
+                                                    (filter.ProductId is null || ho.Id == filter.ProductId)));
+
+        if (filter.OrderBy != null)
+        {
+            switch (filter.OrderBy)
+            {
+                case ("Name"):
+                    items = items.OrderBy(item => item.Name); break;
+                case ("Category"):
+                    items = items.OrderBy(item => item.Category); break;
+                default:
+                    items = items.OrderBy(item => item.Id); break;
+            }
+        }
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            items = items.Reverse();
+
+        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+        .Select(x => HotelDto.Map(x, _fileService.GetRelativePath(x.Image.Name, x.Image.Id), x.Image.Name));
+
+        return Ok(new PaginationResponse<HotelDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }
 
     [HttpGet("{id:int}")]
