@@ -29,21 +29,21 @@ public class TourReservationController : ControllerBase
         if (await _repositories.TourOffers.FindById(reservationDto.OfferId) == null)
             return NotFound($"Tour Offer id: {reservationDto.OfferId} doesn´t exists");
 
-        var token = Request.Headers.Authorization[0]![7..];
+        var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        if (role == "Tourist" && userId != reservationDto.TouristId)
-            return Unauthorized($"Tourists can only make reservations for themselves");
+        if ((role == "Tourist") && (userId != reservationDto.TouristId))
+            return BadRequest($"Tourists can only make reservations for themselves");
 
         try
         {
-            var reservation = new TourReservation();
+            TourReservation reservation = new TourReservation();
+            Payment payment = reservationDto.Get_Payment();
             ReservationDto.Map<Tour, TourReservation, TourOffer>(reservation, reservationDto);
-            if (reservationDto.paymentDto.Total < reservationDto.Price)
-                return BadRequest("The payment is not enough");
-            await _repositories.Payment.AddAsync(PaymentDto.Map(reservationDto.paymentDto));
+            await _repositories.Payment.AddAsync(payment);
             await _repositories.Payment.SaveChangesAsync();
+            reservation.PaymentId = payment.Id;
             await _repositories.TourReservations.AddAsync(reservation);
             await _repositories.TourReservations.SaveChangesAsync();
             return Ok();

@@ -39,11 +39,11 @@ public class HotelReservationController : ControllerBase
         try
         {
             HotelReservation reservation = new HotelReservation();
+            Payment payment = reservationDto.Get_Payment();
             ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(reservation, reservationDto);
-            if (reservationDto.paymentDto.Total < reservationDto.Price)
-                return BadRequest("The payment is not enough");
-            await _repositories.Payment.AddAsync(PaymentDto.Map(reservationDto.paymentDto));
+            await _repositories.Payment.AddAsync(payment);
             await _repositories.Payment.SaveChangesAsync();
+            reservation.PaymentId = payment.Id;
             await _repositories.HotelReservations.AddAsync(reservation);
             await _repositories.HotelReservations.SaveChangesAsync();
             return Ok();
@@ -54,7 +54,6 @@ public class HotelReservationController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-
     [HttpPut("{id:int}")]
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Update([FromBody] ReservationDto reservationDto, [FromRoute] int id)
@@ -129,11 +128,18 @@ public class HotelReservationController : ControllerBase
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
 
-        var dtos = _repositories.HotelReservations.Find()
-            .Select(ReservationDto.Map<Hotel, HotelReservation, HotelOffer>);
+        IEnumerable<ReservationDto> dtos; 
 
         if (role == "Tourist")
-            dtos = dtos.Where(rsv => (rsv.TouristId == userId));
+            dtos = _repositories.HotelReservations.Find()
+            .Where(rsv => (rsv.TouristId == userId)).Select(ReservationDto.Map<Hotel, HotelReservation, HotelOffer>);
+        else
+        {
+            var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+            
+            dtos = _repositories.HotelReservations.FindWithInclude(x => x.Offer)
+            .Where(rsv => (rsv.Offer.AgencyId == agencyId)).Select(ReservationDto.Map<Hotel, HotelReservation, HotelOffer>);
+        }
         return Ok(dtos);
     }
 

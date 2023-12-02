@@ -131,7 +131,8 @@ public class FlightOfferController : ControllerBase
     public IActionResult GetFlightOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.FlightOffers.Find().Where(to =>
-                (filter.ProductId == null || to.Product.Id == filter.ProductId)
+                (filter.ProductId == null || to.ProductId == filter.ProductId)
+                && (filter.Title == null || to.Title.ToLower().Contains(filter.Title.ToLower())) 
                 && (filter.StartPrice == null || to.Price >= filter.StartPrice)
                 && (filter.EndPrice == null || to.Price <= filter.EndPrice)
                 && (filter.StartDate == null ||

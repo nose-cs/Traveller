@@ -27,27 +27,25 @@ public class FlightReservationController : ControllerBase
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
         if (await _repositories.FlightOffers.FindById(reservationDto.OfferId) == null)
-            return NotFound($"Flight Offer id: {reservationDto.OfferId} doesn't exists");
+            return NotFound($"Flight Offer id: {reservationDto.OfferId} doesn´t exists");
 
-        var token = Request.Headers.Authorization[0]![7..];
+        var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        if (role == "Tourist" && userId != reservationDto.TouristId)
+        if ((role == "Tourist") && (userId != reservationDto.TouristId))
             return BadRequest($"Tourists can only make reservations for themselves");
 
-        var reservation = new FlightReservation();
-        ReservationDto.Map<Flight, FlightReservation, FlightOffer>(reservation, reservationDto);
-        if (reservationDto.paymentDto != null && reservationDto.paymentDto.Total < reservationDto.Price)
-            return BadRequest("The payment is not enough");
         try
         {
-            await _repositories.FlightReservations.AddAsync(reservation);
-            if (reservationDto.paymentDto != null)
-                await _repositories.Payment.AddAsync(PaymentDto.Map(reservationDto.paymentDto));
+            FlightReservation reservation = new FlightReservation();
+            Payment payment = reservationDto.Get_Payment();
+            ReservationDto.Map<Flight, FlightReservation, FlightOffer>(reservation, reservationDto);
+            await _repositories.Payment.AddAsync(payment);
             await _repositories.Payment.SaveChangesAsync();
+            reservation.PaymentId = payment.Id;
+            await _repositories.FlightReservations.AddAsync(reservation);
             await _repositories.FlightReservations.SaveChangesAsync();
-
             return Ok();
         }
         catch (Exception e)

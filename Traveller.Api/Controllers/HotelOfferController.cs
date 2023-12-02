@@ -155,6 +155,7 @@ public class HotelOfferController : ControllerBase
     {
         var offers = _repository.HotelOffers.Find().Where(ho =>
             (filter.ProductId == null || ho.ProductId == filter.ProductId)
+            && (filter.Title == null || ho.Title.ToLower().Contains(filter.Title.ToLower())) 
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
             && (filter.StartDate == null ||
