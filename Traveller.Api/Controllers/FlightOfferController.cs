@@ -135,7 +135,7 @@ public class FlightOfferController : ControllerBase
     {
         var offers = _repository.FlightOffers.Find().Where(ho =>
             (filter.ProductId == null || ho.ProductId == filter.ProductId)
-            && (filter.Title == null || to.Title.ToLower().Contains(filter.Title.ToLower()))
+            && (filter.Title == null || ho.Title.ToLower().Contains(filter.Title.ToLower()))
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
              && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
