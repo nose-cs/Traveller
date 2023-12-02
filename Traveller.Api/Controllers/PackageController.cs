@@ -52,9 +52,9 @@ public class PackageController : ControllerBase
         return Ok();
     }
 
-    [HttpPut]
+    [HttpPut("{id:int}")]
     [Authorize(Roles = ("MarketingEmployee"))]
-    public async Task<ActionResult> Update([FromBody] OfferDto offerDto)
+    public async Task<ActionResult> Update([FromBody] PackageDto offerDto, int id)
     {
         try
         {
@@ -62,10 +62,7 @@ public class PackageController : ControllerBase
             var jwt = new JwtSecurityToken(token);
             var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-            if (offerDto.Id == null)
-                return BadRequest("Package id can´t be null");
-
-            var dbOffer = await _repository.Package.FindById((int)offerDto.Id);
+            var dbOffer = await _repository.Package.FindById(id);
             if (dbOffer is null)
             {
                 return NotFound();
@@ -76,11 +73,16 @@ public class PackageController : ControllerBase
                 return Unauthorized("Package offer´s agency doesn´t match with user agency");
             }
 
-            // if (dbOffer.ProductId != offerDto.ProductId &&
-            //     await _repository.Packages.FindById(offerDto.ProductId) == null)
-            //     return NotFound($"Package id: {offerDto.ProductId} doesn´t exists");
-            //
-            // OfferDto.Map<Package, PackageReservation, Package>(dbOffer, offerDto);
+            dbOffer.Title = offerDto.Title;
+            dbOffer.Duration = offerDto.Duration;
+            dbOffer.Description = offerDto.Description;
+            dbOffer.Price = offerDto.Price;
+            dbOffer.Capacity = offerDto.Capacity;
+            dbOffer.StartDate = offerDto.StartDate;
+            dbOffer.EndDate = offerDto.EndDate;
+            dbOffer.Capacity = offerDto.Capacity;
+            dbOffer.AgencyId = offerDto.AgencyId;
+            dbOffer.ImageId = offerDto.ImageId;
 
             await _repository.Package.SaveChangesAsync();
 
