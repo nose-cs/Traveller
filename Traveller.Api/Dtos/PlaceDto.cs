@@ -6,9 +6,9 @@ namespace Traveller.Dtos;
 public class PlaceDto
 {
     public int Id { get; set; }
-    public string? Address { get; set; }
-    public string? City { get; set; } 
-    public string? Country { get; set; }
+    public string Address { get; set; } = null!;
+    public string City { get; set; } = null!;
+    public string Country { get; set; } = null!;
 
     public static PlaceDto Map(Place place)
     {
