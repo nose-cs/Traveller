@@ -39,7 +39,7 @@ public class HotelRepository : IHotelRepository
 
     public async ValueTask<Hotel?> FindById(int key)
     {
-        return await _context.Hotels.AsNoTracking().Include(h => h.Address).Include(h => h.Image).FirstOrDefaultAsync(h => h.Id == key);
+        return await _context.Hotels.Include(h => h.Address).Include(h => h.Image).FirstOrDefaultAsync(h => h.Id == key);
     }
 
     public string GetName(int key)
@@ -49,7 +49,7 @@ public class HotelRepository : IHotelRepository
 
     public Task<IEnumerable<HotelOffer>> GetOffers(int key)
     {
-        return Task.FromResult<IEnumerable<HotelOffer>>(_context.HotelOffers.AsNoTracking().Include(ho => ho.Agency).Where(ho => ho.ProductId == key));
+        return Task.FromResult<IEnumerable<HotelOffer>>(_context.HotelOffers.Include(ho => ho.Agency).Where(ho => ho.ProductId == key));
     }
 
     public IEnumerable<Hotel> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Hotel, TInclude>> include)

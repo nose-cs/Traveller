@@ -34,14 +34,13 @@ public class FlightRepository : IFlightRepository
 
     public IEnumerable<Flight> Find()
     {
-        return _context.Flights.AsNoTracking()
-            .Include(f => f.Source)
+        return _context.Flights.Include(f => f.Source)
             .Include(f => f.Destination);
     }
 
     public async ValueTask<Flight?> FindById(int key)
     {
-        return await _context.Flights.AsNoTracking()
+        return await _context.Flights
             .Include(f => f.Source)
             .Include(f => f.Destination)
             .FirstOrDefaultAsync(f => f.Id == key);
@@ -49,7 +48,7 @@ public class FlightRepository : IFlightRepository
 
     public string GetName(int key)
     {
-        return _context.Flights.Include(f => f.Source).Include(f => f.Destination).Where(flight => flight.Id == key).Select(flight => flight.Airline + ": " + flight.Source.City + " - " + flight.Destination.City).First();
+        return _context.Flights.Where(flight => flight.Id == key).Select(flight => flight.Airline + ": " + flight.Source.City + " - " + flight.Destination.City).First();
     }
 
     public IEnumerable<Flight> FindWithInclude<TInclude>(System.Linq.Expressions.Expression<Func<Flight, TInclude>> include)

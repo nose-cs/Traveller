@@ -25,27 +25,17 @@ public class PackageController : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = ("MarketingEmployee"))]
+    [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Create(PackageDto packageDto)
     {
-        // var token = Request.Headers.Authorization[0]!.Substring(7);
-        // var jwt = new JwtSecurityToken(token);
-        // var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
-        //
-        // if (packageDto.AgencyId != agencyId)
-        //     return Unauthorized("Package offer´s agency doesn´t match with user agency");
-        //
-        var newPackage = PackageDto.Map(packageDto);
+        var token = Request.Headers.Authorization[0]!.Substring(7);
+        var jwt = new JwtSecurityToken(token);
+        var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
         
-        foreach (var tourId in packageDto.ToursIds)
-        {
-            var tour = await _repository.Tours.FindById(tourId);
-            
-            if (tour == null)
-                return NotFound($"Tour id: {tourId} doesn´t exists");
-            
-            newPackage.Tours.Add(tour);
-        }
+        if (packageDto.AgencyId != agencyId)
+            return Unauthorized("Package offer´s agency doesn´t match with user agency");
+        
+        var newPackage = PackageDto.Map(packageDto);
 
         foreach (var facilityId in packageDto.FacilitiesIds)
         {
@@ -57,7 +47,7 @@ public class PackageController : ControllerBase
             newPackage.Facilities.Add(new PackageFacility{Facility = facility});
         }
 
-        await _repository.Package.AddAsync(newPackage);
+        await _repository.Package.AddWithToursAsync(newPackage, packageDto.ToursIds);
         await _repository.Package.SaveChangesAsync();
         return Ok();
     }
@@ -104,7 +94,7 @@ public class PackageController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    // [Authorize(Roles = ("MarketingEmployee"))]
+    [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);

@@ -41,7 +41,8 @@ public class PackageRepository : IPackageRepository
 
     public async ValueTask<Package?> FindById(int key)
     {
-        return await _context.Packages.Include(x => x.Image)
+        return await _context.Packages
+            .Include(x => x.Image)
             .Include(x => x.Agency)
             .FirstOrDefaultAsync(x => x.Id == key);
     }
@@ -59,5 +60,12 @@ public class PackageRepository : IPackageRepository
     public Task<IEnumerable<Hotel>> FindHotels(int key)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task AddWithToursAsync(Package model, params int[] toursIds)
+    {
+        var tours = _context.Tours.Where(x => toursIds.Contains(x.Id));
+        model.Tours = new List<Tour>(tours);
+        await _context.AddAsync(model);
     }
 }
