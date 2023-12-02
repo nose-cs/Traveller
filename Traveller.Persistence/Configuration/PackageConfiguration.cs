@@ -11,5 +11,6 @@ public class PackageConfiguration : EntityConfiguration<Package>
         builder.ToTable("Packages");
         builder.HasOne(o => o.Agency).WithMany(a => a.Packages).HasForeignKey(o => o.AgencyId);
         builder.HasMany(o => o.Reservations).WithOne(r => r.Offer);
+        builder.HasOne(o => o.Image).WithMany();
     }
 }
