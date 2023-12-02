@@ -8,6 +8,7 @@ public class HotelDto
     public string Name { get; set; } = null!;
     public PlaceDto Address { get; set; } = null!;
     public Category Category { get; set; }
+    public FileDto Image { get; set; }
 
     public static Hotel Map(HotelDto hotelDto)
     {
@@ -20,8 +21,9 @@ public class HotelDto
         hotel.Id = (int)hotelDto.Id;
         return hotel;
     }
-    public static HotelDto Map(Hotel hotel)
+    public static HotelDto Map(Hotel hotel, string imagePath, string imageName)
     {
-        return new HotelDto() { Id = hotel.Id, Address = PlaceDto.Map(hotel.Address), Name = hotel.Name, Category = hotel.Category};
+        return new HotelDto() { Id = hotel.Id, Address = PlaceDto.Map(hotel.Address), 
+            Name = hotel.Name, Category = hotel.Category, Image = new FileDto(){Id = hotel.ImageId, FilePath = imagePath, Name = imageName}};
     }
 }
