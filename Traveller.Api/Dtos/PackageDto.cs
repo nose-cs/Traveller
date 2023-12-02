@@ -16,7 +16,8 @@ public class PackageDto
     public DateTime? EndDate { get; set; }
     public string? AgencyName { get; set; }
     public int AgencyId { get; set; }
-    public FileDto Image { get; set; } = null!;
+    public int ImageId { get; set; }
+    public FileDto? Image { get; set; } = null!;
     public int[] ToursIds { get; set; }
     public int[] FacilitiesIds { get; set; }
 
@@ -33,6 +34,7 @@ public class PackageDto
             StartDate = package.StartDate,
             EndDate = package.EndDate,
             AgencyId = package.AgencyId,
+            ImageId = package.ImageId,
         };
     }
 
@@ -46,6 +48,7 @@ public class PackageDto
             Capacity = packageDto.Capacity,
             StartDate = packageDto.StartDate,
             EndDate = packageDto.EndDate,
+            ImageId = packageDto.ImageId,
             AgencyId = packageDto.AgencyId };
         
         if (packageDto.Id is null)

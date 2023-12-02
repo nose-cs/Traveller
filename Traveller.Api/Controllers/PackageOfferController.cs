@@ -10,14 +10,14 @@ namespace Traveller.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PackageOfferController : ControllerBase
+public class PackageController : ControllerBase
 {
     private readonly Repositories _repository;
     private readonly ExporterService _exporterService;
 
     private readonly ILogger<TourOfferController> _logger;
 
-    public PackageOfferController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService)
+    public PackageController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService)
     {
         _logger = logger;
         _repository = repository;
@@ -25,16 +25,16 @@ public class PackageOfferController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = ("MarketingEmployee"))]
+    // [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Create(PackageDto packageDto)
     {
-        var token = Request.Headers.Authorization[0]!.Substring(7);
-        var jwt = new JwtSecurityToken(token);
-        var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
-        
-        if (packageDto.AgencyId != agencyId)
-            return Unauthorized("Package offer´s agency doesn´t match with user agency");
-        
+        // var token = Request.Headers.Authorization[0]!.Substring(7);
+        // var jwt = new JwtSecurityToken(token);
+        // var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+        //
+        // if (packageDto.AgencyId != agencyId)
+        //     return Unauthorized("Package offer´s agency doesn´t match with user agency");
+        //
         var newPackage = PackageDto.Map(packageDto);
         
         foreach (var tourId in packageDto.ToursIds)
@@ -54,10 +54,10 @@ public class PackageOfferController : ControllerBase
             if (facility == null)
                 return NotFound("Facility - id: " + facilityId + " not found");
 
-            newPackage.Facilities.Add(new PackageFacility(){Facility = facility});
+            newPackage.Facilities.Add(new PackageFacility{Facility = facility});
         }
 
-        await _repository.Package.AddAsync(new Package());
+        await _repository.Package.AddAsync(newPackage);
         await _repository.Package.SaveChangesAsync();
         return Ok();
     }
@@ -104,7 +104,7 @@ public class PackageOfferController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = ("MarketingEmployee"))]
+    // [Authorize(Roles = ("MarketingEmployee"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
         var token = Request.Headers.Authorization[0]!.Substring(7);
