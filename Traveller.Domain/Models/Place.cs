@@ -11,4 +11,9 @@ public class Place : IDbModel
     
     public virtual ICollection<Tour> ToursWithDestination { get; set; } = new List<Tour>();
     public virtual ICollection<Tour> ToursWithSource { get; set; } = new List<Tour>();
+
+    public string getFullAddress()
+    {
+        return (Address != null ? Address + " ": "") + (City != null ? City + " ": "") + (Country != null ? Country + " " : "");
+    }
 }

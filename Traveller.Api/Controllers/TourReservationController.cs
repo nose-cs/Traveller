@@ -163,38 +163,77 @@ public class TourReservationController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "Agent, Tourist")]
-    public ActionResult<IEnumerable<ReservationDto>> GetAll()
+    [Authorize(Roles = ("Agent, Tourist"))]
+    public ActionResult<IEnumerable<ReservationDto>> GetAll([FromQuery] PaginationDto filter)
     {
-        var token = Request.Headers.Authorization[0]!.Substring(7);
+        var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
 
-        var dtos = _repositories.TourReservations.Find().Select(ReservationDto.Map<Tour, TourReservation, TourOffer>);
+        var items = _repositories.TourReservations.FindWithInclude(f => f.Offer);
 
         if (role == "Tourist")
-            dtos = dtos.Where(rsv => (rsv.TouristId == userId));
-        return Ok(dtos);
+            items = items.Where(rsv => rsv.TouristId == userId);
+        else
+        {
+            var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+            items = items.Where(rsv => rsv.Offer.AgencyId == agencyId);
+        }
+
+        if (filter.OrderBy != null)
+        {
+            switch (filter.OrderBy)
+            {
+                case ("Price"):
+                    items = items.OrderBy(item => item.Price); break;
+                case ("DepartureDay"):
+                    items = items.OrderBy(item => item.DepartureDate); break;
+                default:
+                    items = items.OrderBy(item => item.Id); break;
+            }
+        }
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            items = items.Reverse();
+
+        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+                            .Select(ReservationDto.Map<Tour, TourReservation, TourOffer>);
+
+        return Ok(new PaginationResponse<ReservationDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }
 
     [HttpGet("{id:int}")]
-    [Authorize(Roles = ("Agent, Tourist"))]
+    [Authorize(Roles = "Agent, Tourist")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
-        var token = Request.Headers.Authorization[0]!.Substring(7);
+        var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
 
         try
         {
-            var tourReservation = await _repositories.TourReservations.FindById(id);
-            if (tourReservation is null)
+            var reservation = await _repositories.TourReservations.FindById(id);
+
+            if (reservation is null)
                 return NotFound($"Tour reservation with id {id} doesn't exist");
-            if ((role == "Tourist") && (userId != tourReservation.TouristId))
+
+            if ((role == "Tourist") && (userId != reservation.TouristId))
                 return BadRequest($"Tourists can only see their own reservations");
-            return Ok(ReservationDto.Map<Tour, TourReservation, TourOffer>(tourReservation));
+
+            if (role == "Agent")
+            {
+                var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+                var offer = await _repositories.HotelOffers.FindById(reservation.OfferId);
+
+                if (agencyId != offer!.AgencyId)
+                    return BadRequest("Agents can only see their own agency reservations");
+            }
+
+            return Ok(ReservationDto.Map<Tour, TourReservation, TourOffer>(reservation));
         }
         catch (Exception e)
         {

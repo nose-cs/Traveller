@@ -11,6 +11,7 @@ public class OfferFilterDTO : PaginationDto
     public double? EndPrice { get; set; }
     public int? AgencyId { get; set; }
     public int? Capacity { get; set; }
+    public bool? ValidToday { get; set; }
 
     public string? ProductName { get; set; }
     public string? AgencyName { get; set; }

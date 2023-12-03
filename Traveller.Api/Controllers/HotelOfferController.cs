@@ -170,7 +170,8 @@ public class HotelOfferController : ControllerBase
             && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
                 ho.EndDate >= filter.StartDate))
             && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId)
-            && (filter.ProductName == null || ho.Product.Name.ToLower().Contains(filter.ProductName.ToLower())));
+            && (filter.ProductName == null || ho.Product.Name.ToLower().Contains(filter.ProductName.ToLower()))
+            && (!filter.ValidToday.HasValue || !filter.ValidToday.Value || ho.EndDate >= DateTime.Now ));
 
         if (filter.OrderBy != null)
         {

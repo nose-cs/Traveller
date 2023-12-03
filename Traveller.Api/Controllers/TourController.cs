@@ -110,15 +110,8 @@ public class TourController : ControllerBase
             (filter.Id is null || filter.Id == fl.Id)
             && (filter.Duration is null || filter.Duration == fl.Duration)
             && (filter.StartDay is null || fl.SourceDay == filter.StartDay)
-            && (filter.Source is null || fl.SourcePlace.Address.ToLower().Contains(filter.Source.ToLower())
-                                      || fl.SourcePlace.City.ToLower().Contains(filter.Source.ToLower())
-                                      || fl.SourcePlace.Country.ToLower().Contains(filter.Source.ToLower()))
-            && (filter.Destination is null || fl.DestinationPlace.Address.ToLower()
-                                               .Contains(filter.Destination.ToLower())
-                                           || fl.DestinationPlace.Country.ToLower()
-                                               .Contains(filter.Destination.ToLower())
-                                           || fl.DestinationPlace.City.ToLower()
-                                               .Contains(filter.Destination.ToLower())));
+            && (filter.Source is null || fl.SourcePlace.getFullAddress().ToLower().Contains(filter.Source.ToLower()))
+            && (filter.Destination is null || fl.DestinationPlace.getFullAddress().ToLower().Contains(filter.Destination.ToLower())));
 
         if (filter.OrderBy != null)
         {
