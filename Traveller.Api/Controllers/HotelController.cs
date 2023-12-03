@@ -137,7 +137,7 @@ public class HotelController : ControllerBase
     }
     
     [HttpGet("{id:int}/fromTour")]
-    public async Task<ActionResult> GetHotels([FromRoute] int id)
+    public async Task<ActionResult> GetHotelsFromTour([FromRoute] int id)
     {
         try
         {
@@ -155,6 +155,16 @@ public class HotelController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+    [HttpGet("{id:int}/fromPackage")]
+    public IActionResult GetHotelsFromPackage([FromRoute] int id)
+    {
+        return Ok(_repositories
+            .Package
+            .FindHotels(id)
+            .Select(t => HotelDto
+                .Map(t, _fileService.GetRelativePath(t.Image.Name, t.Image.Id), t.Image.Name)));
+
     }
     
     [HttpGet("{id:int}/offers")]
