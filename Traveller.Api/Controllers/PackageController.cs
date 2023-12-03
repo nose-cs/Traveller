@@ -202,7 +202,7 @@ public class PackageController : ControllerBase
     [HttpGet("getPackageFacilities")]
     public IActionResult GetPackageFacilities([FromQuery] int packageId)
     {
-        return Ok(_repository.Package.FindPackageFacilities(packageId).Select(PackageFacilityDto.Map));
+        return Ok(_repository.Package.FindFacilities(packageId).Select(PackageFacilityDto.Map));
     }
 
     [HttpGet("{id:int}")]

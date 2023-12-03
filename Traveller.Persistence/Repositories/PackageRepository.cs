@@ -85,10 +85,22 @@ public class PackageRepository : IPackageRepository
             .Where(t => t.Packages.Any(p => p.PackageId == key));
     }
 
+    public IEnumerable<PackageFacility> FindFacilities(int key)
+    {
+        return _context.PackageFacility.Include(x 
+            => x.Facility).Where(x 
+            => x.PackageId == key);
+    }
+
+    public Task<IEnumerable<Hotel>> FindHotels(int key)
+    {
+        throw new NotImplementedException();
+    }
     public IEnumerable<PackageFacility> FindPackageFacilities(int key)
     {
         return _context.PackageFacility.Include(pf => pf.Facility).Where(pf => pf.PackageId == key);
     }
+    
 
     public async Task AddWithToursAsync(Package model, params int[] toursIds)
     {

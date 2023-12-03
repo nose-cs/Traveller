@@ -1,8 +1,5 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.AspNetCore.Mvc;
-using System.Runtime.Intrinsics;
+﻿using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
-using Traveller.Domain.Models;
 using Traveller.Dtos;
 using Traveller.Services;
 
@@ -128,6 +125,27 @@ public class HotelController : ControllerBase
             }
 
             return Ok(HotelDto.Map(dbHotel, _fileService.GetRelativePath(dbHotel.Image.Name, dbHotel.Image.Id), dbHotel.Image.Name));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
+    
+    [HttpGet("{id:int}/fromTour")]
+    public async Task<ActionResult> GetHotels([FromRoute] int id)
+    {
+        try
+        {
+            var hotels = await _repositories.Tours.FindHotels(id);
+            if (hotels is null)
+            {
+                return NotFound($"Tour with id {id} doesn't exist");
+            }
+
+            return Ok(hotels.Select(x =>
+                HotelDto.Map(x, _fileService.GetRelativePath(x.Image.Name, x.Image.Id), x.Image.Name)));
         }
         catch (Exception e)
         {

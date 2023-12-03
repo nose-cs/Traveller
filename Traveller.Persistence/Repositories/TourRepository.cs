@@ -49,6 +49,17 @@ public class TourRepository : ITourRepository
         return packages;
     }
 
+    public async Task<IEnumerable<Hotel>?> FindHotels(int key)
+    {
+        var tour = await _context.ExtendedTours
+            .Include(t => t.Hotels)
+            .ThenInclude(x => x.Image)
+            .Include(x => x.Hotels)
+            .ThenInclude(x => x.Address)
+            .FirstOrDefaultAsync(t => t.Id == key);
+        return tour?.Hotels;
+    } 
+
     public string GetName(int key)
     {
         return _context.Tours.AsNoTracking()
