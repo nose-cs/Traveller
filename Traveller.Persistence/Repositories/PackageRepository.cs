@@ -52,9 +52,9 @@ public class PackageRepository : IPackageRepository
         return _context.Packages.Include(include);
     }
 
-    public Task<IEnumerable<Tour>> FindTours(int key)
+    public IEnumerable<Tour> FindTours(int key)
     {
-        throw new NotImplementedException();
+        return _context.Tours.Include(t => t.DestinationPlace).Include(t => t.SourcePlace).Include(t => t.Image).Where(t => t.Packages.Any(p => p.Id == key));
     }
 
     public Task<IEnumerable<Hotel>> FindHotels(int key)
