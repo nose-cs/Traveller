@@ -1,4 +1,4 @@
-﻿﻿namespace Traveller.Services;
+﻿namespace Traveller.Services;
 
 public class FileService
 {

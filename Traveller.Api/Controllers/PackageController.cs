@@ -32,19 +32,19 @@ public class PackageController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
         
-        if (packageDto.AgencyId != agencyId)
-            return Unauthorized("Package offer´s agency doesn´t match with user agency");
+        packageDto.AgencyId = agencyId;
         
         var newPackage = PackageDto.Map(packageDto);
+        newPackage.Facilities = new List<PackageFacility>();
 
-        foreach (var facilityId in packageDto.FacilitiesIds)
+        for(int i = 0; i < packageDto.FacilitiesIds.Length; i++)
         {
-            var facility = await _repository.Facilities.FindById(facilityId);
+            var facility = await _repository.Facilities.FindById(packageDto.FacilitiesIds[i]);
 
             if (facility == null)
-                return NotFound("Facility - id: " + facilityId + " not found");
+                return NotFound("Facility - id: " + packageDto.FacilitiesIds[i] + " not found");
 
-            newPackage.Facilities.Add(new PackageFacility{Facility = facility});
+            newPackage.Facilities.Add(new PackageFacility{ Facility = facility, Package = newPackage, Price = packageDto.FacilitiesPrices[i] });
         }
 
         await _repository.Package.AddWithToursAsync(newPackage, packageDto.ToursIds);
@@ -52,9 +52,9 @@ public class PackageController : ControllerBase
         return Ok();
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPut]
     [Authorize(Roles = ("MarketingEmployee"))]
-    public async Task<ActionResult> Update([FromBody] PackageDto offerDto, int id)
+    public async Task<ActionResult> Update([FromBody] PackageDto packageDto)
     {
         try
         {
@@ -62,7 +62,10 @@ public class PackageController : ControllerBase
             var jwt = new JwtSecurityToken(token);
             var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-            var dbOffer = await _repository.Package.FindById(id);
+            if (!packageDto.Id.HasValue)
+                return NotFound();
+
+            var dbOffer = await _repository.Package.FindById(packageDto.Id.Value);
             if (dbOffer is null)
             {
                 return NotFound();
@@ -73,16 +76,30 @@ public class PackageController : ControllerBase
                 return Unauthorized("Package offer´s agency doesn´t match with user agency");
             }
 
-            dbOffer.Title = offerDto.Title;
-            dbOffer.Duration = offerDto.Duration;
-            dbOffer.Description = offerDto.Description;
-            dbOffer.Price = offerDto.Price;
-            dbOffer.Capacity = offerDto.Capacity;
-            dbOffer.StartDate = offerDto.StartDate;
-            dbOffer.EndDate = offerDto.EndDate;
-            dbOffer.Capacity = offerDto.Capacity;
-            dbOffer.AgencyId = offerDto.AgencyId;
-            dbOffer.ImageId = offerDto.ImageId;
+            dbOffer.Title = packageDto.Title;
+            dbOffer.Duration = packageDto.Duration;
+            dbOffer.Description = packageDto.Description;
+            dbOffer.Price = packageDto.Price;
+            dbOffer.Capacity = packageDto.Capacity;
+            dbOffer.StartDate = packageDto.StartDate;
+            dbOffer.EndDate = packageDto.EndDate;
+            dbOffer.Capacity = packageDto.Capacity;
+            dbOffer.ImageId = packageDto.ImageId;
+
+            _repository.Package.RemoveAllPackageFacility(dbOffer.Id);
+
+            if(dbOffer.Facilities == null)
+                dbOffer.Facilities = new List<PackageFacility>();
+
+            for (int i = 0; i < packageDto.FacilitiesIds.Length; i++)
+            {
+                var facility = await _repository.Facilities.FindById(packageDto.FacilitiesIds[i]);
+
+                if (facility == null)
+                    return NotFound("Facility - id: " + packageDto.FacilitiesIds[i] + " not found");
+
+                dbOffer.Facilities.Add(new PackageFacility { Facility = facility, Package = dbOffer, Price = packageDto.FacilitiesPrices[i] });
+            }
 
             await _repository.Package.SaveChangesAsync();
 
@@ -132,19 +149,49 @@ public class PackageController : ControllerBase
     public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.Package.Find().Where(pa =>
-                (filter.ProductId == null || pa.Id == filter.ProductId)
-                && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
-                && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
-                && (filter.StartDate == null || pa.StartDate <= filter.StartDate
-                    && (pa.EndDate == null || pa.EndDate >= filter.StartDate))
-                && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId)
-               ).ToArray().Select(offer =>
+            (filter.ProductId == null || pa.Id == filter.ProductId)
+            && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
+            && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
+             && (filter.Capacity == null || pa.Capacity >= filter.Capacity)
+            && (filter.StartDate == null || pa.StartDate <= filter.StartDate && (pa.EndDate == null ||
+                                                     pa.EndDate >= filter.StartDate))
+            && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId));
+
+        if (filter.OrderBy != null)
+        {
+            switch (filter.OrderBy)
             {
-                var dto = PackageDto.Map(offer);
-                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                return dto;
-            });
-        return Ok(offers);
+                case ("Price"):
+                    offers = offers.OrderBy(offer => offer.Price); break;
+                default:
+                    offers = offers.OrderBy(offer => offer.Id); break;
+            }
+        }
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            offers = offers.Reverse();
+
+        var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+                               .ToArray().Select(offer =>
+                               {
+                                   var dto = PackageDto.Map(offer);
+                                   dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                                   return dto;
+                               });
+
+        return Ok(new PaginationResponse<PackageDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
+    }
+
+    [HttpGet("getTours")]
+    public IActionResult GetTours([FromQuery] int packageId)
+    {
+        return Ok(_repository.Package.FindTours(packageId).Select(TourDto.Map));
+    }
+
+    [HttpGet("getPackageFacilities")]
+    public IActionResult GetPackageFacilities([FromQuery] int packageId)
+    {
+        return Ok(_repository.Package.FindPackageFacilities(packageId).Select(PackageFacilityDto.Map));
     }
 
     [HttpGet("{id:int}")]
