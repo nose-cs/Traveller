@@ -51,6 +51,30 @@ public class PackageRepository : IPackageRepository
         return false;
     }
 
+    public bool RemovePackageTour(int packageId, int tourId)
+    {
+        var ptDb = _context.PackageTours.FirstOrDefault(pf => pf.PackageId == packageId && pf.TourId == tourId);
+        if (ptDb is not null)
+        {
+            _context.Remove(ptDb);
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool RemoveAllPackageTour(int packageId)
+    {
+        var ptsDb = _context.PackageTours.Where(pf => pf.PackageId == packageId);
+        if (ptsDb is not null)
+        {
+            _context.RemoveRange(ptsDb);
+            return true;
+        }
+
+        return false;
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
