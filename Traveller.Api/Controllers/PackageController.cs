@@ -171,6 +171,20 @@ public class PackageController : ControllerBase
     {
         return Ok(_repository.Package.FindTours(packageId).Select(TourDto.Map));
     }
+    
+    [HttpGet("getFacilities")]
+    
+    public IActionResult GetFacilities([FromQuery] int packageId)
+    {
+        return Ok(_repository.Package.FindFacilities(packageId).Select(t 
+            => new FacilityDto()
+            {
+                Description = t.Facility.Description,
+                Id = t.FacilityId,
+                Name = t.Facility.Name,
+                Price = t.Price
+            }));
+    }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
