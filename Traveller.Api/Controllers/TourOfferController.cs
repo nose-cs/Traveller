@@ -158,6 +158,7 @@ public class TourOfferController : ControllerBase
     {
         var offers = _repository.TourOffers.Find().Where(to =>
                 (filter.ProductId == null || to.Product.Id == filter.ProductId)
+                && (filter.Title == null || to.Title.ToLower().Contains(filter.Title.ToLower()))
                 && (filter.StartPrice == null || to.Price >= filter.StartPrice)
                 && (filter.EndPrice == null || to.Price <= filter.EndPrice)
                 && (filter.StartDate == null ||
