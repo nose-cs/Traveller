@@ -9,7 +9,7 @@ public class TravellerContext : DbContext
     {
     }
     public DbSet<Agency> Agencies { get; set; } = null!;
-    
+    public DbSet<ExtendedTour>ExtendedTours { get; set; } = null!;
     public DbSet<Flight> Flights { get; set; } = null!;
     public DbSet<FlightOffer> FlightOffers { get; set; } = null!;
     public DbSet<FlightReservation> FlightReservations { get; set; } = null!;

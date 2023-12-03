@@ -139,6 +139,27 @@ public class HotelController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
+    
+    [HttpGet("{id:int}/fromTour")]
+    public async Task<ActionResult> GetHotels([FromRoute] int id)
+    {
+        try
+        {
+            var hotels = await _repositories.Tours.FindHotels(id);
+            if (hotels is null)
+            {
+                return NotFound($"Tour with id {id} doesn't exist");
+            }
+
+            return Ok(hotels.Select(x =>
+                HotelDto.Map(x, _fileService.GetRelativePath(x.Image.Name, x.Image.Id), x.Image.Name)));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e.Message);
+            return StatusCode(StatusCodes.Status500InternalServerError);
+        }
+    }
 
     [HttpGet("getMostSolds")]
     public IActionResult GetMostSolds()
