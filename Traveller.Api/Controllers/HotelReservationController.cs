@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
+using Traveller.Persistence.Migrations;
 using Traveller.Services;
 
 namespace Traveller.Controllers;
@@ -29,9 +30,9 @@ public class HotelReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
-        var offer = await _repositories.TourOffers.FindById(reservationDto.OfferId);
+        var offer = await _repositories.HotelOffers.FindById(reservationDto.OfferId);
         if (offer is null)
-            return NotFound($"Tour Offer id: {reservationDto.OfferId} doesn´t exists");
+            return NotFound($"Hotel Offer id: {reservationDto.OfferId} doesn´t exists");
 
         if (offer.Capacity < reservationDto.NumberOfTravellers)
             return BadRequest(
@@ -61,25 +62,37 @@ public class HotelReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Update([FromBody] ReservationDto reservationDto, [FromRoute] int id)
     {
-        var token = Request.Headers.Authorization[0]!.Substring(7);
-        var jwt = new JwtSecurityToken(token);
-        var role = jwt.Claims.First(c => c.Type == "role").Value;
-        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        if ((role == "Tourist") && (userId != reservationDto.TouristId))
-            return BadRequest($"Tourists can only change their own reservations");
-
         try
         {
             var dbHotelReservation = await _repositories.HotelReservations.FindById(id);
             if (dbHotelReservation is null)
                 return NotFound($"Hotel Reservation with id {id} doesn't exist");
+
+            var token = Request.Headers.Authorization[0]!.Substring(7);
+            var jwt = new JwtSecurityToken(token);
+            var role = jwt.Claims.First(c => c.Type == "role").Value;
+            var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
+
+
+            if (role == "Tourist" && userId != dbHotelReservation.TouristId)
+                return BadRequest($"Tourists can only change their own reservations");
+
+            var offer = await _repositories.HotelOffers.FindById(dbHotelReservation.OfferId);
+
+            if (role == "Agent")
+            {
+                var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+                if (agencyId != offer!.AgencyId)
+                    return BadRequest("Agents can only change reservations for they own agency");
+            }
+
             var oldPaymentId = dbHotelReservation.PaymentId; //no quiero que nadie pueda modificar el PaymentId
-            var oldPrice = dbHotelReservation.Price; //ni los turistas el precio
+            var oldPrice = dbHotelReservation.Price; //ni el precio
 
             ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(dbHotelReservation, reservationDto);
             dbHotelReservation.PaymentId = oldPaymentId;
-            if (role == "Tourist")
-                dbHotelReservation.Price = oldPrice;
+            dbHotelReservation.Price = oldPrice;
 
             await _repositories.HotelReservations.SaveChangesAsync();
 
@@ -104,10 +117,23 @@ public class HotelReservationController : ControllerBase
         try
         {
             var dbHotelReservation = await _repositories.HotelReservations.FindById(id);
+            
             if (dbHotelReservation is null)
                 return NotFound($"Hotel reservation with id {id} doesn't exist");
+            
             if ((role == "Tourist") && (userId != dbHotelReservation.TouristId))
                 return BadRequest($"Tourists can only delete their own reservations");
+
+            var offer = await _repositories.HotelOffers.FindById(dbHotelReservation.OfferId);
+
+            if (role == "Agent")
+            {
+                var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+                if (agencyId != offer!.AgencyId)
+                    return BadRequest("Agents can only change reservations for they own agency");
+            }
+
             await _repositories.Payment.Remove(dbHotelReservation.PaymentId);
             await _repositories.HotelReservations.Remove(id);
             await _repositories.Payment.SaveChangesAsync();

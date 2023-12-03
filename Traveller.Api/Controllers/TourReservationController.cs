@@ -62,27 +62,38 @@ public class TourReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Update([FromBody] ReservationDto reservationDto, [FromRoute] int id)
     {
-        var token = Request.Headers.Authorization[0]!.Substring(7);
-        var jwt = new JwtSecurityToken(token);
-        var role = jwt.Claims.First(c => c.Type == "role").Value;
-        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        if (role == "Tourist" && userId != reservationDto.TouristId)
-            return BadRequest($"Tourists can only change their own reservations");
-
         try
         {
             var dbTourReservation = await _repositories.TourReservations.FindById(id);
+            
             if (dbTourReservation is null)
                 return NotFound($"Tour Reservation with id {id} doesn't exist");
+
+            var token = Request.Headers.Authorization[0]!.Substring(7);
+            var jwt = new JwtSecurityToken(token);
+            var role = jwt.Claims.First(c => c.Type == "role").Value;
+            var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
+
+            if (role == "Tourist" && userId != dbTourReservation.TouristId)
+                return BadRequest($"Tourists can only change their own reservations");
+
+            var offer = await _repositories.TourOffers.FindById(dbTourReservation.OfferId);
+
+            if (role == "Agent")
+            {
+                var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+                if (agencyId != offer!.AgencyId)
+                    return BadRequest("Agents can only change reservations for they own agency");
+            }
+
             var oldPaymentId = dbTourReservation.PaymentId; //no quiero que nadie pueda modificar el PaymentId
-            var oldPrice = dbTourReservation.Price; //ni los turistas el precio
+            var oldPrice = dbTourReservation.Price; //ni el precio
 
             ReservationDto.Map<Tour, TourReservation, TourOffer>(dbTourReservation, reservationDto);
             dbTourReservation.PaymentId = oldPaymentId;
-            if (role == "Tourist")
-                dbTourReservation.Price = oldPrice;
+            dbTourReservation.Price = oldPrice;
 
-            await _repositories.Payment.SaveChangesAsync();
             await _repositories.TourReservations.SaveChangesAsync();
 
             return Ok();
@@ -106,12 +117,26 @@ public class TourReservationController : ControllerBase
         try
         {
             var dbTourReservation = await _repositories.TourReservations.FindById(id);
+            
             if (dbTourReservation is null)
                 return NotFound($"Tour reservation with id {id} doesn't exist");
+            
             if ((role == "Tourist") && (userId != dbTourReservation.TouristId))
                 return BadRequest($"Tourists can only delete their own reservations");
+
+            var offer = await _repositories.TourOffers.FindById(dbTourReservation.OfferId);
+
+            if (role == "Agent")
+            {
+                var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+                if (agencyId != offer!.AgencyId)
+                    return BadRequest("Agents can only change reservations for they own agency");
+            }
+
             await _repositories.Payment.Remove(dbTourReservation.PaymentId);
             await _repositories.TourReservations.Remove(id);
+            await _repositories.Payment.SaveChangesAsync();
             await _repositories.TourReservations.SaveChangesAsync();
 
             return Ok();

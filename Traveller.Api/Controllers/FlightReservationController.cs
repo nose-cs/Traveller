@@ -28,9 +28,9 @@ public class FlightReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
-        var offer = await _repositories.TourOffers.FindById(reservationDto.OfferId);
+        var offer = await _repositories.FlightOffers.FindById(reservationDto.OfferId);
         if ( offer is null)
-            return NotFound($"Tour Offer id: {reservationDto.OfferId} doesn´t exists");
+            return NotFound($"Flight Offer id: {reservationDto.OfferId} doesn´t exists");
         
         if (offer.Capacity < reservationDto.NumberOfTravellers)
             return BadRequest($"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
@@ -59,25 +59,38 @@ public class FlightReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Update([FromBody] ReservationDto reservationDto, [FromRoute] int id)
     {
-        var token = Request.Headers.Authorization[0]!.Substring(7);
-        var jwt = new JwtSecurityToken(token);
-        var role = jwt.Claims.First(c => c.Type == "role").Value;
-        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        if (role == "Tourist" && userId != reservationDto.TouristId)
-            return BadRequest($"Tourists can only change their own reservations");
-
         try
         {
             var dbFlightReservation = await _repositories.FlightReservations.FindById(id);
+            
             if (dbFlightReservation is null)
                 return NotFound($"Flight Reservation with id {id} doesn't exist");
+
+            var token = Request.Headers.Authorization[0]!.Substring(7);
+            var jwt = new JwtSecurityToken(token);
+            var role = jwt.Claims.First(c => c.Type == "role").Value;
+            var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
+            
+
+            if (role == "Tourist" && userId != dbFlightReservation.TouristId)
+                return BadRequest($"Tourists can only change their own reservations");
+
+            var offer = await _repositories.FlightOffers.FindById(dbFlightReservation.OfferId);
+
+            if(role == "Agent")
+            {
+                var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+                if (agencyId != offer!.AgencyId)
+                    return BadRequest("Agents can only change reservations for they own agency");
+            }
+
             var oldPaymentId = dbFlightReservation.PaymentId; //no quiero que nadie pueda modificar el PaymentId
-            var oldPrice = dbFlightReservation.Price; //ni los turistas el precio
+            var oldPrice = dbFlightReservation.Price; //ni el precio
 
             ReservationDto.Map<Flight, FlightReservation, FlightOffer>(dbFlightReservation, reservationDto);
             dbFlightReservation.PaymentId = oldPaymentId;
-            if (role == "Tourist")
-                dbFlightReservation.Price = oldPrice;
+            dbFlightReservation.Price = oldPrice;
 
             await _repositories.FlightReservations.SaveChangesAsync();
 
@@ -102,10 +115,23 @@ public class FlightReservationController : ControllerBase
         try
         {
             var dbFlightReservation = await _repositories.FlightReservations.FindById(id);
+            
             if (dbFlightReservation is null)
                 return NotFound($"Flight reservation with id {id} doesn't exist");
+            
             if ((role == "Tourist") && (userId != dbFlightReservation.TouristId))
                 return BadRequest($"Tourists can only delete their own reservations");
+
+            var offer = await _repositories.FlightOffers.FindById(dbFlightReservation.OfferId);
+
+            if (role == "Agent")
+            {
+                var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+                if (agencyId != offer!.AgencyId)
+                    return BadRequest("Agents can only change reservations for they own agency");
+            }
+
             await _repositories.Payment.Remove(dbFlightReservation.PaymentId);
             await _repositories.FlightReservations.Remove(id);
             await _repositories.Payment.SaveChangesAsync();
