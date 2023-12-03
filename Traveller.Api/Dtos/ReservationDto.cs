@@ -13,8 +13,11 @@ public class ReservationDto
 
     public int OfferId { get; set; }
     public int TouristId { get; set; }
-    public int PaymentId { get; set; }
-    public PaymentDto? paymentDto { get; set; }
+    
+    public string PaymentFormat { get; set; } = null!;
+    public string? CreditCardNumber { get; set; }
+    public int? PaymentId { get; set; }
+
 
     public static void Map<TProduct, TReservation, TOffer>(TReservation reservation, ReservationDto reservationDto) where TProduct : class, IProduct, new()
                                                                                                                     where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
@@ -25,7 +28,6 @@ public class ReservationDto
         reservation.NumberOfTravellers = reservationDto.NumberOfTravellers;
         reservation.OfferId = reservationDto.OfferId;
         reservation.TouristId = reservationDto.TouristId;
-        reservation.PaymentId = reservationDto.PaymentId;
         if (reservationDto.Id != null)
             reservation.Id = (int)reservationDto.Id;
         if (reservationDto.ArrivalDate != null)
@@ -46,5 +48,28 @@ public class ReservationDto
             TouristId = reservation.TouristId,
             PaymentId = reservation.PaymentId
         };
+    }
+    
+    //De cada Dto de Reservacion, podemos crear el pago a partir de los datos q nos da
+    public Payment GetPayment()
+    {
+        if (CreditCardNumber == null)
+            return new PaymentByCash()
+            {
+                Total = Price,
+                UserId = TouristId,
+            };
+        if (Confirm(CreditCardNumber, Price))
+            return new PaymentByCard()
+            {
+                Total = Price,
+                UserId = TouristId,
+                CardNumber = CreditCardNumber
+            };
+        throw new Exception("Payment Failed");
+        bool Confirm(string CardNumber, double Price)
+        {
+            return true;
+        }
     }
 }

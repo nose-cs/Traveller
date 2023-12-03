@@ -18,7 +18,8 @@ public class TourOfferController : ControllerBase
 
     private readonly ILogger<TourOfferController> _logger;
 
-    public TourOfferController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService, FileService fileService)
+    public TourOfferController(ILogger<TourOfferController> logger, Repositories repository,
+        ExporterService exporterService, FileService fileService)
     {
         _logger = logger;
         _repository = repository;
@@ -161,11 +162,12 @@ public class TourOfferController : ControllerBase
     {
         var offers = _repository.TourOffers.Find().Where(ho =>
             (filter.ProductId == null || ho.ProductId == filter.ProductId)
+            && (filter.Title == null || ho.Title.ToLower().Contains(filter.Title.ToLower()))
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
-             && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
+            && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
             && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
-                                                     ho.EndDate >= filter.StartDate))
+                ho.EndDate >= filter.StartDate))
             && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId));
 
         if (filter.OrderBy != null)
@@ -173,25 +175,30 @@ public class TourOfferController : ControllerBase
             switch (filter.OrderBy)
             {
                 case ("Price"):
-                    offers = offers.OrderBy(offer => offer.Price); break;
+                    offers = offers.OrderBy(offer => offer.Price);
+                    break;
                 default:
-                    offers = offers.OrderBy(offer => offer.Id); break;
+                    offers = offers.OrderBy(offer => offer.Id);
+                    break;
             }
         }
 
         if (filter.Descending.HasValue && filter.Descending.Value)
             offers = offers.Reverse();
 
-        var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
-                               .ToArray().Select(offer =>
-                               {
-                                   var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer,
-                                       _fileService.GetRelativePath(offer.Image.Name, offer.Image.Id),
-                                       offer.Image.Name);
-                                   dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                   dto.ProductName = _repository.Tours.GetName(offer.ProductId);
-                                   return dto;
-                               });
+        var pageOffers = (filter.PageIndex == null || filter.PageSize == null
+                ? offers
+                : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value,
+                    (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+            .ToArray().Select(offer =>
+            {
+                var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer,
+                    _fileService.GetRelativePath(offer.Image.Name, offer.Image.Id),
+                    offer.Image.Name);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repository.Tours.GetName(offer.ProductId);
+                return dto;
+            });
 
         return Ok(new PaginationResponse<OfferDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
     }
@@ -204,25 +211,30 @@ public class TourOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        var response = _repository.TourReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
-                    .GroupBy(reservation => reservation.OfferId)
-                    .OrderBy(group => group.Key)
-                    .Select(group => new SalesResponse
-                    {
-                        Group = group.Key.ToString(),
-                        Description = group.First().Offer.Title,
-                        Total = group.Count(),
-                        MoneyAmount = group.Sum(reservation => reservation.Price)
-                    });
+        var response = _repository.TourReservations.FindWithInclude(reservation => reservation.Offer).Where(
+                reservation => reservation.Offer.AgencyId == agencyId &&
+                               DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start &&
+                               DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+            .GroupBy(reservation => reservation.OfferId)
+            .OrderBy(group => group.Key)
+            .Select(group => new SalesResponse
+            {
+                Group = group.Key.ToString(),
+                Description = group.First().Offer.Title,
+                Total = group.Count(),
+                MoneyAmount = group.Sum(reservation => reservation.Price)
+            });
 
         if (export.HasValue)
         {
-            return Ok(_exporterService.getDoc("Tour Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
-                                                       new string[4] { "Id", "Title", "Total Sales", "Amount (USD)" },
-                                                       new float[4] { 15, 50, 15, 15 },
-                                                       response.SelectMany(sales => new object[] { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
-                                                       export.Value
-                                                       ));
+            return Ok(_exporterService.getDoc(
+                "Tour Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
+                new string[4] { "Id", "Title", "Total Sales", "Amount (USD)" },
+                new float[4] { 15, 50, 15, 15 },
+                response.SelectMany(sales => new object[]
+                    { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
+                export.Value
+            ));
         }
 
         return Ok(response);

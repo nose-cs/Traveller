@@ -18,7 +18,8 @@ public class HotelOfferController : ControllerBase
 
     private readonly ILogger<HotelOfferController> _logger;
 
-    public HotelOfferController(ILogger<HotelOfferController> logger, Repositories repository, ExporterService exporterService, FileService fileService)
+    public HotelOfferController(ILogger<HotelOfferController> logger, Repositories repository,
+        ExporterService exporterService, FileService fileService)
     {
         _logger = logger;
         _repository = repository;
@@ -131,6 +132,7 @@ public class HotelOfferController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
@@ -161,39 +163,45 @@ public class HotelOfferController : ControllerBase
     {
         var offers = _repository.HotelOffers.Find().Where(ho =>
             (filter.ProductId == null || ho.ProductId == filter.ProductId)
+            && (filter.Title == null || ho.Title.ToLower().Contains(filter.Title.ToLower()))
             && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
             && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
-             && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
+            && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
             && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
-                                                     ho.EndDate >= filter.StartDate))
+                ho.EndDate >= filter.StartDate))
             && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId)
-             && (filter.ProductName == null || ho.Product.Name.ToLower().Contains(filter.ProductName.ToLower())));
+            && (filter.ProductName == null || ho.Product.Name.ToLower().Contains(filter.ProductName.ToLower())));
 
         if (filter.OrderBy != null)
         {
             switch (filter.OrderBy)
             {
                 case ("Price"):
-                    offers = offers.OrderBy(offer => offer.Price); break;
+                    offers = offers.OrderBy(offer => offer.Price);
+                    break;
                 default:
-                    offers = offers.OrderBy(offer => offer.Id); break;
+                    offers = offers.OrderBy(offer => offer.Id);
+                    break;
             }
         }
-        
+
 
         if (filter.Descending.HasValue && filter.Descending.Value)
             offers = offers.Reverse();
 
-        var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
-                               .ToArray().Select(offer =>
-                               {
-                                   var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer,
-                                       _fileService.GetRelativePath(offer.Image.Name, offer.Image.Id),
-                                       offer.Image.Name);
-                                    dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                    dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
-                                    return dto;
-                                });
+        var pageOffers = (filter.PageIndex == null || filter.PageSize == null
+                ? offers
+                : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value,
+                    (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+            .ToArray().Select(offer =>
+            {
+                var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer,
+                    _fileService.GetRelativePath(offer.Image.Name, offer.Image.Id),
+                    offer.Image.Name);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
+                return dto;
+            });
 
         return Ok(new PaginationResponse<OfferDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
     }
@@ -206,25 +214,30 @@ public class HotelOfferController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        var response = _repository.HotelReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
-                    .GroupBy(reservation => reservation.OfferId)
-                    .OrderBy(group => group.Key)
-                    .Select(group => new SalesResponse 
-                            { 
-                                Group = group.Key.ToString(),
-                                Description = group.First().Offer.Title,
-                                Total = group.Count(), 
-                                MoneyAmount = group.Sum(reservation => reservation.Price) 
-                            });
+        var response = _repository.HotelReservations.FindWithInclude(reservation => reservation.Offer).Where(
+                reservation => reservation.Offer.AgencyId == agencyId &&
+                               DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start &&
+                               DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+            .GroupBy(reservation => reservation.OfferId)
+            .OrderBy(group => group.Key)
+            .Select(group => new SalesResponse
+            {
+                Group = group.Key.ToString(),
+                Description = group.First().Offer.Title,
+                Total = group.Count(),
+                MoneyAmount = group.Sum(reservation => reservation.Price)
+            });
 
         if (export.HasValue)
         {
-            return Ok(_exporterService.getDoc("Hotel Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
-                                                       new string[4] { "Id", "Title", "Total Sales", "Amount (USD)" },
-                                                       new float[4] { 15, 50, 15, 15 },
-                                                       response.SelectMany(sales => new object[] { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
-                                                       export.Value
-                                                       ));
+            return Ok(_exporterService.getDoc(
+                "Hotel Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
+                new string[4] { "Id", "Title", "Total Sales", "Amount (USD)" },
+                new float[4] { 15, 50, 15, 15 },
+                response.SelectMany(sales => new object[]
+                    { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
+                export.Value
+            ));
         }
 
         return Ok(response);

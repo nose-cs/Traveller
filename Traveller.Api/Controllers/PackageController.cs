@@ -154,6 +154,7 @@ public class PackageController : ControllerBase
     {
         var offers = _repository.Package.Find().Where(pa =>
             (filter.ProductId == null || pa.Id == filter.ProductId)
+            && (filter.Title == null || pa.Title.ToLower().Contains(filter.Title.ToLower()))
             && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
             && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
             && (filter.Capacity == null || pa.Capacity >= filter.Capacity)

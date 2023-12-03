@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
@@ -29,28 +28,24 @@ public class FlightReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
-        if (await _repositories.FlightOffers.FindById(reservationDto.OfferId) == null)
-            return NotFound($"Flight Offer id: {reservationDto.OfferId} doesn't exists");
-
-        var token = Request.Headers.Authorization[0]![7..];
-        var jwt = new JwtSecurityToken(token);
-        var role = jwt.Claims.First(c => c.Type == "role").Value;
-        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-        if (role == "Tourist" && userId != reservationDto.TouristId)
-            return BadRequest($"Tourists can only make reservations for themselves");
-
-        var reservation = new FlightReservation();
-        ReservationDto.Map<Flight, FlightReservation, FlightOffer>(reservation, reservationDto);
-        if (reservationDto.paymentDto != null && reservationDto.paymentDto.Total < reservationDto.Price)
-            return BadRequest("The payment is not enough");
+        var offer = await _repositories.TourOffers.FindById(reservationDto.OfferId);
+        if ( offer is null)
+            return NotFound($"Tour Offer id: {reservationDto.OfferId} doesn´t exists");
+        
+        if (offer.Capacity < reservationDto.NumberOfTravellers)
+            return BadRequest($"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
+        
+        offer.Capacity = (uint)(offer.Capacity - reservationDto.NumberOfTravellers);
+        
         try
         {
+            var reservation = new FlightReservation();
+            var payment = reservationDto.GetPayment();
+            ReservationDto.Map<Flight, FlightReservation, FlightOffer>(reservation, reservationDto);
+            await _repositories.Payment.AddAsync(payment);
+            reservation.Payment = payment;
             await _repositories.FlightReservations.AddAsync(reservation);
-            if (reservationDto.paymentDto != null)
-                await _repositories.Payment.AddAsync(PaymentDto.Map(reservationDto.paymentDto));
-            await _repositories.Payment.SaveChangesAsync();
             await _repositories.FlightReservations.SaveChangesAsync();
-
             return Ok();
         }
         catch (Exception e)

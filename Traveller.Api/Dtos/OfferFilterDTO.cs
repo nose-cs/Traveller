@@ -4,6 +4,7 @@ namespace Traveller.Dtos;
 
 public class OfferFilterDTO : PaginationDto
 {
+    public string? Title { get; set; }
     public int? ProductId { get; set; }
     public DateTime? StartDate { get; set; }
     public double? StartPrice { get; set; }
