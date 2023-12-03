@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.Intrinsics;
 using Traveller.Domain;
@@ -25,6 +26,7 @@ public class HotelController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = ("MarketingEmployee, TravellerAdmin"))]
     public async Task<ActionResult> Create(HotelDto hotelDto)
     {
         try
@@ -42,6 +44,7 @@ public class HotelController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = ("TravellerAdmin"))]
     public async Task<ActionResult> Update([FromBody] HotelDto hotelDto, [FromRoute] int id)
     {
         try
@@ -68,6 +71,7 @@ public class HotelController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = ("TravellerAdmin"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
         try
@@ -155,25 +159,6 @@ public class HotelController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
-    }
-    
-    [HttpGet("{id:int}/offers")]
-    public IActionResult GetHotelOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
-    {
-        var offers = _repositories.HotelOffers.Find().Where(
-                to => to.ProductId == id
-                      && (filter.StartPrice == null || to.Price >= filter.StartPrice)
-                      && (filter.EndPrice == null || to.Price <= filter.EndPrice)
-                      && (filter.StartDate == null || to.StartDate <= filter.StartDate && (to.EndDate == null || to.EndDate >= filter.StartDate))
-                      && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
-            .ToArray().Select(offer =>
-            {
-                var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
-                dto.AgencyName = _repositories.Agencies.GetName(offer.AgencyId);
-                dto.ProductName = _repositories.Flights.GetName(offer.ProductId);
-                return dto;
-            });
-        return Ok(offers);
     }
 
     [HttpGet("getMostSolds")]
