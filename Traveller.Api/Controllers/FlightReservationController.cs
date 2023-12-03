@@ -25,22 +25,37 @@ public class FlightReservationController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = ("Agent, Tourist"))]
+    // [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
+        if (reservationDto.NumberOfTravellers <= 0)
+            return BadRequest("The number of travellers must be greater than 0");
+            
         var offer = await _repositories.FlightOffers.FindById(reservationDto.OfferId);
-        if ( offer is null)
+        
+        if (offer is null)
             return NotFound($"Flight Offer id: {reservationDto.OfferId} doesn´t exists");
         
+        var token = Request.Headers.Authorization[0]![7..];
+        var jwt = new JwtSecurityToken(token);
+            
+        if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
+            && agencyId != offer.AgencyId)
+        {
+            return Unauthorized("You don't have permission for this action");
+        }
+
         if (offer.Capacity < reservationDto.NumberOfTravellers)
-            return BadRequest($"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
-        
+            return BadRequest(
+                $"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
+
         offer.Capacity = (uint)(offer.Capacity - reservationDto.NumberOfTravellers);
-        
         try
         {
             var reservation = new FlightReservation();
-            var payment = reservationDto.GetPayment();
+            var price = offer.Price * reservationDto.NumberOfTravellers;
+            reservation.Price = price;
+            var payment = reservationDto.GetPayment(price);
             ReservationDto.Map<Flight, FlightReservation, FlightOffer>(reservation, reservationDto);
             await _repositories.Payment.AddAsync(payment);
             reservation.Payment = payment;

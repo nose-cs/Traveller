@@ -4,7 +4,6 @@ using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
-using Traveller.Persistence.Migrations;
 using Traveller.Services;
 
 namespace Traveller.Controllers;
@@ -30,9 +29,22 @@ public class HotelReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
+        if (reservationDto.NumberOfTravellers <= 0)
+            return BadRequest("The number of travellers must be greater than 0");
+            
         var offer = await _repositories.HotelOffers.FindById(reservationDto.OfferId);
+        
         if (offer is null)
             return NotFound($"Hotel Offer id: {reservationDto.OfferId} doesn´t exists");
+        
+        var token = Request.Headers.Authorization[0]![7..];
+        var jwt = new JwtSecurityToken(token);
+            
+        if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
+            && agencyId != offer.AgencyId)
+        {
+            return Unauthorized("You don't have permission for this action");
+        }
 
         if (offer.Capacity < reservationDto.NumberOfTravellers)
             return BadRequest(
@@ -43,7 +55,9 @@ public class HotelReservationController : ControllerBase
         try
         {
             var reservation = new HotelReservation();
-            var payment = reservationDto.GetPayment();
+            var price = offer.Price * reservationDto.NumberOfTravellers;
+            reservation.Price = price;
+            var payment = reservationDto.GetPayment(price);
             ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(reservation, reservationDto);
             await _repositories.Payment.AddAsync(payment);
             reservation.Payment = payment;
