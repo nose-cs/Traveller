@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
 using Traveller.Exceptions;
@@ -15,41 +16,13 @@ public class AdminController : ControllerBase
 {
     private readonly LoginService _loginService;
     private readonly ILogger<HotelController> _logger;
+    private readonly Repositories _repositories;
 
-    public AdminController(LoginService loginService, ILogger<HotelController> logger)
+    public AdminController(LoginService loginService, ILogger<HotelController> logger, Repositories repositories)
     {
         _loginService = loginService;
         _logger = logger;
-    }
-
-
-    [Authorize(Roles = ("AgencyAdmin"))]
-    [HttpPost("registerAgencyUser")]
-    public async Task<ActionResult> SignupAdmin([FromBody] UserDto userDto)
-    {
-        var token = Request.Headers.Authorization[0]![7..];
-        var jwt = new JwtSecurityToken(token);
-        var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
-
-        try
-        {
-            if (userDto.Role is not (Role.AgencyAdmin or Role.Agent or Role.MarketingEmployee))
-            {
-                return Unauthorized("You don't have permission for this action");
-            }
-
-            await _loginService.CreateAccount(userDto, agencyId);
-            return Ok();
-        }
-        catch (BadRequestException e)
-        {
-            return BadRequest(e.Message);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e.Message);
-            return StatusCode(StatusCodes.Status500InternalServerError);
-        }
+        _repositories = repositories;
     }
 
     [HttpPost("registerTravellerAdmin")]
@@ -73,5 +46,11 @@ public class AdminController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+    
+    [HttpGet("AgenciesUsers")]
+    public IActionResult GetUsers()
+    {
+        return Ok(_repositories.Users.FindAgencyUsers());
     }
 }

@@ -6,4 +6,6 @@ public interface ITourRepository : IRepository<Tour, int>
 {
     Task<IEnumerable<Package>?> FindPackages(int key);
     string GetName(int key);
+
+    Task AddWithHotelsAsync(ExtendedTour tour, HashSet<int> hotelsIds);
 }

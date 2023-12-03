@@ -9,6 +9,10 @@ public class TourDto
     public TourInfo SourceInfo { get; init; } = null!;
     public TourInfo DestinationInfo { get; init; } = null!;
     public uint Duration { get; set; }
+    public int ImageId { get; set; }
+    public FileDto? Image { get; set; }
+
+    public int[]? HotelsIds { get; set; } = null!;
 
     public static TourDto Map(Tour tour)
     {
@@ -19,22 +23,28 @@ public class TourDto
         var destinationInfo = new TourInfo(destinationPlaceInfo, destinationDay, tour.DestinationTime);
         return new TourDto
         {
-            Id = tour.Id, SourceInfo = sourceInfo, DestinationInfo = destinationInfo, Duration = tour.Duration
+            Id = tour.Id, SourceInfo = sourceInfo, DestinationInfo = destinationInfo, Duration = tour.Duration, 
+            ImageId = tour.ImageId
         };
     }
 
     public static Tour Map(TourDto tourDto)
     {
-        var tour = tourDto.Duration > 0 ? new Tour
+        var tour = tourDto.Duration == 0 ? new Tour
         {
             SourceDay = tourDto.SourceInfo.Day, SourceTime = tourDto.SourceInfo.Time,
-            SourcePlaceId = tourDto.SourceInfo.Place.Id, DestinationPlaceId = tourDto.DestinationInfo.Place.Id,
+            SourcePlace = PlaceDto.Map(tourDto.SourceInfo.Place),
+            DestinationPlace = PlaceDto.Map(tourDto.DestinationInfo.Place),
             DestinationTime = tourDto.DestinationInfo.Time, Duration = tourDto.Duration,
+            ImageId = tourDto.ImageId
             
         } : new ExtendedTour
         {   
             SourceDay = tourDto.SourceInfo.Day, SourceTime = tourDto.SourceInfo.Time, 
-            DestinationTime = tourDto.DestinationInfo.Time, Duration = tourDto.Duration
+            SourcePlace = PlaceDto.Map(tourDto.SourceInfo.Place),
+            DestinationPlace = PlaceDto.Map(tourDto.DestinationInfo.Place),
+            DestinationTime = tourDto.DestinationInfo.Time, Duration = tourDto.Duration,
+            ImageId = tourDto.ImageId
         };
         if (tourDto.Id is null)
         {

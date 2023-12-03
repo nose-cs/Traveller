@@ -17,9 +17,15 @@ public partial class AgencyController
     {
         var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
-        var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+
+        if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
+            && agencyId != id)
+        {
+            return Unauthorized("You don't have permission for this action");
+        }
         
-        if (agencyId != id || userDto.Role is not (Role.AgencyAdmin or Role.Agent or Role.MarketingEmployee)) 
+        
+        if (userDto.Role is not (Role.AgencyAdmin or Role.Agent or Role.MarketingEmployee)) 
             return Unauthorized("You don't have permission for this action");
 
         try
@@ -45,9 +51,15 @@ public partial class AgencyController
         {
             var token = Request.Headers.Authorization[0]![7..];
             var jwt = new JwtSecurityToken(token);
-            var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
+            
+            if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
+                && agencyId != idAgency)
+            {
+                return Unauthorized("You don't have permission for this action");
+            }
         
-            if (agencyId != idAgency || userDto.Role is not (Role.AgencyAdmin or Role.Agent or Role.MarketingEmployee)) 
+        
+            if (userDto.Role is not (Role.AgencyAdmin or Role.Agent or Role.MarketingEmployee)) 
                 return Unauthorized("You don't have permission for this action");
             
             await _loginService.UpdateAgencyUserAccount(idUser, idAgency, userDto);
@@ -76,10 +88,12 @@ public partial class AgencyController
         {
             var token = Request.Headers.Authorization[0]![7..];
             var jwt = new JwtSecurityToken(token);
-            var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
-        
-            if (agencyId != idAgency) 
+            
+            if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
+                && agencyId != idAgency)
+            {
                 return Unauthorized("You don't have permission for this action");
+            }
 
             await _repositories.Users.Remove(idUser);
             
@@ -98,12 +112,5 @@ public partial class AgencyController
     public IActionResult GetUsers(int id)
     {
         return Ok(_repositories.Users.FindAgencyUsers().Where(u => u.AgencyId == id));
-    }
-    
-    [HttpGet("{idAgency:int}/employees/{idUser:int}/reservations")]
-    public IActionResult GetUserReservations([FromRoute] int idAgency, [FromRoute] int idUser)
-    {
-        //TODO
-        return Ok();
     }
 }

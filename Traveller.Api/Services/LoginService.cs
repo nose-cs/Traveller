@@ -77,7 +77,7 @@ public class LoginService
             
         var user = await _repository.FindByEmail(userDto.Email);
         
-        if (user is not null)
+        if (user is not null && user.Id != idUser)
         {
             throw new BadRequestException($"Email {userDto.Email} already exists");
         }

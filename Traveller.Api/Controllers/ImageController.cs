@@ -25,7 +25,7 @@ public class FileController : ControllerBase
     }
     
     [HttpPost]
-    [Authorize(Roles = ("MarketingEmployee, Agent, Admin"))]
+    [Authorize(Roles = ("TravellerAdmin, MarketingEmployee, Agent, Admin"))]
     public async Task<IActionResult> UploadFile(IFormFile? file)
     {
         try
@@ -50,7 +50,7 @@ public class FileController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = ("MarketingEmployee, Agent, Admin"))]
+    [Authorize(Roles = ("TravellerAdmin, MarketingEmployee, Agent, Admin"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
         try
