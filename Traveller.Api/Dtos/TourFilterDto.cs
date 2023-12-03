@@ -11,10 +11,4 @@ public class TourFilterDTO
     public Day? StartDay { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
-
-    public int? PageIndex { get; set; }
-    public int? PageSize { get; set; }
-
-    public string? OrderBy { get; set; }
-    public bool? Descending { get; set; }
 }

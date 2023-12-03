@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
-using Traveller.Domain.Interfaces.Models;
-using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
 
@@ -85,11 +83,9 @@ public class TourController : ControllerBase
     }
     
 
-
     [HttpGet]
     public ActionResult<IEnumerable<TourDto>> GetToursWithFilter([FromQuery] TourFilterDTO filter)
-    {
-        var items = _repositories.Tours.Find().Where(fl =>
+        => Ok(_repositories.Tours.Find().Where(fl =>
                    (filter.Id is null || filter.Id == fl.Id)
                 && (filter.Duration is null || filter.Duration == fl.Duration)
                 && (filter.StartDay is null || fl.SourceDay == filter.StartDay)
@@ -98,27 +94,8 @@ public class TourController : ControllerBase
                                           || fl.SourcePlace.Country.ToLower().Contains(filter.Source.ToLower()))
                 && (filter.Destination is null || fl.DestinationPlace.Address.ToLower().Contains(filter.Destination.ToLower())
                                                || fl.DestinationPlace.Country.ToLower().Contains(filter.Destination.ToLower())
-                                               || fl.DestinationPlace.City.ToLower().Contains(filter.Destination.ToLower())));
-
-        if (filter.OrderBy != null) {
-            switch (filter.OrderBy)
-            {
-                case ("Duration"):
-                    items = items.OrderBy(item => item.Duration); break;
-                case ("SourceDay"):
-                    items = items.OrderBy(item => item.SourceDay); break;
-                default:
-                    items = items.OrderBy(item => item.Id); break;
-            }
-        }
-
-        if (filter.Descending.HasValue && filter.Descending.Value)
-            items = items.Reverse();
-        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
-        .Select(TourDto.Map);
-
-        return Ok(new PaginationResponse<TourDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
-    }
+                                               || fl.DestinationPlace.City.ToLower().Contains(filter.Destination.ToLower())))
+            .Select(TourDto.Map));
 
         [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)

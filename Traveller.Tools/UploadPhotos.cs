@@ -16,5 +16,14 @@ public static partial class Program
     {
         await _appDbContext.AddRangeAsync(HotelsPhotos);
     }
+
+<<<<<<< HEAD
     private static string[] GetPhotosNames() => Directory.GetFiles($"{ImagesPath}", "*.png").Select(x => x[(ImagesPath.Length + 5) ..]).ToArray();
 }
+<<<<<<< HEAD
+=======
+=======
+    private static string[] GetPhotosNames() => Directory.GetFiles($"{ImagesPath}", "*.png").Select(x => x[ImagesPath.Length ..]).ToArray();
+}
+>>>>>>> d10e642 (cambios personales)
+>>>>>>> 65868e2 (cambios personales)

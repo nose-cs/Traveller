@@ -7,11 +7,5 @@ public class HotelFilterDTO
     public string? Address { get; set; } 
     public string? Name { get; set; } 
     public Category? Category { get; set; }
-
-    public int? PageIndex { get; set; }
-    public int? PageSize { get; set; }
-
-    public string? OrderBy { get; set; }
-    public bool? Descending { get; set; }
 }
 

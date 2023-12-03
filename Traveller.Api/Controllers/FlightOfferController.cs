@@ -133,40 +133,23 @@ public class FlightOfferController : ControllerBase
     [HttpGet]
     public IActionResult GetFlightOffers([FromQuery] OfferFilterDTO filter)
     {
-        var offers = _repository.FlightOffers.Find().Where(ho =>
-            (filter.ProductId == null || ho.ProductId == filter.ProductId)
-            && (filter.Title == null || ho.Title.ToLower().Contains(filter.Title.ToLower()))
-            && (filter.StartPrice == null || ho.Price >= filter.StartPrice)
-            && (filter.EndPrice == null || ho.Price <= filter.EndPrice)
-             && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
-            && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
-                                                     ho.EndDate >= filter.StartDate))
-            && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId));
-
-        if (filter.OrderBy != null)
-        {
-            switch (filter.OrderBy)
+        var offers = _repository.FlightOffers.Find().Where(to =>
+                (filter.ProductId == null || to.ProductId == filter.ProductId)
+                && (filter.Title == null || to.Title.ToLower().Contains(filter.Title.ToLower())) 
+                && (filter.StartPrice == null || to.Price >= filter.StartPrice)
+                && (filter.EndPrice == null || to.Price <= filter.EndPrice)
+                && (filter.StartDate == null ||
+                    to.StartDate <= filter.StartDate && (to.EndDate == null ||
+                                                         to.EndDate >= filter.StartDate))
+                && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
+            .ToArray().Select(offer =>
             {
-                case ("Price"):
-                    offers = offers.OrderBy(offer => offer.Price); break;
-                default:
-                    offers = offers.OrderBy(offer => offer.Id); break;
-            }
-        }
-
-        if (filter.Descending.HasValue && filter.Descending.Value)
-            offers = offers.Reverse();
-
-        var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
-                               .ToArray().Select(offer =>
-                               {
-                                   var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
-                                   dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                   dto.ProductName = _repository.Flights.GetName(offer.ProductId);
-                                   return dto;
-                               });
-
-        return Ok(new PaginationResponse<OfferDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
+                var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                dto.ProductName = _repository.Flights.GetName(offer.ProductId);
+                return dto;
+            });
+        return Ok(offers);
     }
 
     [HttpGet("{id:int}")]

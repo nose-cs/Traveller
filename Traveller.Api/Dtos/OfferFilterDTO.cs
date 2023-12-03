@@ -13,11 +13,4 @@ public class OfferFilterDTO
     public int? Capacity { get; set; }
     public string? ProductName { get; set; }
     public string? AgencyName { get; set; }
-
-    public int? PageIndex { get; set; }
-    public int? PageSize { get; set; }
-
-    public string? OrderBy { get; set; }
-
-    public bool? Descending { get; set; }
 }
