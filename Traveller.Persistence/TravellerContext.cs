@@ -21,6 +21,7 @@ public class TravellerContext : DbContext
     public DbSet<TourReservation> TourReservations { get; set; } = null!;
     public DbSet<Package> Packages { get; set; } = null!;
     public DbSet<Facility> Facilities { get; set; } = null!;
+    public DbSet<PackageTour> PackageTours { get; set; } = null!;
     public DbSet<PackageFacility> PackageFacility { get; set; } = null!;
     public DbSet<PackageReservation> PackageReservations { get; set; } = null!;
     public DbSet<Payment> Payment { get; set; } = null!;
