@@ -171,6 +171,7 @@ public class TourController : ControllerBase
         }
     }
     
+
     [HttpGet("{id:int}/offers")]
     public IActionResult GetTourOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
     {
