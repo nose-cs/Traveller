@@ -8,11 +8,12 @@ public class HotelDto
     public string Name { get; set; } = null!;
     public PlaceDto Address { get; set; } = null!;
     public Category Category { get; set; }
-    public FileDto Image { get; set; }
+    public int ImageId { get; set; }
+    public FileDto? Image { get; set; }
 
     public static Hotel Map(HotelDto hotelDto)
     {
-        var hotel = new Hotel() { Name = hotelDto.Name, AddressId = hotelDto.Address.Id, Category = hotelDto.Category };
+        var hotel = new Hotel() { Name = hotelDto.Name, Address = PlaceDto.Map(hotelDto.Address), Category = hotelDto.Category, ImageId = hotelDto.ImageId};
         if (hotelDto.Id is null)
         {
             return hotel;

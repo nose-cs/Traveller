@@ -27,6 +27,30 @@ public class PackageRepository : IPackageRepository
         }
     }
 
+    public bool RemovePackageFacility(int packageId, int facilityId)
+    {
+        var pfDb = _context.PackageFacility.FirstOrDefault(pf => pf.PackageId == packageId && pf.FacilityId == facilityId);
+        if (pfDb is not null)
+        {
+            _context.Remove(pfDb);
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool RemoveAllPackageFacility(int packageId)
+    {
+        var pfsDb = _context.PackageFacility.Where(pf => pf.PackageId == packageId);
+        if (pfsDb is not null)
+        {
+            _context.RemoveRange(pfsDb);
+            return true;
+        }
+
+        return false;
+    }
+
     public async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
@@ -59,13 +83,20 @@ public class PackageRepository : IPackageRepository
 
     public IEnumerable<PackageFacility> FindFacilities(int key)
     {
-        return _context.Set<PackageFacility>().Include(x => x.Facility).Where(x => x.PackageId == key);
+        return _context.PackageFacility.Include(x 
+            => x.Facility).Where(x 
+            => x.PackageId == key);
     }
 
     public Task<IEnumerable<Hotel>> FindHotels(int key)
     {
         throw new NotImplementedException();
     }
+    public IEnumerable<PackageFacility> FindPackageFacilities(int key)
+    {
+        return _context.PackageFacility.Include(pf => pf.Facility).Where(pf => pf.PackageId == key);
+    }
+    
 
     public async Task AddWithToursAsync(Package model, params int[] toursIds)
     {

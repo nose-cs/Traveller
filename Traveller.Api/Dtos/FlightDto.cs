@@ -12,10 +12,11 @@ public class FlightDto
 
     public static Flight Map(FlightDto flightDto)
     {
-        var flight = new Flight()
+        var flight = new Flight
         {
-            FlightNumber = flightDto.FlightNumber, Airline = flightDto.Airline, SourceId = flightDto.Source.Id,
-            DestinationId = flightDto.Destination.Id
+            FlightNumber = flightDto.FlightNumber, Airline = flightDto.Airline, 
+            Source = PlaceDto.Map(flightDto.Source),
+            Destination = PlaceDto.Map(flightDto.Destination)
         };
         if (flightDto.Id is null)
         {
@@ -28,7 +29,7 @@ public class FlightDto
 
     public static FlightDto Map(Flight flight)
     {
-        return new FlightDto()
+        return new FlightDto
         {
             Id = flight.Id, FlightNumber = flight.FlightNumber, Airline = flight.Airline, 
             Source = PlaceDto.Map(flight.Source), Destination = PlaceDto.Map(flight.Destination)

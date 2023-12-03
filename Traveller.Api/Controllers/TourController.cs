@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
-using Traveller.Domain.Interfaces.Models;
-using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
 
@@ -26,7 +24,21 @@ public class TourController : ControllerBase
     {
         try
         {
-            await _repositories.Tours.AddAsync(TourDto.Map(tourDto));
+            var tour = TourDto.Map(tourDto);
+
+            if (tour is ExtendedTour et)
+            {
+                if (tourDto is { HotelsIds.Length: > 0 })
+                {
+                    await _repositories.Tours.AddWithHotelsAsync(et, tourDto.HotelsIds.ToHashSet());
+                }
+                else
+                {
+                    BadRequest("Extended tours must have at least 1 hotel");
+                }
+            }
+            else
+                await _repositories.Tours.AddAsync(tour);
 
             await _repositories.Tours.SaveChangesAsync();
             return Ok();
@@ -83,7 +95,7 @@ public class TourController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-
+    
 
     [HttpGet]
     public ActionResult<IEnumerable<TourDto>> GetToursWithFilter([FromQuery] TourFilterDTO filter)
@@ -119,7 +131,7 @@ public class TourController : ControllerBase
         return Ok(new PaginationResponse<TourDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }
 
-    [HttpGet("{id:int}")]
+        [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
         try
