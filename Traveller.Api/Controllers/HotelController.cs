@@ -135,25 +135,6 @@ public class HotelController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
-    [HttpGet("{id:int}/offers")]
-    public IActionResult GetHotelOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
-    {
-        var offers = _repositories.HotelOffers.Find().Where(
-                to => to.ProductId == id
-                      && (filter.StartPrice == null || to.Price >= filter.StartPrice)
-                      && (filter.EndPrice == null || to.Price <= filter.EndPrice)
-                      && (filter.StartDate == null || to.StartDate <= filter.StartDate && (to.EndDate == null || to.EndDate >= filter.StartDate))
-                      && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
-            .ToArray().Select(offer =>
-            {
-                var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
-                dto.AgencyName = _repositories.Agencies.GetName(offer.AgencyId);
-                dto.ProductName = _repositories.Flights.GetName(offer.ProductId);
-                return dto;
-            });
-        return Ok(offers);
-    }
 
     [HttpGet("getMostSolds")]
     public IActionResult GetMostSolds()

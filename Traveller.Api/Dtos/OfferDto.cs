@@ -17,6 +17,7 @@ namespace Traveller.Dtos
         public string? ProductName { get; set; }
         public int ProductId { get; set; }
         public int ImageId { get; set; }
+        public FileDto? Image { get; set; }
 
         public static void Map<TProduct, TReservation, TOffer>(TOffer offer, OfferDto offerDto) where TProduct : class, IProduct, new()
                                                                                                                  where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
@@ -34,9 +35,10 @@ namespace Traveller.Dtos
             if (offerDto.Id != null)
                 offer.Id = (int)offerDto.Id;
         }
-        public static OfferDto Map<TProduct, TReservation, TOffer>(TOffer offer) where TProduct : class, IProduct, new()
-                                                                                where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
-                                                                                where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
+        public static OfferDto Map<TProduct, TReservation, TOffer>(TOffer offer, string imagePath, string imageName) 
+            where TProduct : class, IProduct, new()
+            where TReservation : class, IReservation<TProduct, TReservation, TOffer>, new()
+            where TOffer : class, IOffer<TProduct, TReservation, TOffer>, new()
         {
             return new OfferDto()
             {
@@ -49,7 +51,8 @@ namespace Traveller.Dtos
                 EndDate = offer.EndDate,
                 AgencyId = offer.AgencyId,
                 ProductId = offer.ProductId,
-                ImageId = offer.ImageId
+                ImageId = offer.ImageId,
+                Image = new FileDto { Id = offer.ImageId, FilePath = imagePath, Name = imageName }
             };
         }
 

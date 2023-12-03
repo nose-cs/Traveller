@@ -136,25 +136,6 @@ public class FlightController : ControllerBase
         return Ok(new PaginationResponse<FlightDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }       
 
-    [HttpGet("{id:int}/offers")]
-    public IActionResult GetFlightOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
-    {
-        var offers = _repositories.FlightOffers.Find().Where(
-                to => to.ProductId == id
-                && (filter.StartPrice == null || to.Price >= filter.StartPrice)
-                && (filter.EndPrice == null || to.Price <= filter.EndPrice)
-                && (filter.StartDate == null || to.StartDate <= filter.StartDate && (to.EndDate == null || to.EndDate >= filter.StartDate))
-                && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
-            .ToArray().Select(offer =>
-            {
-                var dto = OfferDto.Map<Flight, FlightReservation, FlightOffer>(offer);
-                dto.AgencyName = _repositories.Agencies.GetName(offer.AgencyId);
-                dto.ProductName = _repositories.Flights.GetName(offer.ProductId);
-                return dto;
-            });
-        return Ok(offers);
-    }
-
     [HttpGet("getMostSolds")]
     public IActionResult GetMostSolds()
     {
