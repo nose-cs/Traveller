@@ -25,7 +25,7 @@ public class FlightReservationController : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize(Roles = ("Agent, Tourist"))]
+    [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
         if (reservationDto.NumberOfTravellers <= 0)
