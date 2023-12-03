@@ -53,6 +53,20 @@ public class LoginService
         return token;
     }
 
+    public async Task<string> ChangePassword(int userId, ChangePasswordRequestDto requestDto)
+    {
+        var dbUser = await _repository.FindById(userId);
+
+        if (dbUser is null || !_passwordService.CheckPassword(requestDto.OldPassword, dbUser))
+            throw new BadRequestException("Invalid credentials");
+
+        dbUser.Password = _passwordService.EncryptPassword(requestDto.NewPassword);
+        await _repository.SaveChangesAsync();
+
+        var token = _jwtProvider.Generate(dbUser);
+        return token;
+    }
+
     public async Task UpdateAgencyUserAccount(int idUser, int agencyId, UserDto userDto)
     {
         var dbUser = await _repository.FindById(idUser);

@@ -32,8 +32,7 @@ public class PackageController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
         
-        if (packageDto.AgencyId != agencyId)
-            return Unauthorized("Package offer´s agency doesn´t match with user agency");
+        packageDto.AgencyId = agencyId;
         
         var newPackage = PackageDto.Map(packageDto);
 
@@ -52,9 +51,9 @@ public class PackageController : ControllerBase
         return Ok();
     }
 
-    [HttpPut("{id:int}")]
+    [HttpPut]
     [Authorize(Roles = ("MarketingEmployee"))]
-    public async Task<ActionResult> Update([FromBody] PackageDto offerDto, int id)
+    public async Task<ActionResult> Update([FromBody] PackageDto offerDto)
     {
         try
         {
@@ -62,7 +61,10 @@ public class PackageController : ControllerBase
             var jwt = new JwtSecurityToken(token);
             var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-            var dbOffer = await _repository.Package.FindById(id);
+            if (!offerDto.Id.HasValue)
+                return NotFound();
+
+            var dbOffer = await _repository.Package.FindById(offerDto.Id.Value);
             if (dbOffer is null)
             {
                 return NotFound();
@@ -81,7 +83,6 @@ public class PackageController : ControllerBase
             dbOffer.StartDate = offerDto.StartDate;
             dbOffer.EndDate = offerDto.EndDate;
             dbOffer.Capacity = offerDto.Capacity;
-            dbOffer.AgencyId = offerDto.AgencyId;
             dbOffer.ImageId = offerDto.ImageId;
 
             await _repository.Package.SaveChangesAsync();
@@ -132,19 +133,43 @@ public class PackageController : ControllerBase
     public IActionResult GetPackageOffers([FromQuery] OfferFilterDTO filter)
     {
         var offers = _repository.Package.Find().Where(pa =>
-                (filter.ProductId == null || pa.Id == filter.ProductId)
-                && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
-                && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
-                && (filter.StartDate == null || pa.StartDate <= filter.StartDate
-                    && (pa.EndDate == null || pa.EndDate >= filter.StartDate))
-                && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId)
-               ).ToArray().Select(offer =>
+            (filter.ProductId == null || pa.Id == filter.ProductId)
+            && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
+            && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
+             && (filter.Capacity == null || pa.Capacity >= filter.Capacity)
+            && (filter.StartDate == null || pa.StartDate <= filter.StartDate && (pa.EndDate == null ||
+                                                     pa.EndDate >= filter.StartDate))
+            && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId));
+
+        if (filter.OrderBy != null)
+        {
+            switch (filter.OrderBy)
             {
-                var dto = PackageDto.Map(offer);
-                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                return dto;
-            });
-        return Ok(offers);
+                case ("Price"):
+                    offers = offers.OrderBy(offer => offer.Price); break;
+                default:
+                    offers = offers.OrderBy(offer => offer.Id); break;
+            }
+        }
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            offers = offers.Reverse();
+
+        var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+                               .ToArray().Select(offer =>
+                               {
+                                   var dto = PackageDto.Map(offer);
+                                   dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                                   return dto;
+                               });
+
+        return Ok(new PaginationResponse<PackageDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
+    }
+
+    [HttpGet("getTours")]
+    public IActionResult GetTours([FromQuery] int packageId)
+    {
+        return Ok(_repository.Package.FindTours(packageId).Select(TourDto.Map));
     }
 
     [HttpGet("{id:int}")]

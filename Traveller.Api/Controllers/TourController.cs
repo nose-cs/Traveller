@@ -95,26 +95,43 @@ public class TourController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-
+    
 
     [HttpGet]
     public ActionResult<IEnumerable<TourDto>> GetToursWithFilter([FromQuery] TourFilterDTO filter)
-        => Ok(_repositories.Tours.Find().Where(fl =>
-                (filter.Id is null || filter.Id == fl.Id)
+    {
+        var items = _repositories.Tours.Find().Where(fl =>
+                   (filter.Id is null || filter.Id == fl.Id)
                 && (filter.Duration is null || filter.Duration == fl.Duration)
                 && (filter.StartDay is null || fl.SourceDay == filter.StartDay)
                 && (filter.Source is null || fl.SourcePlace.Address.ToLower().Contains(filter.Source.ToLower())
                                           || fl.SourcePlace.City.ToLower().Contains(filter.Source.ToLower())
                                           || fl.SourcePlace.Country.ToLower().Contains(filter.Source.ToLower()))
-                && (filter.Destination is null || fl.DestinationPlace.Address.ToLower()
-                                                   .Contains(filter.Destination.ToLower())
-                                               || fl.DestinationPlace.Country.ToLower()
-                                                   .Contains(filter.Destination.ToLower())
-                                               || fl.DestinationPlace.City.ToLower()
-                                                   .Contains(filter.Destination.ToLower())))
-            .Select(TourDto.Map));
+                && (filter.Destination is null || fl.DestinationPlace.Address.ToLower().Contains(filter.Destination.ToLower())
+                                               || fl.DestinationPlace.Country.ToLower().Contains(filter.Destination.ToLower())
+                                               || fl.DestinationPlace.City.ToLower().Contains(filter.Destination.ToLower())));
 
-    [HttpGet("{id:int}")]
+        if (filter.OrderBy != null) {
+            switch (filter.OrderBy)
+            {
+                case ("Duration"):
+                    items = items.OrderBy(item => item.Duration); break;
+                case ("SourceDay"):
+                    items = items.OrderBy(item => item.SourceDay); break;
+                default:
+                    items = items.OrderBy(item => item.Id); break;
+            }
+        }
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            items = items.Reverse();
+        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+        .Select(TourDto.Map);
+
+        return Ok(new PaginationResponse<TourDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
+    }
+
+        [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
         try
@@ -153,7 +170,7 @@ public class TourController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-
+    
     [HttpGet("{id:int}/offers")]
     public IActionResult GetTourOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
     {
@@ -161,8 +178,7 @@ public class TourController : ControllerBase
                 to => to.ProductId == id
                       && (filter.StartPrice == null || to.Price >= filter.StartPrice)
                       && (filter.EndPrice == null || to.Price <= filter.EndPrice)
-                      && (filter.StartDate == null || to.StartDate <= filter.StartDate &&
-                          (to.EndDate == null || to.EndDate >= filter.StartDate))
+                      && (filter.StartDate == null || to.StartDate <= filter.StartDate && (to.EndDate == null || to.EndDate >= filter.StartDate))
                       && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
             .ToArray().Select(offer =>
             {
@@ -178,11 +194,10 @@ public class TourController : ControllerBase
     public IActionResult GetMostSolds()
     {
         return Ok(_repositories.TourReservations.FindWithInclude(reservation => reservation.Offer)
-            .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
-            .GroupBy(reservation => reservation.Offer.ProductId)
-            .OrderBy(group => -group.Count())
-            .Take(20)
-            .Join(_repositories.Tours.Find(), group => group.Key, model => model.Id,
-                (group, model) => TourDto.Map(model)));
+                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+                                       .GroupBy(reservation => reservation.Offer.ProductId)
+                                       .OrderBy(group => -group.Count())
+                                       .Take(20)
+                                       .Join(_repositories.Tours.Find(), group => group.Key, model => model.Id, (group, model) => TourDto.Map(model)));
     }
 }

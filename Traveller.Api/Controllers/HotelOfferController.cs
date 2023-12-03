@@ -164,14 +164,33 @@ public class HotelOfferController : ControllerBase
             && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
                                                      ho.EndDate >= filter.StartDate))
             && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId)
-             && (filter.ProductName == null || ho.Product.Name.ToLower().Contains(filter.ProductName.ToLower()))).ToArray().Select(offer =>
+             && (filter.ProductName == null || ho.Product.Name.ToLower().Contains(filter.ProductName.ToLower())));
+
+        if (filter.OrderBy != null)
         {
-            var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
-            dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-            dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
-            return dto;
-        });
-        return Ok(offers);
+            switch (filter.OrderBy)
+            {
+                case ("Price"):
+                    offers = offers.OrderBy(offer => offer.Price); break;
+                default:
+                    offers = offers.OrderBy(offer => offer.Id); break;
+            }
+        }
+        
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            offers = offers.Reverse();
+
+        var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+                               .ToArray().Select(offer =>
+                                {
+                                    var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
+                                    dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                                    dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
+                                    return dto;
+                                });
+
+        return Ok(new PaginationResponse<OfferDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
     }
 
     [HttpGet("getSales")]
