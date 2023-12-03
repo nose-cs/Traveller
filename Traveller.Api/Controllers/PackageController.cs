@@ -14,14 +14,16 @@ public class PackageController : ControllerBase
 {
     private readonly Repositories _repository;
     private readonly ExporterService _exporterService;
-
+    private readonly FileService _fileService;
     private readonly ILogger<TourOfferController> _logger;
 
-    public PackageController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService)
+    public PackageController(ILogger<TourOfferController> logger, Repositories repository,
+        ExporterService exporterService, FileService fileService)
     {
         _logger = logger;
         _repository = repository;
         _exporterService = exporterService;
+        _fileService = fileService;
     }
 
     [HttpPost]
@@ -31,20 +33,21 @@ public class PackageController : ControllerBase
         var token = Request.Headers.Authorization[0]!.Substring(7);
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
-        
+
         packageDto.AgencyId = agencyId;
-        
+
         var newPackage = PackageDto.Map(packageDto);
         newPackage.Facilities = new List<PackageFacility>();
 
-        for(int i = 0; i < packageDto.FacilitiesIds.Length; i++)
+        for (int i = 0; i < packageDto.FacilitiesIds.Length; i++)
         {
             var facility = await _repository.Facilities.FindById(packageDto.FacilitiesIds[i]);
 
             if (facility == null)
                 return NotFound("Facility - id: " + packageDto.FacilitiesIds[i] + " not found");
 
-            newPackage.Facilities.Add(new PackageFacility{ Facility = facility, Package = newPackage, Price = packageDto.FacilitiesPrices[i] });
+            newPackage.Facilities.Add(new PackageFacility
+                { Facility = facility, Package = newPackage, Price = packageDto.FacilitiesPrices[i] });
         }
 
         await _repository.Package.AddWithToursAsync(newPackage, packageDto.ToursIds);
@@ -88,7 +91,7 @@ public class PackageController : ControllerBase
 
             _repository.Package.RemoveAllPackageFacility(dbOffer.Id);
 
-            if(dbOffer.Facilities == null)
+            if (dbOffer.Facilities == null)
                 dbOffer.Facilities = new List<PackageFacility>();
 
             for (int i = 0; i < packageDto.FacilitiesIds.Length; i++)
@@ -98,7 +101,8 @@ public class PackageController : ControllerBase
                 if (facility == null)
                     return NotFound("Facility - id: " + packageDto.FacilitiesIds[i] + " not found");
 
-                dbOffer.Facilities.Add(new PackageFacility { Facility = facility, Package = dbOffer, Price = packageDto.FacilitiesPrices[i] });
+                dbOffer.Facilities.Add(new PackageFacility
+                    { Facility = facility, Package = dbOffer, Price = packageDto.FacilitiesPrices[i] });
             }
 
             await _repository.Package.SaveChangesAsync();
@@ -152,9 +156,9 @@ public class PackageController : ControllerBase
             (filter.ProductId == null || pa.Id == filter.ProductId)
             && (filter.StartPrice == null || pa.Price >= filter.StartPrice)
             && (filter.EndPrice == null || pa.Price <= filter.EndPrice)
-             && (filter.Capacity == null || pa.Capacity >= filter.Capacity)
+            && (filter.Capacity == null || pa.Capacity >= filter.Capacity)
             && (filter.StartDate == null || pa.StartDate <= filter.StartDate && (pa.EndDate == null ||
-                                                     pa.EndDate >= filter.StartDate))
+                pa.EndDate >= filter.StartDate))
             && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId));
 
         if (filter.OrderBy != null)
@@ -162,22 +166,28 @@ public class PackageController : ControllerBase
             switch (filter.OrderBy)
             {
                 case ("Price"):
-                    offers = offers.OrderBy(offer => offer.Price); break;
+                    offers = offers.OrderBy(offer => offer.Price);
+                    break;
                 default:
-                    offers = offers.OrderBy(offer => offer.Id); break;
+                    offers = offers.OrderBy(offer => offer.Id);
+                    break;
             }
         }
 
         if (filter.Descending.HasValue && filter.Descending.Value)
             offers = offers.Reverse();
 
-        var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
-                               .ToArray().Select(offer =>
-                               {
-                                   var dto = PackageDto.Map(offer);
-                                   dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
-                                   return dto;
-                               });
+        var pageOffers = (filter.PageIndex == null || filter.PageSize == null
+                ? offers
+                : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value,
+                    (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+            .ToArray().Select(offer =>
+            {
+                var dto = PackageDto.Map(offer, _fileService.GetRelativePath(offer.Image.Name, offer.Image.Id),
+                    offer.Image.Name);
+                dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
+                return dto;
+            });
 
         return Ok(new PaginationResponse<PackageDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
     }
@@ -185,7 +195,8 @@ public class PackageController : ControllerBase
     [HttpGet("getTours")]
     public IActionResult GetTours([FromQuery] int packageId)
     {
-        return Ok(_repository.Package.FindTours(packageId).Select(TourDto.Map));
+        return Ok(_repository.Package.FindTours(packageId).Select(x =>
+            TourDto.Map(x, _fileService.GetRelativePath(x.Image.Name, x.Image.Id), x.Image.Name)));
     }
 
     [HttpGet("getPackageFacilities")]
@@ -205,7 +216,8 @@ public class PackageController : ControllerBase
                 return NotFound($"Package offer with id {id} doesn't exist");
             }
 
-            var dto = PackageDto.Map(dbOffer);
+            var dto = PackageDto.Map(dbOffer, _fileService.GetRelativePath(dbOffer.Image.Name, dbOffer.Image.Id),
+                dbOffer.Image.Name);
             dto.AgencyName = _repository.Agencies.GetName(dbOffer.AgencyId);
             return Ok(dto);
         }
@@ -224,25 +236,30 @@ public class PackageController : ControllerBase
         var jwt = new JwtSecurityToken(token);
         var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-        var response = _repository.PackageReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
-                    .GroupBy(reservation => reservation.OfferId)
-                    .OrderBy(group => group.Key)
-                    .Select(group => new SalesResponse
-                    {
-                        Group = group.Key.ToString(),
-                        Description = group.First().Offer.Title,
-                        Total = group.Count(),
-                        MoneyAmount = group.Sum(reservation => reservation.Price)
-                    });
+        var response = _repository.PackageReservations.FindWithInclude(reservation => reservation.Offer).Where(
+                reservation => reservation.Offer.AgencyId == agencyId &&
+                               DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start &&
+                               DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+            .GroupBy(reservation => reservation.OfferId)
+            .OrderBy(group => group.Key)
+            .Select(group => new SalesResponse
+            {
+                Group = group.Key.ToString(),
+                Description = group.First().Offer.Title,
+                Total = group.Count(),
+                MoneyAmount = group.Sum(reservation => reservation.Price)
+            });
 
         if (export.HasValue)
         {
-            return Ok(_exporterService.getDoc("Package Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
-                                                       new[] { "Id", "Title", "Total Sales", "Amount (USD)" },
-                                                       new float[] { 15, 50, 15, 15 },
-                                                       response.SelectMany(sales => new object[] { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
-                                                       export.Value
-                                                       ));
+            return Ok(_exporterService.getDoc(
+                "Package Offer Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
+                new[] { "Id", "Title", "Total Sales", "Amount (USD)" },
+                new float[] { 15, 50, 15, 15 },
+                response.SelectMany(sales => new object[]
+                    { sales.Group, sales.Description!, sales.Total, sales.MoneyAmount }),
+                export.Value
+            ));
         }
 
         return Ok(response);
@@ -252,10 +269,12 @@ public class PackageController : ControllerBase
     public IActionResult GetMostSolds()
     {
         return Ok(_repository.PackageReservations.FindWithInclude(reservation => reservation.Offer)
-                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
-                                       .GroupBy(reservation => reservation.OfferId)
-                                       .OrderBy(group => -group.Count())
-                                       .Take(20)
-                                       .Select(group => PackageDto.Map(group.First().Offer)));
+            .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+            .GroupBy(reservation => reservation.OfferId)
+            .OrderBy(group => -group.Count())
+            .Take(20)
+            .Select(group => PackageDto.Map(group.First().Offer,
+                _fileService.GetRelativePath(group.First().Offer.Image.Name, group.First().Offer.Image.Id),
+                group.First().Offer.Image.Name)));
     }
 }

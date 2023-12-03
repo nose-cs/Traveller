@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
+using Traveller.Services;
 
 namespace Traveller.Controllers;
 
@@ -11,13 +12,14 @@ namespace Traveller.Controllers;
 public class TourController : ControllerBase
 {
     private readonly Repositories _repositories;
-
     private readonly ILogger<HotelController> _logger;
+    private readonly FileService _fileService;
 
-    public TourController(ILogger<HotelController> logger, Repositories repositories)
+    public TourController(ILogger<HotelController> logger, Repositories repositories, FileService fileService)
     {
         _logger = logger;
         _repositories = repositories;
+        _fileService = fileService;
     }
 
     [HttpPost]
@@ -99,38 +101,48 @@ public class TourController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-    
+
 
     [HttpGet]
     public ActionResult<IEnumerable<TourDto>> GetToursWithFilter([FromQuery] TourFilterDTO filter)
     {
         var items = _repositories.Tours.Find().Where(fl =>
-                   (filter.Id is null || filter.Id == fl.Id)
-                && (filter.Duration is null || filter.Duration == fl.Duration)
-                && (filter.StartDay is null || fl.SourceDay == filter.StartDay)
-                && (filter.Source is null || fl.SourcePlace.Address.ToLower().Contains(filter.Source.ToLower())
-                                          || fl.SourcePlace.City.ToLower().Contains(filter.Source.ToLower())
-                                          || fl.SourcePlace.Country.ToLower().Contains(filter.Source.ToLower()))
-                && (filter.Destination is null || fl.DestinationPlace.Address.ToLower().Contains(filter.Destination.ToLower())
-                                               || fl.DestinationPlace.Country.ToLower().Contains(filter.Destination.ToLower())
-                                               || fl.DestinationPlace.City.ToLower().Contains(filter.Destination.ToLower())));
+            (filter.Id is null || filter.Id == fl.Id)
+            && (filter.Duration is null || filter.Duration == fl.Duration)
+            && (filter.StartDay is null || fl.SourceDay == filter.StartDay)
+            && (filter.Source is null || fl.SourcePlace.Address.ToLower().Contains(filter.Source.ToLower())
+                                      || fl.SourcePlace.City.ToLower().Contains(filter.Source.ToLower())
+                                      || fl.SourcePlace.Country.ToLower().Contains(filter.Source.ToLower()))
+            && (filter.Destination is null || fl.DestinationPlace.Address.ToLower()
+                                               .Contains(filter.Destination.ToLower())
+                                           || fl.DestinationPlace.Country.ToLower()
+                                               .Contains(filter.Destination.ToLower())
+                                           || fl.DestinationPlace.City.ToLower()
+                                               .Contains(filter.Destination.ToLower())));
 
-        if (filter.OrderBy != null) {
+        if (filter.OrderBy != null)
+        {
             switch (filter.OrderBy)
             {
                 case ("Duration"):
-                    items = items.OrderBy(item => item.Duration); break;
+                    items = items.OrderBy(item => item.Duration);
+                    break;
                 case ("SourceDay"):
-                    items = items.OrderBy(item => item.SourceDay); break;
+                    items = items.OrderBy(item => item.SourceDay);
+                    break;
                 default:
-                    items = items.OrderBy(item => item.Id); break;
+                    items = items.OrderBy(item => item.Id);
+                    break;
             }
         }
 
         if (filter.Descending.HasValue && filter.Descending.Value)
             items = items.Reverse();
-        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
-        .Select(TourDto.Map);
+        var pageItems = (filter.PageIndex == null || filter.PageSize == null
+                ? items
+                : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value,
+                    (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+            .Select(x => TourDto.Map(x, _fileService.GetRelativePath(x.Image.Name, x.Image.Id), x.Image.Name));
 
         return Ok(new PaginationResponse<TourDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }
@@ -146,7 +158,8 @@ public class TourController : ControllerBase
                 return NotFound($"Tour with id {id} doesn't exist");
             }
 
-            return Ok(TourDto.Map(dbTour));
+            return Ok(TourDto.Map(dbTour, _fileService.GetRelativePath(dbTour.Image.Name, dbTour.Image.Id),
+                dbTour.Image.Name));
         }
         catch (Exception e)
         {
@@ -160,13 +173,15 @@ public class TourController : ControllerBase
     {
         try
         {
-            var packages = await _repositories.Tours.FindPackages(id);
-            if (packages is null)
+            var tour = await _repositories.Tours.FindById(id);
+            if (tour is null)
             {
                 return NotFound($"Tour with id {id} doesn't exist");
             }
 
-            return Ok(packages.Select(PackageDto.Map));
+            var packages = _repositories.Tours.FindPackages(id);
+            return Ok(packages.Select(x =>
+                PackageDto.Map(x, _fileService.GetRelativePath(x.Image.Name, x.Image.Id), x.Image.Name)));
         }
         catch (Exception e)
         {
@@ -179,10 +194,12 @@ public class TourController : ControllerBase
     public IActionResult GetMostSolds()
     {
         return Ok(_repositories.TourReservations.FindWithInclude(reservation => reservation.Offer)
-                                       .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
-                                       .GroupBy(reservation => reservation.Offer.ProductId)
-                                       .OrderBy(group => -group.Count())
-                                       .Take(20)
-                                       .Join(_repositories.Tours.Find(), group => group.Key, model => model.Id, (group, model) => TourDto.Map(model)));
+            .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
+            .GroupBy(reservation => reservation.Offer.ProductId)
+            .OrderBy(group => -group.Count())
+            .Take(20)
+            .Join(_repositories.Tours.Find(), group => group.Key, model => model.Id,
+                (group, model) => TourDto.Map(model, _fileService.GetRelativePath(model.Image.Name, model.Image.Id),
+                    model.Image.Name)));
     }
 }

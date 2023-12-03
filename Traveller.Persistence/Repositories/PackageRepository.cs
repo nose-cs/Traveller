@@ -78,7 +78,11 @@ public class PackageRepository : IPackageRepository
 
     public IEnumerable<Tour> FindTours(int key)
     {
-        return _context.Tours.Include(t => t.DestinationPlace).Include(t => t.SourcePlace).Include(t => t.Image).Where(t => t.Packages.Any(p => p.Id == key));
+        return _context.Tours
+            .Include(t => t.DestinationPlace)
+            .Include(t => t.SourcePlace)
+            .Include(t => t.Image)
+            .Where(t => t.Packages.Any(p => p.PackageId == key));
     }
 
     public IEnumerable<PackageFacility> FindFacilities(int key)
@@ -101,7 +105,7 @@ public class PackageRepository : IPackageRepository
     public async Task AddWithToursAsync(Package model, params int[] toursIds)
     {
         var tours = _context.Tours.Where(x => toursIds.Contains(x.Id));
-        model.Tours = new List<Tour>(tours);
+        model.Tours = new List<PackageTour>(tours.Select(x => new PackageTour{Tour = x}));
         await _context.AddAsync(model);
     }
 }

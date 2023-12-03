@@ -14,7 +14,7 @@ public class TourDto
 
     public int[]? HotelsIds { get; set; } = null!;
 
-    public static TourDto Map(Tour tour)
+    public static TourDto Map(Tour tour, string imagePath, string imageName)
     {
         var sourcePlaceInfo = PlaceDto.Map(tour.SourcePlace);
         var destinationPlaceInfo = PlaceDto.Map(tour.DestinationPlace);
@@ -24,7 +24,7 @@ public class TourDto
         return new TourDto
         {
             Id = tour.Id, SourceInfo = sourceInfo, DestinationInfo = destinationInfo, Duration = tour.Duration, 
-            ImageId = tour.ImageId
+            ImageId = tour.ImageId, Image = new FileDto { Id = tour.ImageId, FilePath = imagePath, Name = imageName }
         };
     }
 

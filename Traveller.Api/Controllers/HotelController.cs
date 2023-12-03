@@ -1,9 +1,6 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.Intrinsics;
 using Traveller.Domain;
-using Traveller.Domain.Models;
 using Traveller.Dtos;
 using Traveller.Services;
 

@@ -13,7 +13,11 @@ public class HotelDto
 
     public static Hotel Map(HotelDto hotelDto)
     {
-        var hotel = new Hotel() { Name = hotelDto.Name, Address = PlaceDto.Map(hotelDto.Address), Category = hotelDto.Category, ImageId = hotelDto.ImageId};
+        var hotel = new Hotel()
+        {
+            Name = hotelDto.Name, Address = PlaceDto.Map(hotelDto.Address), Category = hotelDto.Category,
+            ImageId = hotelDto.ImageId
+        };
         if (hotelDto.Id is null)
         {
             return hotel;
@@ -22,9 +26,15 @@ public class HotelDto
         hotel.Id = (int)hotelDto.Id;
         return hotel;
     }
+
     public static HotelDto Map(Hotel hotel, string imagePath, string imageName)
     {
-        return new HotelDto() { Id = hotel.Id, Address = PlaceDto.Map(hotel.Address), 
-            Name = hotel.Name, Category = hotel.Category, Image = new FileDto(){Id = hotel.ImageId, FilePath = imagePath, Name = imageName}};
+        return new HotelDto()
+        {
+            Id = hotel.Id, Address = PlaceDto.Map(hotel.Address),
+            Name = hotel.Name, Category = hotel.Category,
+            ImageId = hotel.ImageId,
+            Image = new FileDto { Id = hotel.ImageId, FilePath = imagePath, Name = imageName }
+        };
     }
 }

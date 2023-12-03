@@ -14,14 +14,16 @@ public class HotelOfferController : ControllerBase
 {
     private readonly Repositories _repository;
     private readonly ExporterService _exporterService;
+    private readonly FileService _fileService;
 
     private readonly ILogger<HotelOfferController> _logger;
 
-    public HotelOfferController(ILogger<HotelOfferController> logger, Repositories repository, ExporterService exporterService)
+    public HotelOfferController(ILogger<HotelOfferController> logger, Repositories repository, ExporterService exporterService, FileService fileService)
     {
         _logger = logger;
         _repository = repository;
         _exporterService = exporterService;
+        _fileService = fileService;
     }
 
     [HttpPost]
@@ -140,7 +142,8 @@ public class HotelOfferController : ControllerBase
                 return NotFound($"Hotel offer with id {id} doesn't exist");
             }
 
-            var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(dbHotelOffer);
+            var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(dbHotelOffer,
+                _fileService.GetRelativePath(dbHotelOffer.Image.Name, dbHotelOffer.Image.Id), dbHotelOffer.Image.Name);
             dto.AgencyName = _repository.Agencies.GetName(dbHotelOffer.AgencyId);
             dto.ProductName = _repository.Hotels.GetName(dbHotelOffer.ProductId);
 
@@ -183,8 +186,10 @@ public class HotelOfferController : ControllerBase
 
         var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
                                .ToArray().Select(offer =>
-                                {
-                                    var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer);
+                               {
+                                   var dto = OfferDto.Map<Hotel, HotelReservation, HotelOffer>(offer,
+                                       _fileService.GetRelativePath(offer.Image.Name, offer.Image.Id),
+                                       offer.Image.Name);
                                     dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
                                     dto.ProductName = _repository.Hotels.GetName(offer.ProductId);
                                     return dto;

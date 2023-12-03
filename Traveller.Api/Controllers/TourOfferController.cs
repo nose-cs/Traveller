@@ -14,14 +14,16 @@ public class TourOfferController : ControllerBase
 {
     private readonly Repositories _repository;
     private readonly ExporterService _exporterService;
+    private readonly FileService _fileService;
 
     private readonly ILogger<TourOfferController> _logger;
 
-    public TourOfferController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService)
+    public TourOfferController(ILogger<TourOfferController> logger, Repositories repository, ExporterService exporterService, FileService fileService)
     {
         _logger = logger;
         _repository = repository;
         _exporterService = exporterService;
+        _fileService = fileService;
     }
 
     [HttpPost]
@@ -140,7 +142,8 @@ public class TourOfferController : ControllerBase
                 return NotFound($"Tour offer with id {id} doesn't exist");
             }
 
-            var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(dbOffer);
+            var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(dbOffer,
+                _fileService.GetRelativePath(dbOffer.Image.Name, dbOffer.Image.Id), dbOffer.Image.Name);
             dto.AgencyName = _repository.Agencies.GetName(dbOffer.AgencyId);
             dto.ProductName = _repository.Tours.GetName(dbOffer.ProductId);
 
@@ -182,7 +185,9 @@ public class TourOfferController : ControllerBase
         var pageOffers = (filter.PageIndex == null || filter.PageSize == null ? offers : offers.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
                                .ToArray().Select(offer =>
                                {
-                                   var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
+                                   var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer,
+                                       _fileService.GetRelativePath(offer.Image.Name, offer.Image.Id),
+                                       offer.Image.Name);
                                    dto.AgencyName = _repository.Agencies.GetName(offer.AgencyId);
                                    dto.ProductName = _repository.Tours.GetName(offer.ProductId);
                                    return dto;

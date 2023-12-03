@@ -20,7 +20,7 @@ public class PackageDto
     public int[] ToursIds { get; set; }
     public int[] FacilitiesIds { get; set; }
     public double[] FacilitiesPrices { get; set; }
-    public static PackageDto Map(Package package)
+    public static PackageDto Map(Package package, string imagePath, string imageName)
     {
         return new PackageDto
         {
@@ -34,6 +34,7 @@ public class PackageDto
             EndDate = package.EndDate,
             AgencyId = package.AgencyId,
             ImageId = package.ImageId,
+            Image = new FileDto { Id = package.ImageId, FilePath = imagePath, Name = imageName }
         };
     }
 

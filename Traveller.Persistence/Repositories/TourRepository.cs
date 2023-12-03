@@ -43,10 +43,10 @@ public class TourRepository : ITourRepository
             .Include(t => t.Image).FirstOrDefaultAsync(t => t.Id == key);
     }
 
-    public async Task<IEnumerable<Package>?> FindPackages(int key)
+    public IEnumerable<Package> FindPackages(int key)
     {
-        var tour = await _context.Tours.Include(t => t.Packages).FirstOrDefaultAsync(t => t.Id == key);
-        return tour?.Packages;
+        var packages = _context.Packages.Where(x => x.Tours.Any(packageTour => packageTour.TourId == key));
+        return packages;
     }
 
     public async Task<IEnumerable<Hotel>?> FindHotels(int key)

@@ -24,7 +24,7 @@ public class Tour : IProduct
     public TimeOnly SourceTime { get; set; }
     public TimeOnly DestinationTime { get; set; }
 
-    public virtual ICollection<Package> Packages { get; set; } = new List<Package>();
+    public virtual ICollection<PackageTour> Packages { get; set; } = new List<PackageTour>();
     public int Id { get; set; }
     public int ImageId { get; set; }
     public Image Image { get; set; } = null!;
