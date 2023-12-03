@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
@@ -49,8 +50,30 @@ public class AdminController : ControllerBase
     }
     
     [HttpGet("AgenciesUsers")]
-    public IActionResult GetUsers()
+    public IActionResult GetUsers([FromQuery] PaginationDto filter)
     {
-        return Ok(_repositories.Users.FindAgencyUsers());
+        IEnumerable<AgencyUser> items = _repositories.Users.FindAgencyUsers();
+
+        if (filter.OrderBy != null)
+        {
+            switch (filter.OrderBy)
+            {
+                case ("Name"):
+                    items = items.OrderBy(item => item.Name); break;
+                case ("Email"):
+                    items = items.OrderBy(item => item.Email); break;
+                case ("AgencyId"):
+                    items = items.OrderBy(item => item.AgencyId); break;
+                default:
+                    items = items.OrderBy(item => item.Id); break;
+            }
+        }
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            items = items.Reverse();
+
+        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)));
+
+        return Ok(new PaginationResponse<AgencyUser>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }
 }

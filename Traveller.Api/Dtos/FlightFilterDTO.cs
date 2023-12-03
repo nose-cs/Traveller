@@ -1,6 +1,6 @@
 namespace Traveller.Dtos;
 
-public class FlightFilterDTO
+public class FlightFilterDTO : PaginationDto
 {
     public int? Id { get; set; }
     public string? Source { get; set; } 
@@ -8,10 +8,4 @@ public class FlightFilterDTO
     public int? Capacity { get; set; }
     public int? FlightNumber { get; set; }
     public string? Airline { get; set; }
-
-    public int? PageIndex { get; set; }
-    public int? PageSize { get; set; }
-
-    public string? OrderBy { get; set; }
-    public bool? Descending { get; set; }
 }

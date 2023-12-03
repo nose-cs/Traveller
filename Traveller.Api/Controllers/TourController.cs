@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
@@ -20,6 +21,7 @@ public class TourController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = ("MarketingEmployee, TravellerAdmin"))]
     public async Task<ActionResult> Create(TourDto tourDto)
     {
         try
@@ -51,6 +53,7 @@ public class TourController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = ("TravellerAdmin"))]
     public async Task<ActionResult> Update([FromBody] TourDto tourDto, [FromRoute] int id)
     {
         try
@@ -80,6 +83,7 @@ public class TourController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = ("TravellerAdmin"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
         try
@@ -131,7 +135,7 @@ public class TourController : ControllerBase
         return Ok(new PaginationResponse<TourDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }
 
-        [HttpGet("{id:int}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)
     {
         try
@@ -169,25 +173,6 @@ public class TourController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
-    }
-    
-    [HttpGet("{id:int}/offers")]
-    public IActionResult GetTourOffers([FromRoute] int id, [FromQuery] OfferFilterDTO filter)
-    {
-        var offers = _repositories.TourOffers.Find().Where(
-                to => to.ProductId == id
-                      && (filter.StartPrice == null || to.Price >= filter.StartPrice)
-                      && (filter.EndPrice == null || to.Price <= filter.EndPrice)
-                      && (filter.StartDate == null || to.StartDate <= filter.StartDate && (to.EndDate == null || to.EndDate >= filter.StartDate))
-                      && (filter.AgencyId == null || to.AgencyId == filter.AgencyId))
-            .ToArray().Select(offer =>
-            {
-                var dto = OfferDto.Map<Tour, TourReservation, TourOffer>(offer);
-                dto.AgencyName = _repositories.Agencies.GetName(offer.AgencyId);
-                dto.ProductName = _repositories.Flights.GetName(offer.ProductId);
-                return dto;
-            });
-        return Ok(offers);
     }
 
     [HttpGet("getMostSolds")]
