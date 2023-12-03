@@ -5,7 +5,6 @@ namespace Traveller.Dtos;
 public record PackageDetails(IEnumerable<TourDto> Tours, IEnumerable<HotelDto>? Hotels);
 public class PackageDto
 {
-    public record FacilityDto(int? Id, string Name, string Description, double Price);
     public int? Id { get; set; }
     public uint Duration { get; set; }
     public string Title { get; set; } = null!;
@@ -20,7 +19,7 @@ public class PackageDto
     public FileDto? Image { get; set; } = null!;
     public int[] ToursIds { get; set; }
     public int[] FacilitiesIds { get; set; }
-
+    public double[] FacilitiesPrices { get; set; }
     public static PackageDto Map(Package package)
     {
         return new PackageDto
