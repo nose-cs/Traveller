@@ -111,12 +111,8 @@ public class FlightController : ControllerBase
                    (filter.Id is null || fl.Id == filter.Id)
                 && (filter.FlightNumber is null || fl.FlightNumber.ToString().Contains(filter.FlightNumber.ToString()!))
                 && (filter.Airline is null || fl.Airline.ToLower().Contains(filter.Airline.ToLower()))
-                && (filter.Source is null || fl.Source.Address.ToLower().Contains(filter.Source.ToLower())
-                                          || fl.Source.City.ToLower().Contains(filter.Source.ToLower())
-                                          || fl.Source.Country.ToLower().Contains(filter.Source.ToLower()))
-                && (filter.Destination is null || fl.Destination.Address.ToLower().Contains(filter.Destination.ToLower())
-                                               || fl.Destination.Country.ToLower().Contains(filter.Destination.ToLower())
-                                               || fl.Destination.City.ToLower().Contains(filter.Destination.ToLower())));
+                && (filter.Source is null || fl.Source.getFullAddress().ToLower().Contains(filter.Source.ToLower()))
+                && (filter.Destination is null || fl.Destination.getFullAddress().ToLower().Contains(filter.Destination.ToLower())));
 
         if (filter.OrderBy != null)
         {

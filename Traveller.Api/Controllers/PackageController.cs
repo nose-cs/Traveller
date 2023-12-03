@@ -174,7 +174,8 @@ public class PackageController : ControllerBase
             && (filter.Capacity == null || pa.Capacity >= filter.Capacity)
             && (filter.StartDate == null || pa.StartDate <= filter.StartDate && (pa.EndDate == null ||
                 pa.EndDate >= filter.StartDate))
-            && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId));
+            && (filter.AgencyId == null || pa.AgencyId == filter.AgencyId)
+            && (!filter.ValidToday.HasValue || !filter.ValidToday.Value || pa.EndDate >= DateTime.Now));
 
         if (filter.OrderBy != null)
         {

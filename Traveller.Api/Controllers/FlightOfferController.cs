@@ -144,7 +144,8 @@ public class FlightOfferController : ControllerBase
             && (filter.Capacity == null || ho.Capacity >= filter.Capacity)
             && (filter.StartDate == null || ho.StartDate <= filter.StartDate && (ho.EndDate == null ||
                 ho.EndDate >= filter.StartDate))
-            && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId));
+            && (filter.AgencyId == null || ho.AgencyId == filter.AgencyId)
+            && (!filter.ValidToday.HasValue || !filter.ValidToday.Value || ho.EndDate >= DateTime.Now));
 
         if (filter.OrderBy != null)
         {
