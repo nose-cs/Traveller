@@ -60,6 +60,13 @@ public class TourRepository : ITourRepository
             .First();
     }
 
+    public async Task AddWithHotelsAsync(ExtendedTour tour, HashSet<int> hotelsIds)
+    {
+        var hotels = _context.Hotels.Where(x => hotelsIds.Contains(x.Id));
+        tour.Hotels = new List<Hotel>(hotels);
+        await _context.AddAsync(tour);
+    }
+
     public IEnumerable<Tour> FindTourByIds(HashSet<int> ids)
     {
         return _context.Tours.Where(x => ids.Contains(x.Id));
