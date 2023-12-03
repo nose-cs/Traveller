@@ -19,6 +19,6 @@ public class Package : IOffer<PackageReservation, Package>
     public Image Image { get; set; } = null!;
     
     public virtual ICollection<PackageFacility> Facilities { get; set; } = null!;
-    public virtual ICollection<Tour> Tours { get; set; } = new List<Tour>();
+    public virtual ICollection<PackageTour> Tours { get; set; } = new List<PackageTour>();
     public virtual ICollection<PackageReservation> Reservations { get; set; } = new List<PackageReservation>();
 }

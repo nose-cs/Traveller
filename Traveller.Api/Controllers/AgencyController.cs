@@ -8,7 +8,7 @@ namespace Traveller.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-// [Authorize(Roles = ("AgencyAdmin, TravellerAdmin"))]
+[Authorize(Roles = ("AgencyAdmin, TravellerAdmin"))]
 public partial class AgencyController : ControllerBase
 {
     private readonly Repositories _repositories;

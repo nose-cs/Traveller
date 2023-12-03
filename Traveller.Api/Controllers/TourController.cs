@@ -156,12 +156,12 @@ public class TourController : ControllerBase
     {
         try
         {
-            var packages = await _repositories.Tours.FindPackages(id);
-            if (packages is null)
+            var tour = await _repositories.Tours.FindById(id);
+            if (tour is null)
             {
                 return NotFound($"Tour with id {id} doesn't exist");
             }
-
+            var packages = _repositories.Tours.FindPackages(id);
             return Ok(packages.Select(PackageDto.Map));
         }
         catch (Exception e)
