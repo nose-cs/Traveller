@@ -86,7 +86,31 @@ public partial class AgencyController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<AgencyDto>> GetAll() => Ok(_repositories.Agencies.Find().Select(AgencyDto.Map));
+    public ActionResult<IEnumerable<AgencyDto>> GetAll([FromQuery] PaginationDto filter)
+    {
+        var items = _repositories.Agencies.Find();
+
+        if (filter.OrderBy != null)
+        {
+            switch (filter.OrderBy)
+            {
+                case ("Name"):
+                    items = items.OrderBy(item => item.Name); break;
+                case ("Email"):
+                    items = items.OrderBy(item => item.Email); break;
+                default:
+                    items = items.OrderBy(item => item.Id); break;
+            }
+        }
+
+        if (filter.Descending.HasValue && filter.Descending.Value)
+            items = items.Reverse();
+
+        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+        .Select(AgencyDto.Map);
+
+        return Ok(new PaginationResponse<AgencyDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
+    }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)

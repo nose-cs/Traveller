@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Traveller.Domain;
 using Traveller.Dtos;
 using Traveller.Services;
@@ -22,6 +23,7 @@ public class HotelController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = ("MarketingEmployee, TravellerAdmin"))]
     public async Task<ActionResult> Create(HotelDto hotelDto)
     {
         try
@@ -39,6 +41,7 @@ public class HotelController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Roles = ("TravellerAdmin"))]
     public async Task<ActionResult> Update([FromBody] HotelDto hotelDto, [FromRoute] int id)
     {
         try
@@ -65,6 +68,7 @@ public class HotelController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = ("TravellerAdmin"))]
     public async Task<ActionResult> Delete([FromRoute] int id)
     {
         try
