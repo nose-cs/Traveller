@@ -11,4 +11,7 @@ public interface IPackageRepository : IRepository<Package, int>
 
     public bool RemovePackageFacility(int packageId, int facilityId);
     public bool RemoveAllPackageFacility(int packageId);
+
+    public bool RemovePackageTour(int packageId, int tourId);
+    public bool RemoveAllPackageTour(int packageId);
 }

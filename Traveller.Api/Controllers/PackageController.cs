@@ -90,6 +90,7 @@ public class PackageController : ControllerBase
             dbOffer.ImageId = packageDto.ImageId;
 
             _repository.Package.RemoveAllPackageFacility(dbOffer.Id);
+            _repository.Package.RemoveAllPackageTour(dbOffer.Id);
 
             if (dbOffer.Facilities == null)
                 dbOffer.Facilities = new List<PackageFacility>();
@@ -103,6 +104,19 @@ public class PackageController : ControllerBase
 
                 dbOffer.Facilities.Add(new PackageFacility
                     { Facility = facility, Package = dbOffer, Price = packageDto.FacilitiesPrices[i] });
+            }
+
+            if (dbOffer.Tours == null)
+                dbOffer.Tours = new List<PackageTour>();
+
+            for (int i = 0; i < packageDto.ToursIds.Length; i++)
+            {
+                var tour = await _repository.Tours.FindById(packageDto.ToursIds[i]);
+
+                if (tour == null)
+                    return NotFound("Tour - id: " + packageDto.ToursIds[i] + " not found");
+
+                dbOffer.Tours.Add(new PackageTour() { Package = dbOffer, Tour = tour });
             }
 
             await _repository.Package.SaveChangesAsync();
