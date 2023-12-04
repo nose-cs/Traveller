@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
@@ -30,9 +29,22 @@ public class TourReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
+        if (reservationDto.NumberOfTravellers <= 0)
+            return BadRequest("The number of travellers must be greater than 0");
+            
         var offer = await _repositories.TourOffers.FindById(reservationDto.OfferId);
+        
         if (offer is null)
             return NotFound($"Tour Offer id: {reservationDto.OfferId} doesn´t exists");
+        
+        var token = Request.Headers.Authorization[0]![7..];
+        var jwt = new JwtSecurityToken(token);
+            
+        if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
+            && agencyId != offer.AgencyId)
+        {
+            return Unauthorized("You don't have permission for this action");
+        }
 
         if (offer.Capacity < reservationDto.NumberOfTravellers)
             return BadRequest(
@@ -43,7 +55,9 @@ public class TourReservationController : ControllerBase
         try
         {
             var reservation = new TourReservation();
-            var payment = reservationDto.GetPayment();
+            var price = offer.Price * reservationDto.NumberOfTravellers;
+            reservation.Price = price;
+            var payment = reservationDto.GetPayment(price);
             ReservationDto.Map<Tour, TourReservation, TourOffer>(reservation, reservationDto);
             await _repositories.Payment.AddAsync(payment);
             reservation.Payment = payment;
