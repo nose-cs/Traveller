@@ -49,13 +49,17 @@ public class HotelReservationController : ControllerBase
         if (offer.Capacity < reservationDto.NumberOfTravellers)
             return BadRequest(
                 $"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
+        
+        if (reservationDto.ArrivalDate < offer.StartDate || reservationDto.DepartureDate > offer.EndDate ||
+            reservationDto.ArrivalDate > reservationDto.DepartureDate || reservationDto.ArrivalDate < DateTime.Now)
+            return BadRequest("The date range is not valid");
 
         offer.Capacity = (uint)(offer.Capacity - reservationDto.NumberOfTravellers);
         
         try
         {
             var reservation = new HotelReservation();
-            var price = offer.Price * reservationDto.NumberOfTravellers;
+            var price = offer.Price * reservationDto.DepartureDate.Subtract(reservationDto.ArrivalDate).Days;
             reservation.Price = price;
             var payment = reservationDto.GetPayment(price);
             ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(reservation, reservationDto);

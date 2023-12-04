@@ -4,7 +4,7 @@ namespace Traveller.Dtos;
 
 public class TourDto
 {
-    public record TourInfo(PlaceDto Place, Day Day, TimeOnly Time);
+    public record TourInfo(PlaceDto Place, DayOfWeek Day, TimeOnly Time);
     public int? Id { get; init; }
     public TourInfo SourceInfo { get; init; } = null!;
     public TourInfo DestinationInfo { get; init; } = null!;
@@ -19,7 +19,7 @@ public class TourDto
         var sourcePlaceInfo = PlaceDto.Map(tour.SourcePlace);
         var destinationPlaceInfo = PlaceDto.Map(tour.DestinationPlace);
         var sourceInfo = new TourInfo(sourcePlaceInfo, tour.SourceDay, tour.SourceTime);
-        var destinationDay = (Day)(((uint)tour.SourceDay + tour.Duration) % 7);
+        var destinationDay = (DayOfWeek)(((uint)tour.SourceDay + tour.Duration) % 7);
         var destinationInfo = new TourInfo(destinationPlaceInfo, destinationDay, tour.DestinationTime);
         return new TourDto
         {

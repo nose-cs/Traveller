@@ -48,6 +48,10 @@ public class PackageReservationController : ControllerBase
         if (offer.Capacity < reservationDto.NumberOfTravellers)
             return BadRequest(
                 $"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
+        
+        if (reservationDto.ArrivalDate < offer.StartDate || reservationDto.DepartureDate > offer.EndDate ||
+            reservationDto.ArrivalDate > reservationDto.DepartureDate || reservationDto.ArrivalDate < DateTime.Now)
+            return BadRequest("The dates range is not valid");
 
         offer.Capacity = (uint)(offer.Capacity - reservationDto.NumberOfTravellers);
 
