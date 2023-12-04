@@ -39,4 +39,9 @@ public class HotelReservationRepository : IHotelReservationRepository
     {
         return await _context.HotelReservations.FindAsync(key);
     }
+    
+    public IEnumerable<HotelReservation> FindWithImages()
+    {
+        return _context.HotelReservations.Include(x => x.Offer).ThenInclude(x => x.Image);
+    }
 }

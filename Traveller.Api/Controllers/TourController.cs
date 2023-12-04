@@ -186,7 +186,7 @@ public class TourController : ControllerBase
     [HttpGet("getMostSolds")]
     public IActionResult GetMostSolds()
     {
-        return Ok(_repositories.TourReservations.FindWithInclude(reservation => reservation.Offer)
+        return Ok(_repositories.TourReservations.FindWithPhoto()
             .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
             .GroupBy(reservation => reservation.Offer.ProductId)
             .OrderBy(group => -group.Count())

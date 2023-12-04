@@ -286,6 +286,8 @@ public class PackageController : ControllerBase
     [HttpGet("getMostSolds")]
     public IActionResult GetMostSolds()
     {
+        if (!_repository.PackageReservations.FindWithPackagePhoto().Any())
+            return Ok();
         return Ok(_repository.PackageReservations.FindWithInclude(reservation => reservation.Offer)
             .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
             .GroupBy(reservation => reservation.OfferId)

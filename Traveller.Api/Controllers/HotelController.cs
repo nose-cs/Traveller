@@ -172,7 +172,7 @@ public class HotelController : ControllerBase
     [HttpGet("getMostSolds")]
     public IActionResult GetMostSolds()
     {
-        return Ok(_repositories.HotelReservations.FindWithInclude(reservation => reservation.Offer)
+        return Ok(_repositories.HotelReservations.FindWithImages()
                                        .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
                                        .GroupBy(reservation => reservation.Offer.ProductId)
                                        .OrderBy(group => -group.Count())

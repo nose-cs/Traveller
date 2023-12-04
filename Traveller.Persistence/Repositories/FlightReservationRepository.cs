@@ -40,4 +40,8 @@ public class FlightReservationRepository : IFlightReservationRepository
     {
         return _context.FlightReservations.Include(include);
     }
+    public IEnumerable<FlightReservation> FindWithPhoto()
+    {
+        return _context.FlightReservations.Include(x => x.Offer).ThenInclude(x => x.Image);
+    }
 }
