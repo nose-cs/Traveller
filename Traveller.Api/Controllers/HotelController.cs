@@ -157,6 +157,7 @@ public class HotelController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
+    
     [HttpGet("{id:int}/fromPackage")]
     public IActionResult GetHotelsFromPackage([FromRoute] int id)
     {

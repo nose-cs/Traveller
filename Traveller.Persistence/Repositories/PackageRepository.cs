@@ -120,7 +120,7 @@ public class PackageRepository : IPackageRepository
     {
         return _context.ExtendedTours
             .Where(t => t.Packages
-                .Any(t => t.Id == key))
+                .Any(t => t.PackageId == key))
             .SelectMany(t => t.Hotels)
             .Include(t => t.Image)
             .Include(t=> t.Address);
