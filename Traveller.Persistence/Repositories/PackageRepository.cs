@@ -116,9 +116,14 @@ public class PackageRepository : IPackageRepository
             => x.PackageId == key);
     }
 
-    public Task<IEnumerable<Hotel>> FindHotels(int key)
+    public IEnumerable<Hotel> FindHotels(int key)
     {
-        throw new NotImplementedException();
+        return _context.ExtendedTours
+            .Where(t => t.Packages
+                .Any(t => t.Id == key))
+            .SelectMany(t => t.Hotels)
+            .Include(t => t.Image)
+            .Include(t=> t.Address);
     }
     public IEnumerable<PackageFacility> FindPackageFacilities(int key)
     {

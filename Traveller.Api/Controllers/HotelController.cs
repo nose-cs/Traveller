@@ -91,7 +91,7 @@ public class HotelController : ControllerBase
         var items = _repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
                                                     (filter.Name is null ||
                                                      ho.Name.ToLower().Contains(filter.Name.ToLower())) &&
-                                                    (filter.Address is null || ho.Address.getFullAddress().ToLower()
+                                                    (filter.Address is null || ho.Address.Address.ToLower()
                                                         .Contains(filter.Address.ToLower())) &&
                                                     (filter.ProductId is null || ho.Id == filter.ProductId)));
 
@@ -156,6 +156,16 @@ public class HotelController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+    [HttpGet("{id:int}/fromPackage")]
+    public IActionResult GetHotelsFromPackage([FromRoute] int id)
+    {
+        return Ok(_repositories
+            .Package
+            .FindHotels(id)
+            .Select(t => HotelDto
+                .Map(t, _fileService.GetRelativePath(t.Image.Name, t.Image.Id), t.Image.Name)));
+
     }
 
     [HttpGet("getMostSolds")]
