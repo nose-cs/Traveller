@@ -149,7 +149,6 @@ public class FlightReservationController : ControllerBase
 
             await _repositories.Payment.Remove(dbFlightReservation.PaymentId);
             await _repositories.FlightReservations.Remove(id);
-            await _repositories.Payment.SaveChangesAsync();
             await _repositories.FlightReservations.SaveChangesAsync();
 
             return Ok();

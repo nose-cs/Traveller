@@ -150,7 +150,6 @@ public class TourReservationController : ControllerBase
 
             await _repositories.Payment.Remove(dbTourReservation.PaymentId);
             await _repositories.TourReservations.Remove(id);
-            await _repositories.Payment.SaveChangesAsync();
             await _repositories.TourReservations.SaveChangesAsync();
 
             return Ok();
