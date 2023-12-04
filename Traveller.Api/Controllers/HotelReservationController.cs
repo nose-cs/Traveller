@@ -39,6 +39,15 @@ public class HotelReservationController : ControllerBase
         
         var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
+        
+        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
+        
+        var role = jwt.Claims.First(c => c.Type == "role").Value;
+        
+        if (role == "Tourist")
+        {
+            reservationDto.TouristId = userId;
+        }
             
         if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
             && agencyId != offer.AgencyId)

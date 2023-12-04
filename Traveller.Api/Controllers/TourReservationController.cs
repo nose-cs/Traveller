@@ -55,6 +55,15 @@ public class TourReservationController : ControllerBase
         {
             return Unauthorized("You don't have permission for this action");
         }
+        
+        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
+        
+        var role = jwt.Claims.First(c => c.Type == "role").Value;
+        
+        if (role == "Tourist")
+        {
+            reservationDto.TouristId = userId;
+        }
 
         if (offer.Capacity < reservationDto.NumberOfTravellers)
             return BadRequest(
