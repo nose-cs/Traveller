@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
+using Traveller.Domain;
+using Traveller.Domain.Interfaces.Repositories;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
 using Traveller.Exceptions;
@@ -14,11 +16,15 @@ public class IdentityController : ControllerBase
 {
     private readonly LoginService _loginService;
     private readonly ILogger<HotelController> _logger;
+    private readonly Repositories _repositories;
+    private readonly ExporterService _exporterService;
 
-    public IdentityController(LoginService loginService, ILogger<HotelController> logger)
+    public IdentityController(LoginService loginService, ILogger<HotelController> logger, Repositories repositories, ExporterService exporterService)
     {
         _loginService = loginService;
         _logger = logger;
+        _repositories = repositories;
+        _exporterService = exporterService;
     }
 
     [HttpPost("login")]
@@ -94,5 +100,38 @@ public class IdentityController : ControllerBase
             _logger.LogError(e.Message);
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
+    }
+
+    [HttpGet("getTouristsTravelCountry")]
+    [Authorize(Roles = ("MarketingEmployee"))]
+    public IActionResult getTouristsTravelCountry([FromQuery] string country, [FromQuery] ExportType export)
+    {
+        IEnumerable<int> touristIds = _repositories.HotelReservations.FindWithInclude(h => h.Offer.Product.Address)
+                                       .Where(h => h.Offer.Product.Address.Country.ToLower() == country.ToLower())
+                                       .GroupBy(h => h.TouristId)
+                                       .Where(g => g.Count() > 1)
+        .Select(g => g.Key);
+
+        touristIds = touristIds.Concat(_repositories.FlightReservations.FindWithInclude(h => h.Offer.Product.Destination)
+                                       .Where(h => h.Offer.Product.Destination.Country.ToLower() == country.ToLower())
+                                       .GroupBy(h => h.TouristId)
+                                       .Where(g => g.Count() > 1)
+                                       .Select(g => g.Key));
+
+        touristIds = touristIds.Concat(_repositories.TourReservations.FindWithInclude(h => h.Offer.Product.DestinationPlace)
+                                      .Where(h => h.Offer.Product.DestinationPlace.Country.ToLower() == country.ToLower())
+                                      .GroupBy(h => h.TouristId)
+                                      .Where(g => g.Count() > 1)
+                                      .Select(g => g.Key)).ToArray();
+
+        var tourists = _repositories.Users.FindTourists().Where(t => t.Country != country && touristIds.Any(ti => ti == t.Id));
+
+        return Ok(_exporterService.getDoc(
+        "Tourists that traveled more than once to " + country,
+               new string[3] { "Name", "Email", "Country" },
+               new float[3] { 35, 35, 20 },
+               tourists.SelectMany(tourist => new object[] { tourist.Name, tourist.Email, tourist.Country }),
+               export
+           ));
     }
 }
