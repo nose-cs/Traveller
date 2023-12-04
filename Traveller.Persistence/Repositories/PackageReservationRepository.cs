@@ -40,4 +40,9 @@ public class PackageReservationRepository : IPackageReservationRepository
     {
         return _context.PackageReservations.Include(include);
     }
+    
+    public IEnumerable<PackageReservation> FindWithPackagePhoto()
+    {
+        return _context.PackageReservations.Include(x => x.Offer).ThenInclude(x => x.Image);
+    }
 }

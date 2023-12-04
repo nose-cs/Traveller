@@ -139,7 +139,7 @@ public class FlightController : ControllerBase
     [HttpGet("getMostSolds")]
     public IActionResult GetMostSolds()
     {
-        return Ok(_repositories.FlightReservations.FindWithInclude(reservation => reservation.Offer)
+        return Ok(_repositories.FlightReservations.FindWithPhoto()
                                        .Where(reservation => reservation.ArrivalDate >= DateTime.UtcNow.AddMonths(-1))
                                        .GroupBy(reservation => reservation.Offer.ProductId)
                                        .OrderBy(group => -group.Count())

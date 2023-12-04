@@ -40,4 +40,8 @@ public class TourReservationRepository : ITourReservationRepository
     {
         return _context.TourReservations.Include(include);
     }
+    public IEnumerable<TourReservation> FindWithPhoto()
+    {
+        return _context.TourReservations.Include(x => x.Offer).ThenInclude(x => x.Image);
+    }
 }
