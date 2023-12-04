@@ -14,10 +14,10 @@ public class PackageReservationController : ControllerBase
 {
     private readonly Repositories _repositories;
     private readonly ExporterService _exporterService;
-    private readonly ILogger<FlightReservationController> _logger;
+    private readonly ILogger<PackageReservationController> _logger;
 
     public PackageReservationController(Repositories repositories, ExporterService exporterService,
-        ILogger<FlightReservationController> logger)
+        ILogger<PackageReservationController> logger)
     {
         _repositories = repositories;
         _exporterService = exporterService;
@@ -321,7 +321,7 @@ public class PackageReservationController : ControllerBase
         if (export.HasValue)
         {
             return Ok(_exporterService.getDoc(
-                "Hotel Reservation Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
+                "Package Reservation Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
                 new string[3] { request.GroupBy.ToString()!, "Total Sales", "Amount (USD)" },
                 new float[3] { 30, 15, 15 },
                 response.SelectMany(sales => new object[] { sales.Group, sales.Total, sales.MoneyAmount }),
