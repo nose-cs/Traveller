@@ -28,6 +28,14 @@ public class PackageReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(PackageReservationDto reservationDto)
     {
+        var user = await _repositories.Users.FindById(reservationDto.TouristId);
+        
+        if (user is null)
+            return NotFound($"User with id {reservationDto.TouristId} doesn't exist");
+        
+        if (user.Role != Role.Tourist)
+            return BadRequest("Only tourists can make reservations");
+
         if (reservationDto.NumberOfTravellers <= 0)
             return BadRequest("The number of travellers must be greater than 0");
 
