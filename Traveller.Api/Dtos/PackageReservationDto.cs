@@ -13,7 +13,7 @@ public class PackageReservationDto
     public int OfferId { get; set; }
     public int TouristId { get; set; }
     public string? CreditCardNumber { get; set; }
-    public int[] Facilities { get; set; } = null!;
+    public int[]? Facilities { get; set; }
 
     public static PackageReservation Map(PackageReservationDto reservationDto)
     {
