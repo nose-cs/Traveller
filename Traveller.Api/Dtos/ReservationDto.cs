@@ -6,6 +6,7 @@ namespace Traveller.Dtos;
 public class ReservationDto
 {
     public int? Id { get; set; }
+    public double? Price { get; set; }
     public DateTime DepartureDate { get; set; }
     public DateTime ArrivalDate { get; set; }
     public int NumberOfTravellers { get; set; }
@@ -37,7 +38,8 @@ public class ReservationDto
             ArrivalDate = reservation.ArrivalDate,
             NumberOfTravellers = reservation.NumberOfTravellers,
             OfferId = reservation.OfferId,
-            TouristId = reservation.TouristId
+            TouristId = reservation.TouristId,
+            Price = reservation.Price
         };
     }
     
