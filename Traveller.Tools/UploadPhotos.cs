@@ -4,7 +4,7 @@ namespace Traveller.Tools;
 
 public static partial class Program
 {
-    private const string ImagesPath = @"C:\Proyecto de IS\Front\Travel-Agency-Web\Travel-Agency-Web\src\assets\Images";
+    private const string ImagesPath = @"C:\Users\anabe\RiderProjects\Travel-Agency-Web\Travel-Agency-Web\src\assets\Images";
 
     private static readonly IEnumerable<Image> HotelsPhotos = GetPhotosNames().Select(name => new Image{Name = name});
     private static readonly string[] HotelOffersPhotos = GetPhotosNames();

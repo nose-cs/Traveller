@@ -208,6 +208,7 @@ public class PackageController : ControllerBase
         return Ok(new PaginationResponse<PackageDto>() { TotalCollectionSize = offers.Count(), Items = pageOffers });
     }
 
+    
     [HttpGet("getTours")]
     public IActionResult GetTours([FromQuery] int packageId)
     {
@@ -220,6 +221,7 @@ public class PackageController : ControllerBase
     {
         return Ok(_repository.Package.FindFacilities(packageId).Select(PackageFacilityDto.Map));
     }
+    
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult> Get([FromRoute] int id)

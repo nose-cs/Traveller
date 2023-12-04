@@ -1,6 +1,6 @@
+﻿using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 using Traveller.Domain;
 using Traveller.Domain.Models;
 using Traveller.Dtos;
@@ -10,23 +10,23 @@ namespace Traveller.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class FlightReservationController : ControllerBase
+public class PackageReservationController : ControllerBase
 {
     private readonly Repositories _repositories;
     private readonly ExporterService _exporterService;
+    private readonly ILogger<PackageReservationController> _logger;
 
-    private readonly ILogger<FlightReservationController> _logger;
-
-    public FlightReservationController(ILogger<FlightReservationController> logger, Repositories repositories, ExporterService exporterService)
+    public PackageReservationController(Repositories repositories, ExporterService exporterService,
+        ILogger<PackageReservationController> logger)
     {
-        _logger = logger;
         _repositories = repositories;
         _exporterService = exporterService;
+        _logger = logger;
     }
 
     [HttpPost]
     [Authorize(Roles = ("Agent, Tourist"))]
-    public async Task<ActionResult> Create(ReservationDto reservationDto)
+    public async Task<ActionResult> Create(PackageReservationDto reservationDto)
     {
         var user = await _repositories.Users.FindById(reservationDto.TouristId);
         
@@ -38,15 +38,14 @@ public class FlightReservationController : ControllerBase
 
         if (reservationDto.NumberOfTravellers <= 0)
             return BadRequest("The number of travellers must be greater than 0");
-            
-        var offer = await _repositories.FlightOffers.FindById(reservationDto.OfferId);
-        
+
+        var offer = await _repositories.Package.FindById(reservationDto.OfferId);
+
         if (offer is null)
-            return NotFound($"Flight Offer id: {reservationDto.OfferId} doesn´t exists");
-        
+            return NotFound($"Package id: {reservationDto.OfferId} doesn´t exists");
+
         var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
-        
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
         
         var role = jwt.Claims.First(c => c.Type == "role").Value;
@@ -55,7 +54,7 @@ public class FlightReservationController : ControllerBase
         {
             reservationDto.TouristId = userId;
         }
-            
+
         if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
             && agencyId != offer.AgencyId)
         {
@@ -66,7 +65,6 @@ public class FlightReservationController : ControllerBase
             return BadRequest(
                 $"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
         
-        
         if (reservationDto.ArrivalDate < offer.StartDate || reservationDto.DepartureDate > offer.EndDate)
             return BadRequest("Offer is not available in this range of dates");
             
@@ -74,17 +72,17 @@ public class FlightReservationController : ControllerBase
             return BadRequest("The date range is not valid");
 
         offer.Capacity = (uint)(offer.Capacity - reservationDto.NumberOfTravellers);
+
         try
         {
-            var reservation = new FlightReservation();
+            var reservation = PackageReservationDto.Map(reservationDto);
             var price = offer.Price * reservationDto.NumberOfTravellers;
             reservation.Price = price;
             var payment = reservationDto.GetPayment(price);
-            ReservationDto.Map<Flight, FlightReservation, FlightOffer>(reservation, reservationDto);
             await _repositories.Payment.AddAsync(payment);
             reservation.Payment = payment;
-            await _repositories.FlightReservations.AddAsync(reservation);
-            await _repositories.FlightReservations.SaveChangesAsync();
+            await _repositories.PackageReservations.AddAsync(reservation);
+            await _repositories.PackageReservations.SaveChangesAsync();
             return Ok();
         }
         catch (Exception e)
@@ -100,23 +98,22 @@ public class FlightReservationController : ControllerBase
     {
         try
         {
-            var dbFlightReservation = await _repositories.FlightReservations.FindById(id);
-            
-            if (dbFlightReservation is null)
-                return NotFound($"Flight Reservation with id {id} doesn't exist");
+            var dbPackageReservation = await _repositories.PackageReservations.FindById(id);
+            if (dbPackageReservation is null)
+                return NotFound($"Package Reservation with id {id} doesn't exist");
 
             var token = Request.Headers.Authorization[0]!.Substring(7);
             var jwt = new JwtSecurityToken(token);
             var role = jwt.Claims.First(c => c.Type == "role").Value;
             var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
-            
 
-            if (role == "Tourist" && userId != dbFlightReservation.TouristId)
+
+            if (role == "Tourist" && userId != dbPackageReservation.TouristId)
                 return BadRequest($"Tourists can only change their own reservations");
 
-            var offer = await _repositories.FlightOffers.FindById(dbFlightReservation.OfferId);
+            var offer = await _repositories.Package.FindById(dbPackageReservation.OfferId);
 
-            if(role == "Agent")
+            if (role == "Agent")
             {
                 var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
@@ -124,14 +121,12 @@ public class FlightReservationController : ControllerBase
                     return BadRequest("Agents can only change reservations for they own agency");
             }
 
-            var oldPaymentId = dbFlightReservation.PaymentId; //no quiero que nadie pueda modificar el PaymentId
-            var oldPrice = dbFlightReservation.Price; //ni el precio
+            dbPackageReservation.ArrivalDate = reservationDto.ArrivalDate;
+            dbPackageReservation.DepartureDate = reservationDto.DepartureDate;
+            dbPackageReservation.NumberOfTravellers = reservationDto.NumberOfTravellers;
+            dbPackageReservation.TouristId = reservationDto.TouristId;
 
-            ReservationDto.Map<Flight, FlightReservation, FlightOffer>(dbFlightReservation, reservationDto);
-            dbFlightReservation.PaymentId = oldPaymentId;
-            dbFlightReservation.Price = oldPrice;
-
-            await _repositories.FlightReservations.SaveChangesAsync();
+            await _repositories.HotelReservations.SaveChangesAsync();
 
             return Ok();
         }
@@ -153,27 +148,27 @@ public class FlightReservationController : ControllerBase
 
         try
         {
-            var dbFlightReservation = await _repositories.FlightReservations.FindById(id);
-            
-            if (dbFlightReservation is null)
-                return NotFound($"Flight reservation with id {id} doesn't exist");
-            
-            if ((role == "Tourist") && (userId != dbFlightReservation.TouristId))
+            var dbPackageReservation = await _repositories.PackageReservations.FindById(id);
+
+            if (dbPackageReservation is null)
+                return NotFound($"Package reservation with id {id} doesn't exist");
+
+            if ((role == "Tourist") && (userId != dbPackageReservation.TouristId))
                 return BadRequest($"Tourists can only delete their own reservations");
 
-            var offer = await _repositories.FlightOffers.FindById(dbFlightReservation.OfferId);
+            var offer = await _repositories.HotelOffers.FindById(dbPackageReservation.OfferId);
 
             if (role == "Agent")
             {
                 var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
                 if (agencyId != offer!.AgencyId)
-                    return BadRequest("Agents can only change reservations for they own agency");
+                    return BadRequest("Agents can only change reservations for their own agency");
             }
 
-            await _repositories.Payment.Remove(dbFlightReservation.PaymentId);
-            await _repositories.FlightReservations.Remove(id);
-            await _repositories.FlightReservations.SaveChangesAsync();
+            await _repositories.Payment.Remove(dbPackageReservation.PaymentId);
+            await _repositories.PackageReservations.Remove(id);
+            await _repositories.PackageReservations.SaveChangesAsync();
 
             return Ok();
         }
@@ -193,11 +188,12 @@ public class FlightReservationController : ControllerBase
         var role = jwt.Claims.First(c => c.Type == "role").Value;
         var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
 
-        var items = _repositories.FlightReservations.FindWithInclude(f => f.Offer);
+        var items = _repositories.PackageReservations.FindWithInclude(f => f.Offer);
 
         if (role == "Tourist")
             items = items.Where(rsv => rsv.TouristId == userId);
-        else {
+        else
+        {
             var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
             items = items.Where(rsv => rsv.Offer.AgencyId == agencyId);
@@ -208,19 +204,25 @@ public class FlightReservationController : ControllerBase
             switch (filter.OrderBy)
             {
                 case ("Price"):
-                    items = items.OrderBy(item => item.Price); break;
+                    items = items.OrderBy(item => item.Price);
+                    break;
                 case ("DepartureDay"):
-                    items = items.OrderBy(item => item.DepartureDate); break;
+                    items = items.OrderBy(item => item.DepartureDate);
+                    break;
                 default:
-                    items = items.OrderBy(item => item.Id); break;
+                    items = items.OrderBy(item => item.Id);
+                    break;
             }
         }
 
         if (filter.Descending.HasValue && filter.Descending.Value)
             items = items.Reverse();
 
-        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
-                            .Select(ReservationDto.Map<Flight, FlightReservation, FlightOffer>);
+        var pageItems = (filter.PageIndex == null || filter.PageSize == null
+                ? items
+                : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value,
+                    (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+            .Select(PackageReservationDto.Map);
 
         return Ok(new PaginationResponse<ReservationDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }
@@ -236,25 +238,25 @@ public class FlightReservationController : ControllerBase
 
         try
         {
-            var flightReservation = await _repositories.FlightReservations.FindById(id);
-            
-            if (flightReservation is null)
-                return NotFound($"Flight reservation with id {id} doesn't exist");
-            
-            if ((role == "Tourist") && (userId != flightReservation.TouristId))
+            var reservation = await _repositories.PackageReservations.FindById(id);
+
+            if (reservation is null)
+                return NotFound($"Package reservation with id {id} doesn't exist");
+
+            if ((role == "Tourist") && (userId != reservation.TouristId))
                 return BadRequest($"Tourists can only see their own reservations");
-            
-            if(role == "Agent")
+
+            if (role == "Agent")
             {
                 var agencyId = int.Parse(jwt.Claims.First(c => c.Type == "agencyId").Value);
 
-                var offer = await _repositories.FlightOffers.FindById(flightReservation.OfferId);
+                var offer = await _repositories.HotelOffers.FindById(reservation.OfferId);
 
-                if(agencyId != offer!.AgencyId)
+                if (agencyId != offer!.AgencyId)
                     return BadRequest("Agents can only see their own agency reservations");
             }
 
-            return Ok(ReservationDto.Map<Flight, FlightReservation, FlightOffer>(flightReservation));
+            return Ok(PackageReservationDto.Map(reservation));
         }
         catch (Exception e)
         {
@@ -279,24 +281,46 @@ public class FlightReservationController : ControllerBase
         switch (request.GroupBy)
         {
             case GroupBy.Day:
-                response = _repositories.FlightReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
-                                              .GroupBy(reservation => DateOnly.FromDateTime(reservation.ArrivalDate))
-                                              .OrderBy(group => group.Key)
-                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) });
+                response = _repositories.PackageReservations.FindWithInclude(reservation => reservation.Offer).Where(
+                        reservation => reservation.Offer.AgencyId == agencyId &&
+                                       DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start &&
+                                       DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                    .GroupBy(reservation => DateOnly.FromDateTime(reservation.ArrivalDate))
+                    .OrderBy(group => group.Key)
+                    .Select(group => new SalesResponse
+                    {
+                        Group = group.Key.ToString(), Total = group.Count(),
+                        MoneyAmount = group.Sum(reservation => reservation.Price)
+                    });
                 break;
             case GroupBy.Year:
-                response = _repositories.FlightReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
-                                              .GroupBy(reservation => reservation.ArrivalDate.Year)
-                                              .OrderBy(group => group.Key)
-                                              .Select(group => new SalesResponse { Group = group.Key.ToString(), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) });
+                response = _repositories.PackageReservations.FindWithInclude(reservation => reservation.Offer).Where(
+                        reservation => reservation.Offer.AgencyId == agencyId &&
+                                       DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start &&
+                                       DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                    .GroupBy(reservation => reservation.ArrivalDate.Year)
+                    .OrderBy(group => group.Key)
+                    .Select(group => new SalesResponse
+                    {
+                        Group = group.Key.ToString(), Total = group.Count(),
+                        MoneyAmount = group.Sum(reservation => reservation.Price)
+                    });
                 break;
             case GroupBy.Month:
-                response = _repositories.FlightReservations.FindWithInclude(reservation => reservation.Offer).Where(reservation => reservation.Offer.AgencyId == agencyId && DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start && DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
-                                              .GroupBy(reservation => reservation.ArrivalDate.Year)
-                                              .OrderBy(group => group.Key)
-                                              .Select(group => group.GroupBy(reservation => reservation.ArrivalDate.Month).OrderBy(group => group.Key))
-                                              .Select(year => year.Select(group => new SalesResponse { Group = Month.getMonth(group.Key), Total = group.Count(), MoneyAmount = group.Sum(reservation => reservation.Price) }))
-                                              .SelectMany(response => response);
+                response = _repositories.PackageReservations.FindWithInclude(reservation => reservation.Offer).Where(
+                        reservation => reservation.Offer.AgencyId == agencyId &&
+                                       DateOnly.FromDateTime(reservation.ArrivalDate) >= request.Start &&
+                                       DateOnly.FromDateTime(reservation.ArrivalDate) <= request.End)
+                    .GroupBy(reservation => reservation.ArrivalDate.Year)
+                    .OrderBy(group => group.Key)
+                    .Select(group =>
+                        group.GroupBy(reservation => reservation.ArrivalDate.Month).OrderBy(group => group.Key))
+                    .Select(year => year.Select(group => new SalesResponse
+                    {
+                        Group = Month.getMonth(group.Key), Total = group.Count(),
+                        MoneyAmount = group.Sum(reservation => reservation.Price)
+                    }))
+                    .SelectMany(response => response);
                 break;
             default:
                 return BadRequest("The Group is not supported");
@@ -304,12 +328,13 @@ public class FlightReservationController : ControllerBase
 
         if (export.HasValue)
         {
-            return Ok(_exporterService.getDoc("Flight Reservation Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
-                                                new string[3] { request.GroupBy.ToString()!, "Total Sales", "Amount (USD)" },
-                                                new float[3] { 30, 15, 15 },
-                                                response.SelectMany(sales => new string[] { sales.Group, sales.Total.ToString(), sales.MoneyAmount.ToString() }),
-                                                export.Value
-                                                ));
+            return Ok(_exporterService.getDoc(
+                "Package Reservation Sales (" + request.Start.ToString() + " - " + request.End.ToString() + ")",
+                new string[3] { request.GroupBy.ToString()!, "Total Sales", "Amount (USD)" },
+                new float[3] { 30, 15, 15 },
+                response.SelectMany(sales => new object[] { sales.Group, sales.Total, sales.MoneyAmount }),
+                export.Value
+            ));
         }
 
         return Ok(response);

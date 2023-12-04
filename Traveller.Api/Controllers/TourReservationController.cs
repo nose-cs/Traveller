@@ -29,21 +29,52 @@ public class TourReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
+        var user = await _repositories.Users.FindById(reservationDto.TouristId);
+        
+        if (user is null)
+            return NotFound($"User with id {reservationDto.TouristId} doesn't exist");
+        
+        if (user.Role != Role.Tourist)
+            return BadRequest("Only tourists can make reservations");
+        
         if (reservationDto.NumberOfTravellers <= 0)
             return BadRequest("The number of travellers must be greater than 0");
-            
+
         var offer = await _repositories.TourOffers.FindById(reservationDto.OfferId);
-        
+
         if (offer is null)
             return NotFound($"Tour Offer id: {reservationDto.OfferId} doesn´t exists");
+
+        var product = await _repositories.Tours.FindById(offer.ProductId);
+
+        if (reservationDto.ArrivalDate < offer.StartDate || reservationDto.DepartureDate > offer.EndDate)
+            return BadRequest("Offer is not available in this range of dates");
+            
+        if (reservationDto.ArrivalDate > reservationDto.DepartureDate || reservationDto.ArrivalDate < DateTime.Now)
+            return BadRequest("The date range is not valid");
         
+        if (reservationDto.ArrivalDate + TimeSpan.FromDays(product!.Duration) != reservationDto.DepartureDate)
+            return BadRequest("The tour duration doesn't match the date range");
+
+        if (reservationDto.ArrivalDate.DayOfWeek != product!.SourceDay)
+            return BadRequest("The arrival day must be the same as the tour source day");
+
         var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
-            
+
         if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
             && agencyId != offer.AgencyId)
         {
             return Unauthorized("You don't have permission for this action");
+        }
+        
+        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
+        
+        var role = jwt.Claims.First(c => c.Type == "role").Value;
+        
+        if (role == "Tourist")
+        {
+            reservationDto.TouristId = userId;
         }
 
         if (offer.Capacity < reservationDto.NumberOfTravellers)
@@ -51,7 +82,7 @@ public class TourReservationController : ControllerBase
                 $"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
 
         offer.Capacity = (uint)(offer.Capacity - reservationDto.NumberOfTravellers);
-  
+
         try
         {
             var reservation = new TourReservation();
@@ -79,7 +110,7 @@ public class TourReservationController : ControllerBase
         try
         {
             var dbTourReservation = await _repositories.TourReservations.FindById(id);
-            
+
             if (dbTourReservation is null)
                 return NotFound($"Tour Reservation with id {id} doesn't exist");
 
@@ -131,10 +162,10 @@ public class TourReservationController : ControllerBase
         try
         {
             var dbTourReservation = await _repositories.TourReservations.FindById(id);
-            
+
             if (dbTourReservation is null)
                 return NotFound($"Tour reservation with id {id} doesn't exist");
-            
+
             if ((role == "Tourist") && (userId != dbTourReservation.TouristId))
                 return BadRequest($"Tourists can only delete their own reservations");
 
@@ -150,7 +181,6 @@ public class TourReservationController : ControllerBase
 
             await _repositories.Payment.Remove(dbTourReservation.PaymentId);
             await _repositories.TourReservations.Remove(id);
-            await _repositories.Payment.SaveChangesAsync();
             await _repositories.TourReservations.SaveChangesAsync();
 
             return Ok();
@@ -187,19 +217,25 @@ public class TourReservationController : ControllerBase
             switch (filter.OrderBy)
             {
                 case ("Price"):
-                    items = items.OrderBy(item => item.Price); break;
+                    items = items.OrderBy(item => item.Price);
+                    break;
                 case ("DepartureDay"):
-                    items = items.OrderBy(item => item.DepartureDate); break;
+                    items = items.OrderBy(item => item.DepartureDate);
+                    break;
                 default:
-                    items = items.OrderBy(item => item.Id); break;
+                    items = items.OrderBy(item => item.Id);
+                    break;
             }
         }
 
         if (filter.Descending.HasValue && filter.Descending.Value)
             items = items.Reverse();
 
-        var pageItems = (filter.PageIndex == null || filter.PageSize == null ? items : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value, (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
-                            .Select(ReservationDto.Map<Tour, TourReservation, TourOffer>);
+        var pageItems = (filter.PageIndex == null || filter.PageSize == null
+                ? items
+                : items.Take(new Range((filter.PageIndex.Value - 1) * filter.PageSize.Value,
+                    (filter.PageIndex.Value - 1) * filter.PageSize.Value + filter.PageSize.Value)))
+            .Select(ReservationDto.Map<Tour, TourReservation, TourOffer>);
 
         return Ok(new PaginationResponse<ReservationDto>() { TotalCollectionSize = items.Count(), Items = pageItems });
     }
