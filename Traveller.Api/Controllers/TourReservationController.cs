@@ -39,10 +39,14 @@ public class TourReservationController : ControllerBase
 
         var product = await _repositories.Tours.FindById(offer.ProductId);
 
-        if (reservationDto.ArrivalDate < offer.StartDate || reservationDto.DepartureDate > offer.EndDate ||
-            reservationDto.ArrivalDate > reservationDto.DepartureDate || reservationDto.ArrivalDate < DateTime.Now ||
-            reservationDto.ArrivalDate + TimeSpan.FromDays(product!.Duration) != reservationDto.DepartureDate)
+        if (reservationDto.ArrivalDate < offer.StartDate || reservationDto.DepartureDate > offer.EndDate)
+            return BadRequest("Offer is not available in this range of dates");
+            
+        if (reservationDto.ArrivalDate > reservationDto.DepartureDate || reservationDto.ArrivalDate < DateTime.Now)
             return BadRequest("The date range is not valid");
+        
+        if (reservationDto.ArrivalDate + TimeSpan.FromDays(product!.Duration) != reservationDto.DepartureDate)
+            return BadRequest("The tour duration doesn't match the date range");
 
         if (reservationDto.ArrivalDate.DayOfWeek != product!.SourceDay)
             return BadRequest("The arrival day must be the same as the tour source day");
