@@ -41,7 +41,12 @@ public class UserRepository : IUserRepository
     {
         return _context.AgencyUsers;
     }
-    
+
+    public IEnumerable<Tourist> FindTourists()
+    {
+        return _context.Tourists;
+    }
+
     public async ValueTask<User?> FindByEmail(string email)
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
