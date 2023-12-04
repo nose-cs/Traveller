@@ -2,24 +2,13 @@
 
 namespace Traveller.Domain.Models;
 
-public enum Day
-{
-    Sunday,
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
-    Saturday
-}
-
 public class Tour : IProduct
 {
     public int SourcePlaceId { get; set; }
     public Place SourcePlace { get; set; } = null!;
     public int DestinationPlaceId { get; set; }
     public Place DestinationPlace { get; set; } = null!;
-    public Day SourceDay { get; set; }
+    public DayOfWeek SourceDay { get; set; }
     public uint Duration { get; set; }
     public TimeOnly SourceTime { get; set; }
     public TimeOnly DestinationTime { get; set; }

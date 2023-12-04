@@ -29,6 +29,14 @@ public class HotelReservationController : ControllerBase
     [Authorize(Roles = ("Agent, Tourist"))]
     public async Task<ActionResult> Create(ReservationDto reservationDto)
     {
+        var user = await _repositories.Users.FindById(reservationDto.TouristId);
+        
+        if (user is null)
+            return NotFound($"User with id {reservationDto.TouristId} doesn't exist");
+        
+        if (user.Role != Role.Tourist)
+            return BadRequest("Only tourists can make reservations");
+        
         if (reservationDto.NumberOfTravellers <= 0)
             return BadRequest("The number of travellers must be greater than 0");
             
@@ -39,6 +47,15 @@ public class HotelReservationController : ControllerBase
         
         var token = Request.Headers.Authorization[0]![7..];
         var jwt = new JwtSecurityToken(token);
+        
+        var userId = int.Parse(jwt.Claims.First(c => c.Type == "id").Value);
+        
+        var role = jwt.Claims.First(c => c.Type == "role").Value;
+        
+        if (role == "Tourist")
+        {
+            reservationDto.TouristId = userId;
+        }
             
         if (int.TryParse(jwt.Claims.First(c => c.Type == "agencyId").Value, out var agencyId)
             && agencyId != offer.AgencyId)
@@ -49,13 +66,19 @@ public class HotelReservationController : ControllerBase
         if (offer.Capacity < reservationDto.NumberOfTravellers)
             return BadRequest(
                 $"The offer doesn't have enough capacity for {reservationDto.NumberOfTravellers} travellers");
+        
+        if (reservationDto.ArrivalDate < offer.StartDate || reservationDto.DepartureDate > offer.EndDate)
+            return BadRequest("Offer is not available in this range of dates");
+            
+        if (reservationDto.ArrivalDate > reservationDto.DepartureDate || reservationDto.ArrivalDate < DateTime.Now)
+            return BadRequest("The date range is not valid");
 
         offer.Capacity = (uint)(offer.Capacity - reservationDto.NumberOfTravellers);
         
         try
         {
             var reservation = new HotelReservation();
-            var price = offer.Price * reservationDto.NumberOfTravellers;
+            var price = offer.Price * reservationDto.DepartureDate.Subtract(reservationDto.ArrivalDate).Days;
             reservation.Price = price;
             var payment = reservationDto.GetPayment(price);
             ReservationDto.Map<Hotel, HotelReservation, HotelOffer>(reservation, reservationDto);
@@ -150,7 +173,6 @@ public class HotelReservationController : ControllerBase
 
             await _repositories.Payment.Remove(dbHotelReservation.PaymentId);
             await _repositories.HotelReservations.Remove(id);
-            await _repositories.Payment.SaveChangesAsync();
             await _repositories.HotelReservations.SaveChangesAsync();
 
             return Ok();

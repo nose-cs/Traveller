@@ -157,6 +157,17 @@ public class HotelController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
+    
+    [HttpGet("{id:int}/fromPackage")]
+    public IActionResult GetHotelsFromPackage([FromRoute] int id)
+    {
+        return Ok(_repositories
+            .Package
+            .FindHotels(id)
+            .Select(t => HotelDto
+                .Map(t, _fileService.GetRelativePath(t.Image.Name, t.Image.Id), t.Image.Name)));
+
+    }
 
     [HttpGet("getMostSolds")]
     public IActionResult GetMostSolds()
