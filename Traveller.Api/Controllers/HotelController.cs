@@ -91,7 +91,7 @@ public class HotelController : ControllerBase
         var items = _repositories.Hotels.Find().Where((ho => (filter.Category is null || filter.Category == ho.Category) &&
                                                     (filter.Name is null ||
                                                      ho.Name.ToLower().Contains(filter.Name.ToLower())) &&
-                                                    (filter.Address is null || ho.Address.Address.ToLower()
+                                                    (filter.Address is null || ho.Address.getFullAddress().ToLower()
                                                         .Contains(filter.Address.ToLower())) &&
                                                     (filter.ProductId is null || ho.Id == filter.ProductId)));
 
